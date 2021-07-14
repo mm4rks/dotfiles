@@ -1,0 +1,83 @@
+function ts {
+  args=$@
+  tmux send-keys -t right "$args" C-m
+}
+function pycov {
+    if [ $# -eq 2 ]; then
+      # 1st argument test folder, second module
+      pytest --cov-report=html --cov=$argv[2] $argv[1]
+    else
+      echo "Usage: ${FUNCNAME[0]} <test folder> <module>"
+    fi
+}
+function watchfolder {
+  if [ $# -ge 2 ]; then
+    echo "[+] watching folder $argv[1]: ${@:2}"
+    inotifywait -q -m -e close_write -r $argv[1] --exclude \[0-9\]+ |
+      while read; do
+        ${@:2}
+      done
+  else
+    echo "Usage: ${FUNCNAME[0]} <folder> <command>"
+  fi
+}
+function notes {
+  notesFile="$HOME/notes/notes.md"
+  if [ ! -f $notesFile ]; then
+    touch $notesFile
+  fi
+  nvim -c "norm Go" \
+    -c "startinsert" $notesFile
+}
+function post {
+  if [ $# -eq 1 ]; then
+    postName=$argv[1]
+    postFile="$(date +%Y-%m-%d)-$postName.md"
+    if [ ! -f $postFile ]; then
+      echo "---" >> $postFile
+      echo "title: $postName" >> $postFile
+      echo "categories:" >> $postFile
+      echo "  - " >> $postFile
+      echo "tags: $postName" >> $postFile
+      echo "  - " >> $postFile
+      echo "---" >> $postFile
+      nvim -c "norm Go" \
+        -c "startinsert" $postFile
+    else
+      echo "Post exists already!"
+    fi
+  else
+    echo "Usage: post <post_name>"
+  fi
+}
+function nn {
+  notesFile="$HOME/notes/$(date +%Y-%m-%d)-notes.md"
+  if [ ! -f $notesFile ]; then
+    echo "# $(date +'%d. %B %Y')\n" >> $notesFile
+  fi
+  nvim -c "norm Go" \
+    -c "startinsert" $notesFile
+}
+function todo {
+  notesFile="$HOME/notes/todo.md"
+  if [ $# -ge 1 ]; then
+    echo "- [ ] ${@:1}" >> $notesFile
+  fi
+  if [ $# -lt 1 ]; then
+    echo "- [ ]  " >> $notesFile
+    nvim -c "norm G$" \
+      -c "startinsert" $notesFile
+  fi
+}
+function dockershellhere() {
+    dirname=${PWD##*/}
+    docker run --rm -it --entrypoint=/bin/bash -v `pwd`:/${dirname} -w /${dirname} "$@"
+}
+function rf {
+  INITIAL_QUERY=""
+  RG_PREFIX="rg --column --line-number --no-heading --color=always --smart-case "
+  FZF_DEFAULT_COMMAND="$RG_PREFIX '$INITIAL_QUERY'" \
+    fzf --bind "change:reload:$RG_PREFIX {q} || true" \
+        --ansi --disabled --query "$INITIAL_QUERY" \
+        --height=50% --layout=reverse
+}

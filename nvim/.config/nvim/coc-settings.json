@@ -1,0 +1,12 @@
+{
+    "python.analysis.extraPaths": ["/usr/local/lib/python3.9/"],
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.autoSearchPaths": true,
+    "python.formatting.provider": "black",
+    "python.formatting.blackPath": "~/.local/bin/black",
+    "python.sortImports.path": "~/.local/bin/isort",
+    "json.enable": true,
+    "json.format.enable": true,
+    "coc.preferences.formatOnSaveFiletypes": ["python", "json"],
+    "python.pythonPath": "/usr/local/bin/python3",
+}
