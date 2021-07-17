@@ -1,0 +1,3 @@
+# .gitignore should be absent from this list to install ~/.gitignore
+
+\.git

@@ -1,0 +1,10 @@
+*.o
+.*~
+*~
+*.log
+*.pyc
+*.bndb
+.mypy_cache/
+.vim/
+.venv/
+htmlcov/

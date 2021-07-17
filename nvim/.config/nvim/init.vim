@@ -35,6 +35,7 @@ set updatetime=50
 
 " Don't pass messages to |ins-completion-menu|.
 set shortmess+=c
+set completeopt=menuone,noselect
 
 set signcolumn=yes
 
@@ -59,6 +60,9 @@ Plug 'stsewd/fzf-checkout.vim'
 Plug 'gruvbox-community/gruvbox'
 Plug 'vim-airline/vim-airline'
 Plug 'szw/vim-maximizer'
+" lsp Plugins
+Plug 'neovim/nvim-lspconfig'
+Plug 'hrsh7th/nvim-compe'
 
 call plug#end()
 
