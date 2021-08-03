@@ -145,10 +145,12 @@ let g:fzf_colors =
   \ 'spinner': ['fg', 'Label'],
   \ 'header':  ['fg', 'Comment'] }
 
+" fugitive
 nmap <leader>gj :diffget //3<CR>
 nmap <leader>gf :diffget //2<CR>
 nmap <leader>gs :G<CR>
 nnoremap <leader>gb :GBranches<CR>
+" pane movement
 nnoremap <leader>h :wincmd h<CR>
 nnoremap <leader>j :wincmd j<CR>
 nnoremap <leader>k :wincmd k<CR>
@@ -160,6 +162,7 @@ nnoremap <leader>v :wincmd v<bar> :Ex <bar> :vertical resize 30<CR>
 nnoremap <Leader>f :Files<CR>
 nnoremap <Leader>+ :vertical resize +5<CR>
 nnoremap <Leader>- :vertical resize -5<CR>
+" back to normal mode
 inoremap <C-c> <esc>
 inoremap jj <esc>
 inoremap jk <esc>
@@ -175,9 +178,29 @@ tnoremap kj <C-\><C-n>
 tnoremap jk <C-\><C-n>
 nnoremap <leader>tt :terminal<CR>
 
+" QOL remaps
+" paste and keep paste
+vnoremap p "_dp
+" yank end of line
+nnoremap Y y$
+" keep centered
+nnoremap n nzzzv
+nnoremap N Nzzzv
+nnoremap J mzJ`z
+" undo breakpoints
+inoremap , ,<c-g>u
+inoremap . .<c-g>u
+" jumplist mutations
+nnoremap <expr> k (v:count > 5 ? "m'" . v:count : "") . 'k'
+nnoremap <expr> j (v:count > 5 ? "m'" . v:count : "") . 'j'
+" moving text
+vnoremap J :m '>+1<CR>gv=gv
+vnoremap K :m '<-2<CR>gv=gv
+
+
 " " Copy to clipboard
 vnoremap  <leader>y  "+y
-nnoremap  <leader>Y  "+yg_
+"nnoremap  <leader>Y  "+yg_
 nnoremap  <leader>y  "+y
 nnoremap  <leader>yy  "+yy
 
@@ -187,8 +210,6 @@ nnoremap <leader>P "+P
 vnoremap <leader>p "+p
 vnoremap <leader>P "+P
 
-" paste and keep paste
-vnoremap p "_dp
 
 
 function! s:check_back_space() abort
