@@ -1,4 +1,3 @@
-set path+=**
 syntax enable
 set guicursor=
 set noshowmatch
