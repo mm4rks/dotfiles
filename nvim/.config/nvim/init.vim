@@ -1,4 +1,4 @@
-syntax enable
+" syntax enable
 set guicursor=
 set noshowmatch
 set relativenumber
@@ -57,15 +57,21 @@ Plug 'tpope/vim-surround'
 Plug 'tpope/vim-repeat'
 Plug 'windwp/nvim-autopairs'
 
+" telescope
+Plug 'nvim-telescope/telescope.nvim'
+
 " lsp
 Plug 'neovim/nvim-lspconfig'
-Plug 'nvim-telescope/telescope.nvim'
-Plug 'hrsh7th/nvim-cmp'
-Plug 'hrsh7th/cmp-nvim-lsp'
-Plug 'hrsh7th/vim-vsnip'
-Plug 'hrsh7th/vim-vsnip-integ'
-Plug 'hrsh7th/cmp-buffer'
+" Plug 'hrsh7th/nvim-cmp'
+" Plug 'hrsh7th/cmp-nvim-lsp'
+" Plug 'hrsh7th/vim-vsnip'
+" Plug 'hrsh7th/vim-vsnip-integ'
+" Plug 'hrsh7th/cmp-buffer'
 Plug 'rafamadriz/friendly-snippets'
+Plug 'hrsh7th/nvim-compe'
+
+" python
+Plug 'psf/black'
 
 " treesitter
 Plug 'nvim-treesitter/nvim-treesitter', {'branch': '0.5-compat', 'do': ':TSUpdate'}  " We recommend updating the parsers on update
@@ -99,6 +105,13 @@ let loaded_matchit = 1
 
 " Mappings
 let mapleader = " "
+
+" compe
+inoremap <silent><expr> <C-Space> compe#complete()
+inoremap <silent><expr> <CR>      compe#confirm(luaeval("require 'nvim-autopairs'.autopairs_cr()"))
+inoremap <silent><expr> <C-e>     compe#close('<C-e>')
+inoremap <silent><expr> <C-f>     compe#scroll({ 'delta': +4 })
+inoremap <silent><expr> <C-d>     compe#scroll({ 'delta': -4 })
 
 " fugitive
 nmap <leader>gj :diffget //3<CR>
