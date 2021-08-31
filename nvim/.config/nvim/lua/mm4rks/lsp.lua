@@ -31,3 +31,6 @@ require'lspconfig'.pyright.setup{
     --   debounce_text_changes = 200,
     -- }
 }
+require'lspconfig'.clangd.setup{
+    on_attach=on_attach,
+}
