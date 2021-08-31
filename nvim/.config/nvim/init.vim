@@ -83,6 +83,7 @@ Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'} " 9000+ Snippets
 
 " python
 Plug 'psf/black', { 'tag': '19.10b0' } " temp fix for missing find_pyproject_toml
+Plug 'jpalardy/vim-slime'
 
 " treesitter
 Plug 'nvim-treesitter/nvim-treesitter', {'branch': '0.5-compat', 'do': ':TSUpdate'}  " We recommend updating the parsers on update
@@ -94,6 +95,7 @@ Plug 'gruvbox-community/gruvbox'
 Plug 'vim-airline/vim-airline'
 call plug#end()
 
+" theme settings
 let g:gruvbox_contrast_dark = 'hard'
 if exists('+termguicolors')
     let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
@@ -104,11 +106,18 @@ let g:gruvbox_invert_selection='0'
 colorscheme gruvbox
 set background=dark
 
-
+" slime
+let g:slime_target = "tmux"
+let g:slime_paste_file = "$HOME/.slime_paste"
+let g:slime_default_config = {"socket_name": "default", "target_pane": "{last}"}
+let g:slime_python_ipython = 1
+let g:slime_no_mappings = 1
+xmap <c-c><c-c> <Plug>SlimeRegionSend
+nmap <c-c><c-c> <Plug>SlimeParagraphSend
 
 " Lua settings
 lua require("mm4rks")
-" lua require('nvim-autopairs').setup{}
+lua require('nvim-autopairs').setup{}
 
 let loaded_matchparen = 1
 let loaded_matchit = 1
@@ -190,7 +199,7 @@ vnoremap <leader>p "+p
 vnoremap <leader>P "+P
 
 " python Black and isort on save
-autocmd BufWritePost *.py execute ':Black'
+autocmd BufWritePost *.py silent execute ':Black'
 autocmd BufWritePost *.py silent execute ':!isort %'
 " autocmd BufWritePost *.py execute ':e'
 
