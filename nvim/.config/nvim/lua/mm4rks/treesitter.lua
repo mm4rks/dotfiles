@@ -19,6 +19,3 @@ require'nvim-treesitter.configs'.setup {
     extended_mode = true, -- Also highlight non-bracket delimiters like html tags, boolean or table: lang -> boolean
   }
 }
-require("twilight").setup { }
---require("twilight").enable()
-

@@ -1,4 +1,18 @@
-" syntax enable
+set path+=**
+
+" Nice menu when typing `:find *.py`
+set wildmode=longest,list,full
+set wildmenu
+" Ignore files
+set wildignore+=*.pyc
+set wildignore+=*_build/*
+set wildignore+=**/coverage/*
+set wildignore+=**/node_modules/*
+set wildignore+=**/ios/*
+set wildignore+=**/android/*
+set wildignore+=**/.git/*
+
+syntax enable
 set guicursor=
 set noshowmatch
 set relativenumber
@@ -62,24 +76,18 @@ Plug 'nvim-telescope/telescope.nvim'
 
 " lsp
 Plug 'neovim/nvim-lspconfig'
-Plug 'hrsh7th/nvim-cmp'
-Plug 'hrsh7th/cmp-nvim-lsp'
-Plug 'saadparwaiz1/cmp_luasnip'
-Plug 'L3MON4D3/LuaSnip'
-" Plug 'hrsh7th/vim-vsnip'
-" Plug 'hrsh7th/vim-vsnip-integ'
-" Plug 'hrsh7th/cmp-buffer'
-" Plug 'rafamadriz/friendly-snippets'
-" Plug 'hrsh7th/nvim-compe'
+
+" completer
+Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
+Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'} " 9000+ Snippets
 
 " python
-Plug 'psf/black'
+Plug 'psf/black', { 'tag': '19.10b0' } " temp fix for missing find_pyproject_toml
 
 " treesitter
 Plug 'nvim-treesitter/nvim-treesitter', {'branch': '0.5-compat', 'do': ':TSUpdate'}  " We recommend updating the parsers on update
 Plug 'lewis6991/spellsitter.nvim'
 Plug 'p00f/nvim-ts-rainbow'
-Plug 'folke/twilight.nvim'
 
 " themes
 Plug 'gruvbox-community/gruvbox'
@@ -100,20 +108,13 @@ set background=dark
 
 " Lua settings
 lua require("mm4rks")
-lua require('nvim-autopairs').setup{}
+" lua require('nvim-autopairs').setup{}
 
 let loaded_matchparen = 1
 let loaded_matchit = 1
 
 " Mappings
 let mapleader = " "
-
-" compe
-inoremap <silent><expr> <C-Space> compe#complete()
-inoremap <silent><expr> <CR>      compe#confirm(luaeval("require 'nvim-autopairs'.autopairs_cr()"))
-inoremap <silent><expr> <C-e>     compe#close('<C-e>')
-inoremap <silent><expr> <C-f>     compe#scroll({ 'delta': +4 })
-inoremap <silent><expr> <C-d>     compe#scroll({ 'delta': -4 })
 
 " fugitive
 nmap <leader>gj :diffget //3<CR>
@@ -188,31 +189,10 @@ nnoremap <leader>P "+P
 vnoremap <leader>p "+p
 vnoremap <leader>P "+P
 
+" python Black and isort on save
+autocmd BufWritePost *.py execute ':Black'
+autocmd BufWritePost *.py silent execute ':!isort %'
+" autocmd BufWritePost *.py execute ':e'
 
-" " vsnip config
-" " Expand
-" imap <expr> <C-j>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-j>'
-" smap <expr> <C-j>   vsnip#expandable()  ? '<Plug>(vsnip-expand)'         : '<C-j>'
-
-" " Expand or jump
-" imap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
-" smap <expr> <C-l>   vsnip#available(1)  ? '<Plug>(vsnip-expand-or-jump)' : '<C-l>'
-
-" " Jump forward or backward
-" imap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
-" smap <expr> <Tab>   vsnip#jumpable(1)   ? '<Plug>(vsnip-jump-next)'      : '<Tab>'
-" imap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
-" smap <expr> <S-Tab> vsnip#jumpable(-1)  ? '<Plug>(vsnip-jump-prev)'      : '<S-Tab>'
-
-" " Select or cut text to use as $TM_SELECTED_TEXT in the next snippet.
-" " See https://github.com/hrsh7th/vim-vsnip/pull/50
-" nmap        s   <Plug>(vsnip-select-text)
-" xmap        s   <Plug>(vsnip-select-text)
-" nmap        S   <Plug>(vsnip-cut-text)
-" xmap        S   <Plug>(vsnip-cut-text)
-
-" " If you want to use snippet for multiple filetypes, you can `g:vsnip_filetypes` for it.
-" let g:vsnip_filetypes = {}
-" let g:vsnip_filetypes.javascriptreact = ['javascript']
-" let g:vsnip_filetypes.typescriptreact = ['typescript']
-
+" start completer
+autocmd VimEnter * execute ':COQnow -s'
