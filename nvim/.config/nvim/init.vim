@@ -93,6 +93,7 @@ Plug 'p00f/nvim-ts-rainbow'
 " themes
 Plug 'gruvbox-community/gruvbox'
 Plug 'vim-airline/vim-airline'
+Plug 'folke/zen-mode.nvim'
 call plug#end()
 
 " theme settings
@@ -118,6 +119,24 @@ nmap <c-c><c-c> <Plug>SlimeParagraphSend
 " Lua settings
 lua require("mm4rks")
 lua require('nvim-autopairs').setup{}
+lua << EOF
+require("zen-mode").setup {
+  window = {
+    backdrop = 0.90, -- shade the backdrop of the Zen window. Set to 1 to keep the same as Normal
+    width = 120, -- width of the Zen window
+    height = 1, -- height of the Zen window
+  },
+  plugins = {
+    options = {
+      enabled = true,
+      ruler = true, -- disables the ruler text in the cmd line area
+      showcmd = true, -- disables the command in the last line of the screen
+    },
+    twilight = { enabled = false }, -- enable to start Twilight when zen mode opens
+    gitsigns = { enabled = true }, -- disables git signs
+  },
+}
+EOF
 
 let loaded_matchparen = 1
 let loaded_matchit = 1
