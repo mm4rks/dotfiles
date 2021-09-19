@@ -218,7 +218,7 @@ vnoremap <leader>p "+p
 vnoremap <leader>P "+P
 
 " python Black and isort on save
-autocmd BufWritePost *.py silent execute ':Black'
+autocmd BufWritePost *.py silent execute ':!black %'
 autocmd BufWritePost *.py silent execute ':!isort %'
 " autocmd BufWritePost *.py execute ':e'
 
