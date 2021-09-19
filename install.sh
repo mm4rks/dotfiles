@@ -1,10 +1,25 @@
-sudo apt update
-sudo apt install -y git
-sudo apt install -y stow
-sudo apt install -y tmux
-sudo apt install -y zsh
-sudo apt install -y curl
-sudo apt install -y wget
+#!/bin/bash
+read -p "Install packages? " -n 1 -r
+echo    # (optional) move to a new line
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    echo "installing packages..."
+    sudo apt update
+    sudo apt install -y git
+    sudo apt install -y stow
+    sudo apt install -y tmux
+    sudo apt install -y zsh
+    sudo apt install -y curl
+    sudo apt install -y wget
+fi
+
+read -p "Remove old dotfiles? " -n 1 -r
+echo    # (optional) move to a new line
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    rm ~/.zshrc* ~/.tmux.conf ~/.config/nvim/init.vim
+    rm -rf ~/.config/nvim/lua/
+fi
 
 stow -S tmux zsh
 
