@@ -17,6 +17,8 @@ git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.config/zsh
 git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
 ~/.fzf/install
 
+nvim +PlugInstall +COQdeps +qall
+
 if ! command -v pip3 &> /dev/null
 then
     echo "pip3 could not be found"
