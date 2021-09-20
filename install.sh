@@ -11,6 +11,8 @@ then
     sudo apt install -y zsh
     sudo apt install -y curl
     sudo apt install -y wget
+    sudo apt install -y python3-pip
+    sudo apt install -y python3-venv
 fi
 
 read -p "Remove old dotfiles? " -n 1 -r
