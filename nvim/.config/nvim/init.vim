@@ -159,7 +159,7 @@ nnoremap <leader>l :wincmd l<CR>
 nnoremap <leader>gb :Telescope git_branches<CR>
 nnoremap <C-p> :Telescope git_files<CR>
 nnoremap <C-f> :Telescope find_files<CR>
-nnoremap <leader>rg :Telescope lsp_dynamic_workspace_symbols<CR>
+nnoremap <leader>rg :lua require('telescope.builtin').grep_string({ search = vim.fn.input("Grep For > ")})<CR>
 nnoremap <leader>gg :Telescope lsp_workspace_diagnostics<CR>
 nnoremap <leader>dg :Telescope lsp_document_diagnostics<CR>
 nnoremap <leader>lg :Telescope live_grep<CR>
