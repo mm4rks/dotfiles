@@ -82,11 +82,11 @@ Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
 Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'} " 9000+ Snippets
 
 " python
-Plug 'psf/black', { 'tag': '19.10b0' } " temp fix for missing find_pyproject_toml
+Plug 'psf/black'
 Plug 'jpalardy/vim-slime'
 
 " treesitter
-Plug 'nvim-treesitter/nvim-treesitter', {'branch': '0.5-compat', 'do': ':TSUpdate'}  " We recommend updating the parsers on update
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
 Plug 'lewis6991/spellsitter.nvim'
 Plug 'p00f/nvim-ts-rainbow'
 
