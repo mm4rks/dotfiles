@@ -13,9 +13,9 @@ require('spellsitter').setup {
   captures = {'comment'},  -- set to {} to spellcheck everything
 }
 
-require'nvim-treesitter.configs'.setup {
-  rainbow = {
-    enable = true,
-    extended_mode = false, -- Also highlight non-bracket delimiters like html tags, boolean or table: lang -> boolean
-  }
-}
+-- require'nvim-treesitter.configs'.setup {
+--   rainbow = {
+--     enable = true,
+--     extended_mode = false, -- Also highlight non-bracket delimiters like html tags, boolean or table: lang -> boolean
+--   }
+-- }

@@ -82,8 +82,8 @@ Plug 'ms-jpq/coq_nvim', {'branch': 'coq'}
 Plug 'ms-jpq/coq.artifacts', {'branch': 'artifacts'} " 9000+ Snippets
 
 " python
-Plug 'psf/black'
-Plug 'jpalardy/vim-slime'
+" Plug 'psf/black'
+" Plug 'jpalardy/vim-slime'
 
 " treesitter
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
@@ -92,8 +92,8 @@ Plug 'p00f/nvim-ts-rainbow'
 
 " themes
 Plug 'gruvbox-community/gruvbox'
-Plug 'vim-airline/vim-airline'
-Plug 'folke/zen-mode.nvim'
+Plug 'nvim-lualine/lualine.nvim'
+" Plug 'kyazdani42/nvim-web-devicons'
 call plug#end()
 
 " theme settings
@@ -108,36 +108,18 @@ colorscheme gruvbox
 set background=dark
 
 " slime
-let g:slime_target = "tmux"
-let g:slime_paste_file = "$HOME/.slime_paste"
-let g:slime_default_config = {"socket_name": "default", "target_pane": "{last}"}
-let g:slime_python_ipython = 1
-let g:slime_no_mappings = 1
-xmap <c-c><c-c> <Plug>SlimeRegionSend
-nmap <c-c><c-c> <Plug>SlimeParagraphSend
+" let g:slime_target = "tmux"
+" let g:slime_paste_file = "$HOME/.slime_paste"
+" let g:slime_default_config = {"socket_name": "default", "target_pane": "{last}"}
+" let g:slime_python_ipython = 1
+" let g:slime_no_mappings = 1
+" xmap <c-c><c-c> <Plug>SlimeRegionSend
+" nmap <c-c><c-c> <Plug>SlimeParagraphSend
 
 " Lua settings
 lua require("mm4rks")
+lua require('lualine').setup{ options = { icons_enabled = false, section_separators = '', component_separators = '|'} }
 lua require('nvim-autopairs').setup{}
-lua << EOF
-require("zen-mode").setup {
-  window = {
-    backdrop = 0.90, -- shade the backdrop of the Zen window. Set to 1 to keep the same as Normal
-    width = 120, -- width of the Zen window
-    height = 1, -- height of the Zen window
-  },
-  plugins = {
-    options = {
-      enabled = true,
-      ruler = true, -- disables the ruler text in the cmd line area
-      showcmd = true, -- disables the command in the last line of the screen
-    },
-    twilight = { enabled = false }, -- enable to start Twilight when zen mode opens
-    gitsigns = { enabled = true }, -- disables git signs
-  },
-}
-EOF
-
 let loaded_matchparen = 1
 let loaded_matchit = 1
 
@@ -218,8 +200,8 @@ vnoremap <leader>p "+p
 vnoremap <leader>P "+P
 
 " python Black and isort on save
-autocmd BufWritePost *.py silent execute ':!black %'
-autocmd BufWritePost *.py silent execute ':!isort %'
+" autocmd BufWritePre*.py silent execute ':!black %'
+" autocmd BufWritePre *.py silent execute ':!isort %'
 " autocmd BufWritePost *.py execute ':e'
 
 " start completer
