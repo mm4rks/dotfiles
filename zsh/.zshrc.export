@@ -4,3 +4,4 @@ export PATH=$PATH:$PFBENCH/scripts/execution:$PFBENCH/scripts/analysis
 export EDITOR=nvim
 export VISUAL=nvim
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+export MANROFFOPT="-c"

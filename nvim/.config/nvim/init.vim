@@ -142,11 +142,10 @@ nnoremap <leader>gb :Telescope git_branches<CR>
 nnoremap <C-p> :Telescope git_files<CR>
 nnoremap <C-f> :Telescope find_files<CR>
 nnoremap <leader>rg :lua require('telescope.builtin').grep_string({ search = vim.fn.input("Grep For > ")})<CR>
-nnoremap <leader>gg :Telescope lsp_workspace_diagnostics<CR>
-nnoremap <leader>dg :Telescope lsp_document_diagnostics<CR>
+nnoremap <leader>dg :Telescope diagnostics<CR>
 nnoremap <leader>lg :Telescope live_grep<CR>
-nnoremap <leader>rr :Telescope lsp_workspace_symbols query=<c-r>=expand("<cword>")<CR><CR>
-nnoremap <leader>rs :Telescope grep_string<CR>
+nnoremap <leader>rr :Telescope lsp_references query=<c-r>=expand("<cword>")<CR><CR>
+nnoremap <leader>rs :Telescope lsp_dynamic_workspace_symbols<CR>
 
 " back to normal mode
 inoremap <C-c> <esc>
