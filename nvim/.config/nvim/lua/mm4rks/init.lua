@@ -1,3 +1,3 @@
-require("mm4rks.telescope")
-require("mm4rks.lsp")
-require("mm4rks.treesitter")
+require("mm4rks.packer")
+require("mm4rks.remap")
+require("mm4rks.set")
