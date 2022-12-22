@@ -1,4 +1,6 @@
 export PATH=$HOME/.local/bin:$PATH
-export EDITOR=/usr/bin/nvim
-export VISUAL=/usr/bin/nvim
+export PFBENCH=$HOME/profuzzbench
+export PATH=$PATH:$PFBENCH/scripts/execution:$PFBENCH/scripts/analysis
+export EDITOR=nvim
+export VISUAL=nvim
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
