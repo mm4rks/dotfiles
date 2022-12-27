@@ -5,6 +5,8 @@ end
 
 local sources = {
     -- python
+    -- MasonInstall black
+    -- MasonInstall isort
     null_ls.builtins.formatting.black.with({
         extra_args = { "--line-length=140" }
     }),
