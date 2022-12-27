@@ -51,6 +51,13 @@ vim.cmd.command("Wq", "wq")
 vim.cmd.command("WQ", "wq")
 vim.cmd.command("Q", "q")
 
+-- " indent/unindent with tab/shift-tab
+vim.keymap.set("i", "<S-Tab>", "<Esc><<i")
+vim.keymap.set("n", "<Tab>", ">>")
+vim.keymap.set("n", "<S-Tab>", "<<")
+vim.keymap.set("v", "<Tab>", ">", {noremap = true })
+vim.keymap.set("v", "<S-Tab>", "<")
+
 -- vim.keymap.set("n", "<C-k>", "<cmd>cnext<CR>zz")
 -- vim.keymap.set("n", "<C-j>", "<cmd>cprev<CR>zz")
 -- vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
