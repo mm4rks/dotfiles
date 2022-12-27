@@ -26,6 +26,7 @@ return require('packer').startup(function(use)
         end
     })
     use('nvim-treesitter/nvim-treesitter', { run = ':TSUpdate' })
+    use('windwp/nvim-autopairs')
     use('tpope/vim-fugitive')
     use('tpope/vim-commentary')
     use('tpope/vim-surround')
@@ -60,7 +61,9 @@ return require('packer').startup(function(use)
             { 'rafamadriz/friendly-snippets' },
         }
     }
-
+    use { "jose-elias-alvarez/null-ls.nvim",
+        requires = { "nvim-lua/plenary.nvim" },
+    }
     -- Automatically set up your configuration after cloning packer.nvim
     -- Put this at the end after all plugins
     if packer_bootstrap then

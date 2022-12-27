@@ -45,6 +45,12 @@ vim.keymap.set("n", "<leader>l", ":wincmd l<CR>", {noremap = true, silent = true
 -- highlight search results toggle
 vim.keymap.set("n", "<leader>#", ":set hlsearch!<CR>", {noremap = true, silent = true })
 
+-- map :W to :w TODO autocmd
+vim.cmd.command("W", "w")
+vim.cmd.command("Wq", "wq")
+vim.cmd.command("WQ", "wq")
+vim.cmd.command("Q", "q")
+
 -- vim.keymap.set("n", "<C-k>", "<cmd>cnext<CR>zz")
 -- vim.keymap.set("n", "<C-j>", "<cmd>cprev<CR>zz")
 -- vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
