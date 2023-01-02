@@ -27,5 +27,6 @@ bindkey "^X^E" edit-command-line
 source ~/.zshrc.export
 source ~/.zshrc.function
 source ~/.zshrc.alias
+source ~/.zshrc.docker
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 [ -f ~/.config/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh ] && source ~/.config/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh
