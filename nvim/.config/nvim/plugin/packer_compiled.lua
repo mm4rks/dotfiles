@@ -209,6 +209,11 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/user/.local/share/nvim/site/pack/packer/start/vim-surround",
     url = "https://github.com/tpope/vim-surround"
+  },
+  ["zen-mode.nvim"] = {
+    loaded = true,
+    path = "/home/user/.local/share/nvim/site/pack/packer/start/zen-mode.nvim",
+    url = "https://github.com/folke/zen-mode.nvim"
   }
 }
 
