@@ -3,7 +3,7 @@ local lsp = require('lsp-zero')
 lsp.preset('recommended')
 
 lsp.ensure_installed({
-    'pyright',
+    'ruff_lsp',
     'lua_ls',
 })
 
@@ -62,16 +62,7 @@ lsp.on_attach(function(client, bufnr)
     vim.keymap.set("i", "<C-h>", vim.lsp.buf.signature_help, opts)
 end)
 
--- lsp.pyright.setup{
---     on_attach=on_attach,
---     -- flags = {
---     --   debounce_text_changes = 200,
---     -- }
--- }
 
--- lsp.clangd.setup{
---     on_attach=on_attach,
--- }
 
 lsp.setup()
 
