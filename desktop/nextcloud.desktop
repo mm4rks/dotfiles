@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Nextcloud
+GenericName=File Synchronizer
+Exec=nextcloud --background
+Terminal=false
+Icon=Nextcloud
+Categories=Network
+Type=Application
+StartupNotify=true
