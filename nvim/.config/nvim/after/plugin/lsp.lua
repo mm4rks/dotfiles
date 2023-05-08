@@ -88,8 +88,8 @@ if null_ls_ok then
 end
 
 require('luasnip').config.set_config({
-  region_check_events = 'InsertEnter',
-  delete_check_events = 'InsertLeave'
+    region_check_events = 'InsertEnter',
+    delete_check_events = 'InsertLeave'
 })
 
 require('luasnip.loaders.from_vscode').lazy_load()
@@ -99,6 +99,10 @@ local cmp = require('cmp')
 local cmp_action = require('lsp-zero').cmp_action()
 
 cmp.setup({
+    preselect = 'item',
+    completion = {
+        completeopt = 'menu,menuone,noinsert'
+    },
     mapping = {
         ['<CR>'] = cmp.mapping.confirm({ select = false }),
         ['<Tab>'] = cmp_action.luasnip_supertab(),
