@@ -39,6 +39,10 @@ git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.config/zsh
 git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
 ~/.fzf/install
 
+### zsh vi mode
+
+git clone https://github.com/jeffreytse/zsh-vi-mode.git $HOME/.zsh-vi-mode
+
 ## Other
 
 ### neovim

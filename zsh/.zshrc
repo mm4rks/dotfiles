@@ -21,7 +21,8 @@ setopt autocd autopushd extendedglob notify
 setopt pushdminus pushdsilent pushdtohome pushdignoredups
 setopt HIST_IGNORE_DUPS
 setopt SHARE_HISTORY
-bindkey -e
+# Enable vi mode
+bindkey -v
 bindkey '^R' history-incremental-search-backward
 bindkey "^X^E" edit-command-line
 source ~/.zshrc.export
@@ -30,3 +31,4 @@ source ~/.zshrc.alias
 source ~/.zshrc.docker
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 [ -f ~/.config/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh ] && source ~/.config/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh
+[ -f ~/.zsh-vi-mode/zsh-vi-mode.plugin.zsh ] && source ~/.zsh-vi-mode/zsh-vi-mode.plugin.zsh
