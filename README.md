@@ -32,16 +32,23 @@ git subtree add --prefix=zsh-syntax-highlighting/ https://github.com/zsh-users/z
 git subtree pull --prefix=zsh-syntax-highlighting/ https://github.com/zsh-users/zsh-syntax-highlighting.git master
 stow -S zsh-syntax-highlighting
 ```
+
+```bash
 git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.config/zsh-syntax-highlighting
+```
 
 ### fzf
 
+```bash
 git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
 ~/.fzf/install
+```
 
 ### zsh vi mode
 
+```bash
 git clone https://github.com/jeffreytse/zsh-vi-mode.git $HOME/.zsh-vi-mode
+```
 
 ## Other
 

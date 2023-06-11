@@ -29,6 +29,12 @@ source ~/.zshrc.export
 source ~/.zshrc.function
 source ~/.zshrc.alias
 source ~/.zshrc.docker
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-[ -f ~/.config/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh ] && source ~/.config/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh
+
+# Define an init function and append to zvm_after_init_commands
+function my_init() {
+    [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+    [ -f ~/.config/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh ] && source ~/.config/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh
+}
+ZVM_VI_INSERT_ESCAPE_BINDKEY=jk
+zvm_after_init_commands+=(my_init)
 [ -f ~/.zsh-vi-mode/zsh-vi-mode.plugin.zsh ] && source ~/.zsh-vi-mode/zsh-vi-mode.plugin.zsh
