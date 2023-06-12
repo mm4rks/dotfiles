@@ -1,8 +1,6 @@
 export PATH=$HOME/.local/bin:$PATH
-export PFBENCH=$HOME/profuzzbench
-export PATH=$PATH:$PFBENCH/scripts/execution:$PFBENCH/scripts/analysis
 export EDITOR=nvim
 export VISUAL=nvim
 export MANPAGER="sh -c 'col -bx | bat -l man -p'"
 export MANROFFOPT="-c"
-export BAT_THEME="base16"
+export BAT_THEME="ansi"

@@ -14,40 +14,21 @@ sudo apt install -y python3-pip
 sudo apt install -y python3-venv
 ```
 
-## Subtrees
+## Plugins
+
 
 ```bash
-git remote add remote-name <URL to Git repo>
-git subtree add --prefix=folder/ remote-name <URL to Git repo> subtree-branchname
-```
+mkdir -p ~/.plugins
 
+# zsh syntax highlight
+git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.plugins/zsh-syntax-highlighting
 
+# zsh vi mode
+git clone --depth 1 https://github.com/jeffreytse/zsh-vi-mode.git ~/.plugins/zsh-vi-mode
 
-
-### zsh syntax highlight
-
-```bash
-git remote add zsh-syntax-highlighting https://github.com/zsh-users/zsh-syntax-highlighting.git
-git subtree add --prefix=zsh-syntax-highlighting/ https://github.com/zsh-users/zsh-syntax-highlighting.git master
-git subtree pull --prefix=zsh-syntax-highlighting/ https://github.com/zsh-users/zsh-syntax-highlighting.git master
-stow -S zsh-syntax-highlighting
-```
-
-```bash
-git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.config/zsh-syntax-highlighting
-```
-
-### fzf
-
-```bash
-git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-~/.fzf/install
-```
-
-### zsh vi mode
-
-```bash
-git clone https://github.com/jeffreytse/zsh-vi-mode.git $HOME/.zsh-vi-mode
+# fzf
+git clone --depth 1 https://github.com/junegunn/fzf.git ~/.plugins/fzf
+~/.plugins/fzf/install
 ```
 
 ## Other

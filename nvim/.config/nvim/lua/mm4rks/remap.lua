@@ -27,7 +27,7 @@ vim.keymap.set({ "n", "v" }, "<leader>P", [["+P]])
 
 vim.keymap.set({ "n", "v" }, "<leader>d", [["_d]])
 
--- This is going to get me cancelled
+-- Exit to normal mode
 vim.keymap.set("i", "<C-c>", "<Esc>")
 vim.keymap.set("i", "jj", "<Esc>")
 vim.keymap.set("i", "jk", "<Esc>")
@@ -35,6 +35,12 @@ vim.keymap.set("i", "kj", "<Esc>")
 
 vim.keymap.set("n", "Q", "<nop>")
 vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
+
+-- H to move to the first character in a line
+vim.keymap.set("n", "H", "^")
+
+-- L to move to the last character in a line
+vim.keymap.set("n", "L", "g_")
 
 -- pane movement
 vim.keymap.set("n", "<leader>h", ":wincmd h<CR>", {noremap = true, silent = true })
@@ -45,7 +51,7 @@ vim.keymap.set("n", "<leader>l", ":wincmd l<CR>", {noremap = true, silent = true
 -- highlight search results toggle
 vim.keymap.set("n", "<leader>#", ":set hlsearch!<CR>", {noremap = true, silent = true })
 
--- map :W to :w TODO autocmd
+-- map :W to :w
 vim.cmd.command("W", "w")
 vim.cmd.command("Wq", "wq")
 vim.cmd.command("WQ", "wq")
