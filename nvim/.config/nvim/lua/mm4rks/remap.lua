@@ -1,6 +1,9 @@
 vim.g.mapleader = " "
-vim.keymap.set("n", "<leader>e", vim.cmd.Ex)
 
+-- Open file browser
+-- vim.keymap.set("n", "<leader>e", vim.cmd.Ex)
+
+-- move selected lines
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
 vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
 
@@ -43,10 +46,27 @@ vim.keymap.set("n", "H", "^")
 vim.keymap.set("n", "L", "g_")
 
 -- pane movement
-vim.keymap.set("n", "<leader>h", ":wincmd h<CR>", {noremap = true, silent = true })
-vim.keymap.set("n", "<leader>j", ":wincmd j<CR>", {noremap = true, silent = true })
-vim.keymap.set("n", "<leader>k", ":wincmd k<CR>", {noremap = true, silent = true })
-vim.keymap.set("n", "<leader>l", ":wincmd l<CR>", {noremap = true, silent = true })
+-- vim.keymap.set("n", "<leader>h", ":wincmd h<CR>", {noremap = true, silent = true })
+-- vim.keymap.set("n", "<leader>j", ":wincmd j<CR>", {noremap = true, silent = true })
+-- vim.keymap.set("n", "<leader>k", ":wincmd k<CR>", {noremap = true, silent = true })
+-- vim.keymap.set("n", "<leader>l", ":wincmd l<CR>", {noremap = true, silent = true })
+-- vim.keymap.set("n", "<C-h>", ":wincmd h<CR>", {noremap = true, silent = true })
+-- vim.keymap.set("n", "<C-j>", ":wincmd j<CR>", {noremap = true, silent = true })
+-- vim.keymap.set("n", "<C-k>", ":wincmd k<CR>", {noremap = true, silent = true })
+-- vim.keymap.set("n", "<C-l>", ":wincmd l<CR>", {noremap = true, silent = true })
+
+-- Vertical split
+vim.keymap.set("n", "vv", "<C-w>v", {noremap = true, silent = true })
+
+
+-- Make easy editing and sourcing vimrc
+vim.cmd("command! RefreshConfig source $MYVIMRC <bar> echo 'Refreshed vimrc!'")
+
+-- <Leader> ev for edit vimrc
+vim.api.nvim_set_keymap('n', '<leader>ev', ':vsplit $MYVIMRC<cr> <bar> :lcd %:h<cr>', { noremap = true })
+
+-- <Leader> sv for sourcing vimrc
+vim.api.nvim_set_keymap('n', '<leader>sv', ':RefreshConfig<cr>', { noremap = true })
 
 -- highlight search results toggle
 vim.keymap.set("n", "<leader>#", ":set hlsearch!<CR>", {noremap = true, silent = true })
