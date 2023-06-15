@@ -45,22 +45,11 @@ vim.keymap.set("n", "H", "^")
 -- L to move to the last character in a line
 vim.keymap.set("n", "L", "g_")
 
--- pane movement
--- vim.keymap.set("n", "<leader>h", ":wincmd h<CR>", {noremap = true, silent = true })
--- vim.keymap.set("n", "<leader>j", ":wincmd j<CR>", {noremap = true, silent = true })
--- vim.keymap.set("n", "<leader>k", ":wincmd k<CR>", {noremap = true, silent = true })
--- vim.keymap.set("n", "<leader>l", ":wincmd l<CR>", {noremap = true, silent = true })
--- vim.keymap.set("n", "<C-h>", ":wincmd h<CR>", {noremap = true, silent = true })
--- vim.keymap.set("n", "<C-j>", ":wincmd j<CR>", {noremap = true, silent = true })
--- vim.keymap.set("n", "<C-k>", ":wincmd k<CR>", {noremap = true, silent = true })
--- vim.keymap.set("n", "<C-l>", ":wincmd l<CR>", {noremap = true, silent = true })
-
 -- Vertical split
 vim.keymap.set("n", "vv", "<C-w>v", {noremap = true, silent = true })
 
-
 -- Make easy editing and sourcing vimrc
-vim.cmd("command! RefreshConfig source $MYVIMRC <bar> echo 'Refreshed vimrc!'")
+vim.cmd("command! RefreshConfig source % <bar> echo 'Refreshed!'")
 
 -- <Leader> ev for edit vimrc
 vim.api.nvim_set_keymap('n', '<leader>ev', ':vsplit $MYVIMRC<cr> <bar> :lcd %:h<cr>', { noremap = true })
@@ -83,8 +72,3 @@ vim.keymap.set("n", "<Tab>", ">>")
 vim.keymap.set("n", "<S-Tab>", "<<")
 vim.keymap.set("v", "<Tab>", ">", {noremap = true })
 vim.keymap.set("v", "<S-Tab>", "<")
-
--- vim.keymap.set("n", "<C-k>", "<cmd>cnext<CR>zz")
--- vim.keymap.set("n", "<C-j>", "<cmd>cprev<CR>zz")
--- vim.keymap.set("n", "<leader>k", "<cmd>lnext<CR>zz")
--- vim.keymap.set("n", "<leader>j", "<cmd>lprev<CR>zz")
