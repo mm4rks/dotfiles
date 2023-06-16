@@ -18,15 +18,10 @@ sudo apt install -y python3-venv
 
 
 ```bash
+# zsh syntax highlight, zsh vim mode, fzf
 mkdir -p ~/.plugins
-
-# zsh syntax highlight
 git clone --depth 1 https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.plugins/zsh-syntax-highlighting
-
-# zsh vi mode
 git clone --depth 1 https://github.com/jeffreytse/zsh-vi-mode.git ~/.plugins/zsh-vi-mode
-
-# fzf
 git clone --depth 1 https://github.com/junegunn/fzf.git ~/.plugins/fzf
 ~/.plugins/fzf/install
 ```
