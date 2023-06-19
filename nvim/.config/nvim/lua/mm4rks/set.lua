@@ -31,3 +31,4 @@ vim.opt.updatetime = 50
 vim.opt.colorcolumn = "110"
 
 vim.opt.spell = true
+vim.opt.showcmd = true
