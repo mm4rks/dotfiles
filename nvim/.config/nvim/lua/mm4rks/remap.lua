@@ -30,6 +30,14 @@ vim.keymap.set({ "n", "v" }, "<leader>P", [["+P]])
 
 vim.keymap.set({ "n", "v" }, "<leader>d", [["_d]])
 
+
+-- command mode remaps
+vim.keymap.set("c", "<C-a>", "<Home>", {noremap = true})
+vim.keymap.set("c", "<C-e>", "<End>", {noremap = true})
+vim.keymap.set("c", "<C-k>", "<Up>", {noremap = true})
+vim.keymap.set("c", "<C-j>", "<Down>", {noremap = true})
+
+
 -- Exit to normal mode
 vim.keymap.set("i", "<C-c>", "<Esc>")
 vim.keymap.set("i", "jj", "<Esc>")
