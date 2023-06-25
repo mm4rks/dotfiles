@@ -27,7 +27,6 @@ vim.keymap.set("n", "Y", "y$")
 -- paste from clipboard
 vim.keymap.set({ "n", "v" }, "<leader>p", [["+p]])
 vim.keymap.set({ "n", "v" }, "<leader>P", [["+P]])
-
 vim.keymap.set({ "n", "v" }, "<leader>d", [["_d]])
 
 
@@ -44,8 +43,19 @@ vim.keymap.set("i", "jj", "<Esc>")
 vim.keymap.set("i", "jk", "<Esc>")
 vim.keymap.set("i", "kj", "<Esc>")
 
+-- normal mode remaps
 vim.keymap.set("n", "Q", "<nop>")
+vim.keymap.set("n", "<BS>", "ciw")
 vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
+
+-- visual mode remaps
+vim.keymap.set("v", "<BS>", "c")
+
+-- C-d, C-u -> }, { move blocks
+vim.keymap.set("n", "<C-d>", "}")
+vim.keymap.set("n", "<C-u>", "{")
+vim.keymap.set("n", "<C-d>", "}")
+vim.keymap.set("n", "<C-u>", "{")
 
 -- H to move to the first character in a line
 vim.keymap.set("n", "H", "^")
@@ -54,7 +64,7 @@ vim.keymap.set("n", "H", "^")
 vim.keymap.set("n", "L", "g_")
 
 -- Vertical split
-vim.keymap.set("n", "vv", "<C-w>v", {noremap = true, silent = true })
+-- vim.keymap.set("n", "vs", "<C-w>v", {noremap = true, silent = true })
 
 -- Make easy editing and sourcing vimrc
 vim.cmd("command! RefreshConfig source % <bar> echo 'Refreshed!'")
