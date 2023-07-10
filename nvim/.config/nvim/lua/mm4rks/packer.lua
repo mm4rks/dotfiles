@@ -14,7 +14,7 @@ local packer_bootstrap = ensure_packer()
 return require('packer').startup(function(use)
     use('wbthomason/packer.nvim')
     use {
-        'nvim-telescope/telescope.nvim', tag = '0.1.0',
+        'nvim-telescope/telescope.nvim', tag = '0.1.1',
         -- or                            , branch = '0.1.x',
         requires = { { 'nvim-lua/plenary.nvim' } }
     }
@@ -65,6 +65,7 @@ return require('packer').startup(function(use)
     use { "jose-elias-alvarez/null-ls.nvim",
         requires = { "nvim-lua/plenary.nvim" },
     }
+    use('mbbill/undotree')
     use('folke/zen-mode.nvim')
     -- Automatically set up your configuration after cloning packer.nvim
     -- Put this at the end after all plugins
