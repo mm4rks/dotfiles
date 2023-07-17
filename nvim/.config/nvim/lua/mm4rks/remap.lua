@@ -76,6 +76,10 @@ vim.api.nvim_set_keymap('n', '<leader>sv', ':RefreshConfig<cr>', { noremap = tru
 -- highlight search results toggle
 vim.keymap.set("n", "<leader>#", ":set hlsearch!<CR>", {noremap = true, silent = true })
 
+-- search and highlight us layout
+vim.keymap.set("n", "\\", "#", {noremap = true, silent = true })
+vim.keymap.set("n", "<leader>\\", ":set hlsearch!<CR>", {noremap = true, silent = true })
+
 -- map :W to :w
 vim.cmd.command("W", "w")
 vim.cmd.command("Wq", "wq")
