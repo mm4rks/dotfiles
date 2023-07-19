@@ -68,6 +68,13 @@ return require('packer').startup(function(use)
     }
     use('mbbill/undotree')
     use('folke/zen-mode.nvim')
+    use {
+        'goolord/alpha-nvim',
+        requires = { 'nvim-tree/nvim-web-devicons' },
+        config = function()
+            require 'alpha'.setup(require 'alpha.themes.startify'.config)
+        end
+    }
     -- Automatically set up your configuration after cloning packer.nvim
     -- Put this at the end after all plugins
     if packer_bootstrap then
