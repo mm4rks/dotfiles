@@ -58,6 +58,9 @@ vim.keymap.set({"n", "x"}, "<C-u>", "{")
 -- H to move to the first character in a line
 vim.keymap.set("n", "H", "^")
 
+-- Insert mode movement
+vim.keymap.set("i", "<C-l>", "<Right>", {noremap = true})
+
 -- L to move to the last character in a line
 vim.keymap.set("n", "L", "g_")
 
