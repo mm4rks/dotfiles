@@ -14,7 +14,7 @@ local packer_bootstrap = ensure_packer()
 return require('packer').startup(function(use)
     use('wbthomason/packer.nvim')
     use {
-        'nvim-telescope/telescope.nvim', tag = '0.1.1',
+        'nvim-telescope/telescope.nvim', tag = '0.1.2',
         -- or                            , branch = '0.1.x',
         requires = { { 'nvim-lua/plenary.nvim' } }
     }
@@ -28,6 +28,7 @@ return require('packer').startup(function(use)
     })
     use('mm4rks/nvim-tmux-navigation')
     use('nvim-treesitter/nvim-treesitter', { run = ':TSUpdate' })
+    -- use('nvim-treesitter/nvim-treesitter-context')
     use('windwp/nvim-autopairs')
     use('tpope/vim-fugitive')
     use('tpope/vim-commentary')
