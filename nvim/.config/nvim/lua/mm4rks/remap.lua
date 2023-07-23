@@ -51,9 +51,9 @@ vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
 -- visual mode remaps
 vim.keymap.set("v", "<BS>", "c")
 
--- C-j, C-k -> }, { move blocks
-vim.keymap.set({"n", "x"}, "<C-j>", "}")
-vim.keymap.set({"n", "x"}, "<C-k>", "{")
+-- C-d, C-u -> }, { move blocks
+vim.keymap.set({"n", "x"}, "<C-d>", "}")
+vim.keymap.set({"n", "x"}, "<C-u>", "{")
 
 -- H to move to the first character in a line
 vim.keymap.set("n", "H", "^")
