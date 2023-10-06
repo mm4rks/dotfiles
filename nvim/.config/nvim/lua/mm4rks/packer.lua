@@ -69,6 +69,9 @@ return require('packer').startup(function(use)
     }
     use('mbbill/undotree')
     use('folke/zen-mode.nvim')
+    -- REPL integration
+    use('Vigemus/iron.nvim')
+    -- starup screen
     use {
         'goolord/alpha-nvim',
         requires = { 'nvim-tree/nvim-web-devicons' },
