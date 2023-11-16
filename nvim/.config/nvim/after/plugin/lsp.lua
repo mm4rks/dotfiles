@@ -1,6 +1,7 @@
 local lsp = require('lsp-zero')
 
 lsp.preset('recommended')
+ -- vim.lsp.set_log_level("debug")
 
 lsp.ensure_installed({
     'pyright',
