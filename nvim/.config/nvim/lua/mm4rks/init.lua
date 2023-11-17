@@ -10,6 +10,12 @@ vim.api.nvim_create_autocmd("TextYankPost", {
   group = yankGrp,
 })
 
+-- Break lines in LaTeX files
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "tex",
+    command = "setlocal wrap linebreak"
+})
+
 -- templates
 local templateGrp = vim.api.nvim_create_augroup("TemplateGrp", { clear = true })
 vim.api.nvim_create_autocmd("BufNewFile", {

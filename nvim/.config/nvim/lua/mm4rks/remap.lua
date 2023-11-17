@@ -95,3 +95,8 @@ vim.keymap.set("n", "<Tab>", ">>")
 vim.keymap.set("n", "<S-Tab>", "<<")
 vim.keymap.set("v", "<Tab>", ">", {noremap = true })
 vim.keymap.set("v", "<S-Tab>", "<")
+
+
+-- Vimtex mappings
+vim.api.nvim_set_keymap('n', '<F5>', ':w<CR>:VimtexCompile<CR>', { noremap = true, silent = true })
+
