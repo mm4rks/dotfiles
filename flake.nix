@@ -18,26 +18,45 @@
   {
     # home-manager module to be imported by the main NixOS flake
     homeManagerModules.default = { pkgs, ... }: {
+      # This section manages packages and files in your home directory.
+
+      # Stow is still used for your specific config files (.zshrc, nvim config, etc.)
       home.packages = [ 
-        # Stow is required to link the files
         pkgs.stow 
       ];
 
-      # This creates a package from your dotfiles directory
-      # and then runs a script to stow them into the home directory.
       home.file.".dotfiles" = {
         source = self;
         recursive = true;
       };
 
-      # Activation script to run stow after a rebuild
-      # It will stow every directory in your dotfiles repo.
-      # Make sure your dotfiles are organized correctly for this.
-      # Example: dotfiles/nvim/.config/nvim, dotfiles/zsh/.zshrc
       home.activation.stowDotfiles = pkgs.lib.hm.dag.entryAfter ["writeBoundary"] ''
+        # This command re-links your dotfiles on every rebuild
         $DRY_RUN_CMD ${pkgs.stow}/bin/stow --restow --target=$HOME --dir=$HOME/.dotfiles */
       '';
+
+      # -- NEW SECTION FOR ZSH PLUGINS --
+      # Declaratively manage Zsh and its plugins
+      programs.zsh = {
+        enable = true; # Let home-manager manage the zsh environment
+        plugins = [
+          {
+            name = "zsh-syntax-highlighting";
+            src = pkgs.zsh-syntax-highlighting;
+          }
+          {
+            name = "zsh-vi-mode";
+            src = pkgs.zsh-vi-mode;
+          }
+        ];
+      };
+
+      # Enable fzf and its shell integrations (key bindings, etc.)
+      programs.fzf = {
+        enable = true;
+      };
     };
   };
 }
+
 
