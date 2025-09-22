@@ -81,3 +81,11 @@ function rf {
         --ansi --disabled --query "$INITIAL_QUERY" \
         --height=50% --layout=reverse
 }
+function pg {
+    TXT_FOLDER="/home/user/thesis/papergrep/txt"
+    ug -C1 -i "$1" "$TXT_FOLDER"
+}
+function pgl {
+    TXT_FOLDER="/home/user/thesis/papergrep/txt"
+    ug -l -i "$1" "$TXT_FOLDER"
+}

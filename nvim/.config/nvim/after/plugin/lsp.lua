@@ -78,7 +78,7 @@ if null_ls_ok then
             -- MasonInstall black
             -- MasonInstall isort
             null_ls.builtins.formatting.black.with({
-                extra_args = { "--line-length=140" }
+                extra_args = { "--line-length=90" }
             }),
             null_ls.builtins.formatting.isort,
             -- htmldjango

@@ -31,10 +31,10 @@ vim.keymap.set({ "n", "v" }, "<leader>d", [["_d]])
 
 
 -- command mode remaps
-vim.keymap.set("c", "<C-a>", "<Home>", {noremap = true})
-vim.keymap.set("c", "<C-e>", "<End>", {noremap = true})
-vim.keymap.set("c", "<C-k>", "<Up>", {noremap = true})
-vim.keymap.set("c", "<C-j>", "<Down>", {noremap = true})
+vim.keymap.set("c", "<C-a>", "<Home>", { noremap = true })
+vim.keymap.set("c", "<C-e>", "<End>", { noremap = true })
+vim.keymap.set("c", "<C-k>", "<Up>", { noremap = true })
+vim.keymap.set("c", "<C-j>", "<Down>", { noremap = true })
 
 
 -- Exit to normal mode
@@ -52,14 +52,14 @@ vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
 vim.keymap.set("v", "<BS>", "c")
 
 -- C-d, C-u -> }, { move blocks
-vim.keymap.set({"n", "x"}, "<C-d>", "}")
-vim.keymap.set({"n", "x"}, "<C-u>", "{")
+vim.keymap.set({ "n", "x" }, "<C-d>", "}")
+vim.keymap.set({ "n", "x" }, "<C-u>", "{")
 
 -- H to move to the first character in a line
 vim.keymap.set("n", "H", "^")
 
 -- Insert mode movement
-vim.keymap.set("i", "<C-l>", "<Right>", {noremap = true})
+vim.keymap.set("i", "<C-l>", "<Right>", { noremap = true })
 
 -- L to move to the last character in a line
 vim.keymap.set("n", "L", "g_")
@@ -77,11 +77,11 @@ vim.api.nvim_set_keymap('n', '<leader>ev', ':vsplit $MYVIMRC<cr> <bar> :lcd %:h<
 vim.api.nvim_set_keymap('n', '<leader>sv', ':RefreshConfig<cr>', { noremap = true })
 
 -- highlight search results toggle
-vim.keymap.set("n", "<leader>#", ":set hlsearch!<CR>", {noremap = true, silent = true })
+vim.keymap.set("n", "<leader>#", ":set hlsearch!<CR>", { noremap = true, silent = true })
 
 -- search and highlight us layout
-vim.keymap.set("n", "\\", "#", {noremap = true, silent = true })
-vim.keymap.set("n", "<leader>\\", ":set hlsearch!<CR>", {noremap = true, silent = true })
+vim.keymap.set("n", "\\", "#", { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>\\", ":set hlsearch!<CR>", { noremap = true, silent = true })
 
 -- map :W to :w
 vim.cmd.command("W", "w")
@@ -93,10 +93,10 @@ vim.cmd.command("Q", "q")
 vim.keymap.set("i", "<S-Tab>", "<Esc><<i")
 vim.keymap.set("n", "<Tab>", ">>")
 vim.keymap.set("n", "<S-Tab>", "<<")
-vim.keymap.set("v", "<Tab>", ">", {noremap = true })
+vim.keymap.set("v", "<Tab>", ">", { noremap = true })
 vim.keymap.set("v", "<S-Tab>", "<")
 
 
 -- Vimtex mappings
 vim.api.nvim_set_keymap('n', '<F5>', ':w<CR>:VimtexCompile<CR>', { noremap = true, silent = true })
-
+vim.api.nvim_set_keymap('n', ',c', '<F7>', { noremap = false })

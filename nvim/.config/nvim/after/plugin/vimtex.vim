@@ -29,7 +29,6 @@ let g:vimtex_quickfix_open_on_warning = 0
 " Most VimTeX mappings rely on localleader and this can be changed with the
 " following line. The default is usually fine and is the symbol "\".
 let maplocalleader = ","
-
 " " Get Vim's window ID for switching focus from Zathura to Vim using xdotool.
 " " Only set this variable once for the current Vim instance.
 " if !exists("g:vim_window_id")
