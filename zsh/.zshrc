@@ -52,13 +52,7 @@ bindkey -v                  # Enable Vi mode for command-line editing.
 
 PROMPT_EOL_MARK=""          # Hide the '%' character that appears at the end of lines.
 
-source .zsh_alias.sh
-source .zsh_docker.sh
-source .zsh_env.sh
-source .zsh_functions.sh
-source .zsh_plugins.sh
-
-bindkey '^R' history-incremental-search-backward # Ctrl+R for history search.
+#bindkey '^R' history-incremental-search-backward # Ctrl+R for history search.
 bindkey ' ' magic-space                          # Space performs history expansion (e.g., '!!').
 bindkey '^[[Z' undo                              # Shift+Tab to undo. TODO change this to undo in insert mode only
 bindkey -s -M vicmd '^?' 'ciw'                   # Backspace executes 'change inner word'.
@@ -67,3 +61,11 @@ bindkey -s -M vicmd '^?' 'ciw'                   # Backspace executes 'change in
 autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey "^X^E" edit-command-line                 # Ctrl+X, Ctrl+E to open editor.
+
+source .zsh_alias.sh
+source .zsh_docker.sh
+source .zsh_env.sh
+source .zsh_functions.sh
+source .zsh_plugins.sh
+
+
