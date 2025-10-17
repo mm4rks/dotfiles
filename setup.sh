@@ -62,6 +62,7 @@ install_required_packages() {
     local required_packages=(
         curl git unzip fontconfig stow fzf
         zsh-syntax-highlighting zsh-autosuggestions command-not-found
+        ripgrep
     )
     sudo apt-get update
     sudo apt-get install "${required_packages[@]}"
