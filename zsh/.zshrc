@@ -25,18 +25,8 @@ setopt SHARE_HISTORY
 bindkey -v
 bindkey '^R' history-incremental-search-backward
 bindkey "^X^E" edit-command-line
-source ~/.zshrc.export
-source ~/.zshrc.function
-source ~/.zshrc.alias
-source ~/.zshrc.docker
-
-function zvm_config() {
-    ZVM_VI_INSERT_ESCAPE_BINDKEY=kj
-}
-
-function zvm_after_init() {
-    [ -f ~/.plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh ] && source ~/.plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.plugin.zsh
-    [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-}
-
-[ -f ~/.plugins/zsh-vi-mode/zsh-vi-mode.plugin.zsh ] && source ~/.plugins/zsh-vi-mode/zsh-vi-mode.plugin.zsh
+source ~/.zsh_env.sh
+source ~/.zsh_functions.sh
+source ~/.zsh_alias.sh
+source ~/.zsh_docker.sh
+source ~/.zsh_plugins.sh
