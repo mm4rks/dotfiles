@@ -1,9 +1,0 @@
-[Desktop Entry]
-Name=Obsidian
-Exec=obsidian %U
-Terminal=false
-Type=Application
-Icon=obsidian
-Comment=Obsidian
-Categories=Office;
-MimeType=x-scheme-handler/obsidian;text/html;
