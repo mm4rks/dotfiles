@@ -177,8 +177,7 @@ handle_nerdfont_setup() {
 
 # --- Main Script Execution ---
 main() {
-    check_dependencies
-    install_apt_packages
+    install_required_packages
     handle_nerdfont_setup
     handle_neovim_setup
     
