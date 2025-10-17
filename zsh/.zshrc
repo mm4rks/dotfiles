@@ -65,3 +65,9 @@ bindkey "^X^E" edit-command-line                 # Ctrl+X, Ctrl+E to open editor
 
 # --- Prompt Customization -----------------------------------------------------
 PROMPT_EOL_MARK=""          # Hide the '%' character that appears at the end of lines.
+
+source .zsh_alias.sh
+source .zsh_docker.sh
+source .zsh_env.sh
+source .zsh_functions.sh
+source .zsh_plugins.sh
