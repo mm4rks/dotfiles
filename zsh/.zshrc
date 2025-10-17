@@ -35,6 +35,7 @@ setopt histverify           # Show history expansions before executing them.
 # --- Completion System --------------------------------------------------------
 autoload -Uz compinit       # Autoload the completion initialization utility.
 compinit -d ~/.cache/zcompdump # Initialize completions, caching to this file.
+zstyle ':completion:*:*:*:*:*' tag-order arguments options files
 zstyle ':completion:*' completer _expand _complete _ignored _approximate
 zstyle ':completion:*' matcher-list '' 'm:{[:lower:]}={[:upper:]}' 'r:|[._-]=* r:|=*'
 zstyle ':completion:*' max-errors 2 # Allow up to 2 errors for fuzzy matching.
@@ -47,23 +48,8 @@ zstyle ':completion:*' format 'Completing %d'
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
 
-# --- Keybindings & Line Editor (ZLE) ------------------------------------------
 bindkey -v                  # Enable Vi mode for command-line editing.
 
-# In any mode:
-bindkey '^R' history-incremental-search-backward # Ctrl+R for history search.
-bindkey ' ' magic-space                          # Space performs history expansion (e.g., '!!').
-bindkey '^[[Z' undo                              # Shift+Tab to undo.
-
-# In Vi command mode:
-bindkey -s -M vicmd '^?' 'ciw'                    # Backspace executes 'change inner word'.
-
-# Widget to edit the current command line in your default editor ($EDITOR).
-autoload -Uz edit-command-line
-zle -N edit-command-line
-bindkey "^X^E" edit-command-line                 # Ctrl+X, Ctrl+E to open editor.
-
-# --- Prompt Customization -----------------------------------------------------
 PROMPT_EOL_MARK=""          # Hide the '%' character that appears at the end of lines.
 
 source .zsh_alias.sh
@@ -71,3 +57,13 @@ source .zsh_docker.sh
 source .zsh_env.sh
 source .zsh_functions.sh
 source .zsh_plugins.sh
+
+bindkey '^R' history-incremental-search-backward # Ctrl+R for history search.
+bindkey ' ' magic-space                          # Space performs history expansion (e.g., '!!').
+bindkey '^[[Z' undo                              # Shift+Tab to undo. TODO change this to undo in insert mode only
+bindkey -s -M vicmd '^?' 'ciw'                   # Backspace executes 'change inner word'.
+
+# Widget to edit the current command line in your default editor ($EDITOR).
+autoload -Uz edit-command-line
+zle -N edit-command-line
+bindkey "^X^E" edit-command-line                 # Ctrl+X, Ctrl+E to open editor.
