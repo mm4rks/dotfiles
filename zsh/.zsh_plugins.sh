@@ -13,8 +13,9 @@ zvm_config() {
 } # Define zsh-vi-mode config before sourcing the plugin.
 
 source_if_exists ~/.plugins/zsh-vi-mode/zsh-vi-mode.plugin.zsh
-source_if_exists /usr/share/fzf/key-bindings.zsh
-source_if_exists /usr/share/fzf/completion.zsh
+if command -v fzf &> /dev/null; then
+    source <(fzf --zsh)
+fi
 source_if_exists /etc/zsh_command_not_found
 
 if source_if_exists /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh; then
