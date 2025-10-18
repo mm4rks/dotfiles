@@ -60,12 +60,12 @@ ask_to_proceed() {
 install_required_packages() {
     echo -e "\n${STEP} Updating package list and installing required packages..."
     local required_packages=(
-        curl git unzip fontconfig stow fzf
+        curl git unzip fontconfig stow fzf pipx
         zsh-syntax-highlighting zsh-autosuggestions command-not-found
         ripgrep
     )
-    sudo apt-get update
-    sudo apt-get install "${required_packages[@]}"
+    sudo apt-get update -q
+    sudo apt-get install -q "${required_packages[@]}"
 }
 
 install_nerd_font() {
@@ -97,6 +97,23 @@ install_neovim() {
     chmod u+x "$NVIM_APPIMAGE_PATH"
     echo -e "${INFO} Neovim installed to ${NVIM_APPIMAGE_PATH}"
     echo -e "${WARN} Please ensure '${NVIM_INSTALL_DIR}' is in your PATH."
+}
+
+setup_argcomplete() {
+    echo -e "\n${STEP} Setting up Python Argcomplete..."
+    if ! command -v pipx &>/dev/null; then
+        echo -e "${ERROR} pipx is not installed. This is required."
+        return 1
+    fi
+    
+    # Use -q for quiet install
+    pipx install argcomplete -q
+    if pipx run activate-global-python-argcomplete &>/dev/null; then
+        echo -e "${INFO} Argcomplete activated."
+    else
+        echo -e "${ERROR} Failed to activate global completions."
+        return 1
+    fi
 }
 
 # --- stow package, backup existing on conflict
@@ -149,6 +166,7 @@ stow_package() {
 # --- Main Script Execution ---
 main() {
     install_required_packages
+    setup_argcomplete
 
     if ask_to_proceed "Do you want to install FiraMono Nerd Font?"; then
         install_nerd_font
