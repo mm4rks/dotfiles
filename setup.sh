@@ -21,7 +21,12 @@ CORE_PACKAGES_TO_STOW=(
     "zsh_plugins"
     "dockerfiles"
 )
-
+REQUIRED_PACKAGES=(
+        curl git unzip fontconfig stow fzf pipx bat
+        zsh-syntax-highlighting zsh-autosuggestions 
+        command-not-found
+        ripgrep
+    )
 # --- Neovim Configuration ---
 NVIM_INSTALL_DIR="$HOME/.local/bin"
 NVIM_APPIMAGE_PATH="$NVIM_INSTALL_DIR/nvim"
@@ -59,13 +64,8 @@ ask_to_proceed() {
 
 install_required_packages() {
     echo -e "\n${STEP} Updating package list and installing required packages..."
-    local required_packages=(
-        curl git unzip fontconfig stow fzf pipx
-        zsh-syntax-highlighting zsh-autosuggestions command-not-found
-        ripgrep
-    )
     sudo apt-get update -q
-    sudo apt-get install -q "${required_packages[@]}"
+    sudo apt-get install -q "${REQUIRED_PACKAGES[@]}"
 }
 
 install_nerd_font() {
