@@ -4,9 +4,11 @@ export PATH=$PATH:$HOME/.local/bin
 if command -v nvim &> /dev/null; then
     export EDITOR='nvim'
     export VISUAL='nvim'
+    export SUDO_EDITOR='nvim'
 else
     export EDITOR='vim'
     export VISUAL='vim'
+    export SUDO_EDITOR='vim'
 fi
 
 # Use bat as the man page pager, but only if it is installed
