@@ -19,7 +19,7 @@ setopt pushdminus           # Swap behavior of `pushd +N` and `pushd -N`.
 setopt pushdsilent          # Don't print the directory stack after `pushd` or `popd`.
 setopt pushdtohome          # Make `pushd` with no arguments go to the home directory.
 setopt pushdignoredups      # Don't push directories that are already on the stack.
-WORDCHARS=${WORDCHARS//\/-} # Slashes and minus separate words
+WORDCHARS=${WORDCHARS//\/} # Slashes and minus separate words
 
 # --- History Configuration ----------------------------------------------------
 HISTFILE=~/.zsh_history     # Set path for the history file.
@@ -52,16 +52,16 @@ bindkey -v                  # Enable Vi mode for command-line editing.
 
 PROMPT_EOL_MARK=""          # Hide the '%' character that appears at the end of lines.
 
-#bindkey '^R' history-incremental-search-backward # Ctrl+R for history search.
+autoload -Uz edit-command-line
+zle -N edit-command-line
+bindkey '^R' history-incremental-search-backward # Ctrl+R for history search.
 bindkey ' ' magic-space                          # Space performs history expansion (e.g., '!!').
 bindkey '^[[Z' undo                              # Shift+Tab to undo. TODO change this to undo in insert mode only
 bindkey -s -M vicmd '^?' 'ciw'                   # Backspace executes 'change inner word'.
-
-# Widget to edit the current command line in your default editor ($EDITOR).
-autoload -Uz edit-command-line
-zle -N edit-command-line
 bindkey "^X^E" edit-command-line                 # Ctrl+X, Ctrl+E to open editor.
 bindkey '^N' forward-word
+bindkey '^A' beginning-of-line
+bindkey '^E' end-of-line
 
 source .zsh_alias.sh
 source .zsh_docker.sh
