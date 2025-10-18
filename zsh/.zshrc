@@ -19,7 +19,7 @@ setopt pushdminus           # Swap behavior of `pushd +N` and `pushd -N`.
 setopt pushdsilent          # Don't print the directory stack after `pushd` or `popd`.
 setopt pushdtohome          # Make `pushd` with no arguments go to the home directory.
 setopt pushdignoredups      # Don't push directories that are already on the stack.
-WORDCHARS=${WORDCHARS//\/}  # Treat file paths as single words by removing '/' as a word separator.
+WORDCHARS=${WORDCHARS//\/-} # Slashes and minus separate words
 
 # --- History Configuration ----------------------------------------------------
 HISTFILE=~/.zsh_history     # Set path for the history file.
@@ -61,6 +61,7 @@ bindkey -s -M vicmd '^?' 'ciw'                   # Backspace executes 'change in
 autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey "^X^E" edit-command-line                 # Ctrl+X, Ctrl+E to open editor.
+bindkey '^N' forward-word
 
 source .zsh_alias.sh
 source .zsh_docker.sh
