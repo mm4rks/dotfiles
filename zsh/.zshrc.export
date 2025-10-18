@@ -1,7 +1,0 @@
-export PATH=$HOME/.local/bin:$PATH
-export PATH="/usr/local/texlive/2025/bin/x86_64-linux:$PATH"
-export EDITOR=nvim
-export VISUAL=nvim
-export MANPAGER="sh -c 'col -bx | bat -l man -p'"
-export MANROFFOPT="-c"
-export BAT_THEME="ansi"
