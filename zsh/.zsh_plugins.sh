@@ -12,15 +12,18 @@ zvm_config() {
     ZVM_CLIPBOARD_PASTE_CMD='xclip -selection clipboard -o'
 } # Define zsh-vi-mode config before sourcing the plugin.
 
-source_if_exists ~/.plugins/zsh-vi-mode/zsh-vi-mode.plugin.zsh
-if command -v fzf &> /dev/null; then
-    source <(fzf --zsh)
-fi
-source_if_exists /etc/zsh_command_not_found
+zvm_after_init() {
+    if command -v fzf &> /dev/null; then
+        source <(fzf --zsh)
+    fi
+    source_if_exists /etc/zsh_command_not_found
+    
+    if source_if_exists /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh; then
+        ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=244'
+    fi
+}
 
-if source_if_exists /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh; then
-    ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=244'
-fi # enable auto-suggestions based on the history
+source_if_exists ~/.plugins/zsh-vi-mode/zsh-vi-mode.plugin.zsh
 
 # ------------------------------------------------------------------------------
 # Color & Prompts
