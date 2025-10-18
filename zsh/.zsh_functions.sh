@@ -2,6 +2,18 @@ function ts() {
     tmux send-keys -t right "$@" C-m
 } # Description: Send a command and its arguments to the tmux pane to the right
 
+function swapctrl() {
+    local arg="${1,,}"
+
+    if [[ "$arg" == "off" ]]; then
+        gsettings set org.gnome.desktop.input-sources xkb-options "[]"
+        echo "[+] Key swap disabled."
+    else
+        gsettings set org.gnome.desktop.input-sources xkb-options "['ctrl:swapcaps']"
+        echo "[+] Ctrl and Caps Lock swapped."
+    fi
+} # Description:  Swaps Ctrl and Caps Lock. Usage: swapctrl [off]
+
 function rf() {
     local search_path="${1:-.}" #  default to the current directory ('.')
     local INITIAL_QUERY=""
