@@ -63,11 +63,11 @@ bindkey -s -M vicmd '^?' 'ciw'                   # Backspace executes 'change in
 #bindkey '^A' beginning-of-line
 #bindkey '^E' end-of-line
 
-source .zsh_alias.sh
-source .zsh_docker.sh
-source .zsh_env.sh
-source .zsh_functions.sh
-source .zsh_plugins.sh
+source ~/.zsh_alias.sh
+source ~/.zsh_docker.sh
+source ~/.zsh_env.sh
+source ~/.zsh_functions.sh
+source ~/.zsh_plugins.sh
 
 
 
