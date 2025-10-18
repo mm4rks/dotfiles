@@ -108,10 +108,10 @@ setup_argcomplete() {
     
     # Use -q for quiet install
     pipx install argcomplete -q
-    if pipx run activate-global-python-argcomplete &>/dev/null; then
+    if activate-global-python-argcomplete &>/dev/null; then
         echo -e "${INFO} Argcomplete activated."
     else
-        echo -e "${ERROR} Failed to activate global completions."
+        echo -e "${ERROR} Failed to activate global completions (activate-global-python-argcomplete)."
         return 1
     fi
 }
