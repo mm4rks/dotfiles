@@ -19,7 +19,10 @@ if command -v nvim &> /dev/null; then
     alias vim='nvim' # Conditional alias for Neovim
 fi
 
-if command -v bat &> /dev/null; then
-    alias cat='bat --paging=never' # Conditional alias for bat
+if command -v batcat &> /dev/null; then
+    alias cat='batcat --paging=never'
+    alias less='batcat'
+elif command -v bat &> /dev/null; then
+    alias cat='bat --paging=never'
     alias less='bat'
 fi
