@@ -15,18 +15,17 @@ return require('packer').startup(function(use)
     -- Packer can manage itself
     use('wbthomason/packer.nvim')
 
-    -- Essentials
+    -- Essential plugins
     use('tpope/vim-surround')
     use('tpope/vim-repeat')
-    use('tpope/vim-fugitive')
     use('tpope/vim-commentary')
     use('windwp/nvim-autopairs')
     use('mm4rks/nvim-tmux-navigation')
 
     -- Treesitter
-    use({ 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' })
+    use('nvim-treesitter/nvim-treesitter', { run = ':TSUpdate' })
 
-    -- UI
+    -- Colorscheme
     use({
         'rose-pine/neovim',
         as = 'rose-pine',
@@ -34,15 +33,8 @@ return require('packer').startup(function(use)
             vim.cmd.colorscheme('rose-pine')
         end
     })
-    use({
-        'nvim-lualine/lualine.nvim',
-        requires = { 'nvim-tree/nvim-web-devicons', opt = true }
-    })
-    use('lewis6991/gitsigns.nvim')
-
 
     -- Automatically set up your configuration after cloning packer.nvim
-    -- Put this at the end after all plugins
     if packer_bootstrap then
         require('packer').sync()
     end

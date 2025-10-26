@@ -2,7 +2,7 @@
 require'nvim-treesitter.configs'.setup {
   -- A list of parser names, or "all".
   -- To add more parsers, add them to this list and run `:TSUpdate`
-  ensure_installed = { "c", "lua", "vim", "python", "rust" },
+  ensure_installed = { "c", "python" },
 
   -- Install parsers synchronously (only applied to `ensure_installed`)
   sync_install = false,
@@ -26,12 +26,6 @@ require'nvim-treesitter.configs'.setup {
 
 -- nvim-autopairs configuration
 require('nvim-autopairs').setup{}
-
--- gitsigns configuration
-require('gitsigns').setup()
-
--- lualine configuration
-require('lualine').setup()
 
 -- Set colorscheme
 -- The colorscheme is set in packer.lua config block,
