@@ -13,13 +13,14 @@ trap script_exit_handler EXIT
 # --- Configuration ---
 DOTFILES_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 BACKUP_DIR="$HOME/.dotfiles_backup_$(date +"%Y%m%d-%H%M%S")"
-# These packages will always be stowed. 'nvim' is handled conditionally.
+# These packages will always be stowed.
 CORE_PACKAGES_TO_STOW=(
     "zsh"
     "tmux"
     "git"
     "zsh_plugins"
     "dockerfiles"
+    "nvim"
 )
 
 # --- Neovim Configuration ---
@@ -167,14 +168,10 @@ stow_package() {
 main() {
     install_required_packages
     setup_argcomplete
+    install_neovim
 
     if ask_to_proceed "Do you want to install FiraMono Nerd Font?"; then
         install_nerd_font
-    fi
-
-    if ask_to_proceed "Do you want to install Neovim and set up LazyVim?"; then
-        install_neovim
-        stow_package "nvim" # Conditionally stow the nvim package
     fi
 
     # Stow all the core, unconditional packages
@@ -187,7 +184,7 @@ main() {
     echo -e "\n${YELLOW}Next Steps:${NC}"
     echo -e "1. ${YELLOW}IMPORTANT:${NC} Open your terminal's settings and change its font to 'FiraMono Nerd Font' (if installed)."
     echo -e "2. Restart your terminal to apply all changes."
-    echo -e "3. If you installed Neovim, run \`${BLUE}nvim${NC}\`. LazyVim will automatically install plugins on the first run."
+    echo -e "3. Run \`${BLUE}nvim${NC}\` and then run \`:PackerSync\` to install the plugins."
 }
 
 main
