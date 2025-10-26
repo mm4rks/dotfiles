@@ -26,8 +26,3 @@ require'nvim-treesitter.configs'.setup {
 
 -- nvim-autopairs configuration
 require('nvim-autopairs').setup{}
-
--- Set colorscheme
--- The colorscheme is set in packer.lua config block,
--- but we can keep this here as a fallback.
-vim.cmd('colorscheme rose-pine')
