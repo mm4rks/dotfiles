@@ -1,8 +1,6 @@
 require("mm4rks.packer")
 require("mm4rks.remap")
 require("mm4rks.set")
-require("mm4rks.plugins")
-require("mm4rks.cmp")
 
 
 -- Highlight on yank
@@ -12,8 +10,19 @@ vim.api.nvim_create_autocmd("TextYankPost", {
   group = yankGrp,
 })
 
+-- Break lines in LaTeX files
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "tex",
+    command = "setlocal wrap linebreak"
+})
+
 -- templates
 local templateGrp = vim.api.nvim_create_augroup("TemplateGrp", { clear = true })
+vim.api.nvim_create_autocmd("BufNewFile", {
+    pattern = "README.md",
+    command = "0r ~/.config/nvim/templates/readme.md",
+    group = templateGrp,
+})
 vim.api.nvim_create_autocmd("BufNewFile", {
     pattern = "*.c",
     command = "0r ~/.config/nvim/templates/main.c",

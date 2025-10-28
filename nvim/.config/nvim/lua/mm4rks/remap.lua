@@ -95,3 +95,11 @@ vim.keymap.set("n", "<Tab>", ">>")
 vim.keymap.set("n", "<S-Tab>", "<<")
 vim.keymap.set("v", "<Tab>", ">", { noremap = true })
 vim.keymap.set("v", "<S-Tab>", "<")
+
+
+-- Vimtex mappings
+vim.api.nvim_set_keymap('n', '<F5>', ':w<CR>:VimtexCompile<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', ',c', '<F7>', { noremap = false })
+
+-- Treesitter incremental selection
+vim.keymap.set("n", "vv", ":lua require('nvim-treesitter.incremental_selection').init_selection()<CR>", { noremap = true, silent = true })

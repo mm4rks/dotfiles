@@ -22,7 +22,7 @@ require'nvim-treesitter.configs'.setup {
   incremental_selection = {
     enable = true,
     keymaps = {
-      init_selection = 'v',
+      init_selection = '<A-v>', -- Set to a placeholder, will be triggered by 'vv'
       scope_incremental = '<M-v>',
       node_incremental = 'v',
       node_decremental = 'V',

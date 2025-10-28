@@ -72,3 +72,9 @@ source ~/.zsh_plugins.sh
 
 
 
+
+# Automatically attach to a tmux session on terminal start
+if [[ -z "$TMUX" && "$-" == *i* ]]; then
+    SESSION_NAME="main"
+    tmux new-session -A -s "$SESSION_NAME"
+fi

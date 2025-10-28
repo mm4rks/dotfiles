@@ -1,6 +1,6 @@
 #!/bin/bash
 DOTFILES_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
-BACKUP_DIR="$HOME/.dotfiles_backup_$(date +"%Y%m%d-%H%M%S")"
+
 
 # --- Neovim Configuration ---
 NVIM_INSTALL_DIR="$HOME/.local/bin"
@@ -19,9 +19,9 @@ SSH_PUBLIC_KEY=""  # e.g., "ssh-rsa AAAA...your-public-key-string...user@host"
 # --- Required APT Packages ---
 # These packages will be installed.
 REQUIRED_APT_PACKAGES=(
-    curl git unzip fontconfig stow fzf pipx
+    curl git unzip fontconfig stow pipx
     zsh-syntax-highlighting zsh-autosuggestions command-not-found
-    ripgrep
+    ripgrep tmux python3 python3-pip python3-venv tree xclip bat
 )
 
 CORE_PACKAGES_TO_STOW=(
@@ -69,15 +69,89 @@ ask_to_proceed() {
 install_required_packages() {
     echo -e "\n${STEP} Updating package list and installing required packages..."
     sudo apt-get update -q
-    sudo apt-get install -q "${REQUIRED_APT_PACKAGES[@]}"
-    if [ $? -ne 0 ]; then
+    if ! sudo apt-get install -q -y "${REQUIRED_APT_PACKAGES[@]}"; then
         echo -e "${ERROR} Failed to install some required packages with apt-get. Please check the output above."
-        return 1
+        exit 1
     fi
 }
 
+install_fzf_from_github() {
+    if command -v fzf &>/dev/null; then
+        echo -e "${INFO} fzf is already installed. Skipping."
+        return 0
+    fi
+
+    echo -e "\n${STEP} Installing fzf from GitHub..."
+    local TEMP_DIR
+    TEMP_DIR="$(mktemp -d)"
+    trap 'rm -rf "$TEMP_DIR"' RETURN # Cleanup on function return
+
+    local FZF_LATEST_URL
+    FZF_LATEST_URL=$(curl -s https://api.github.com/repos/junegunn/fzf/releases/latest | grep "browser_download_url.*linux_amd64.tar.gz" | cut -d '"' -f 4)
+
+    if [ -z "$FZF_LATEST_URL" ]; then
+        echo -e "${WARN} Could not find the latest fzf release URL. Skipping installation."
+        return 1
+    fi
+
+    if ! curl --fail --location -o "${TEMP_DIR}/fzf.tar.gz" "$FZF_LATEST_URL"; then
+        echo -e "${WARN} Failed to download fzf. Skipping installation."
+        return 1
+    fi
+
+    if ! tar -xzf "${TEMP_DIR}/fzf.tar.gz" -C "$TEMP_DIR"; then
+        echo -e "${WARN} Failed to extract fzf. Skipping installation."
+        return 1
+    fi
+
+    if ! sudo mv "${TEMP_DIR}/fzf" /usr/local/bin/; then
+        echo -e "${WARN} Failed to move fzf binary to /usr/local/bin/. Skipping installation."
+        return 1
+    fi
+
+    echo -e "${INFO} fzf installed successfully."
+    return 0
+}
+
+install_gemini_cli() {
+    # Check for a modern version of Node.js (v18+), and install it from NodeSource if needed.
+    if ! command -v node &>/dev/null || [[ $(node -v | cut -d'v' -f2 | cut -d'.' -f1) -lt 18 ]]; then
+        echo -e "${INFO} A modern version of Node.js (v18+) is required. Installing Node.js v20 LTS..."
+        
+        # Add NodeSource repository
+        sudo apt-get update -q
+        sudo apt-get install -y ca-certificates curl gnupg
+        sudo mkdir -p /etc/apt/keyrings
+        curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+        
+        NODE_MAJOR=20
+        echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+        
+        # Install Node.js
+        sudo apt-get update -q
+        if ! sudo apt-get install -q -y nodejs; then
+            echo -e "${ERROR} Failed to install Node.js from NodeSource. Aborting gemini-cli installation."
+            return 1
+        fi
+        echo -e "${INFO} Node.js installed successfully."
+    fi
+
+    if command -v gemini &>/dev/null; then
+        echo -e "${INFO} gemini-cli is already installed. Skipping."
+        return 0
+    fi
+
+    echo -e "\n${STEP} Installing the latest nightly of @google/gemini-cli using npm..."
+    if ! sudo npm install -g @google/gemini-cli@nightly; then
+        echo -e "${ERROR} Failed to install gemini-cli using npm."
+        return 1
+    fi
+
+    echo -e "${INFO} @google/gemini-cli@nightly installed successfully."
+    return 0
+}
+
 install_nerd_font() {
-    echo -e "${STEP} Installing ${FONT_NAME} Nerd Font..."
     if [ -d "${FONT_INSTALL_DIR}/${FONT_NAME}" ]; then
         echo -e "${INFO} ${FONT_NAME} Nerd Font is already installed. Skipping."
         return 0
@@ -136,10 +210,8 @@ setup_argcomplete() {
     fi
 }
 
-# --- stow package, backup existing on conflict
 stow_package() {
     local pkg="$1"
-    local backed_up_in_this_run=false
 
     if [ -z "$pkg" ]; then
         echo -e "${WARN} stow_package called with empty package name. Skipping."
@@ -152,34 +224,10 @@ stow_package() {
         return 1
     fi
 
-    local stow_output
-    stow_output=$(stow --dir="$DOTFILES_DIR" --target="$HOME" --simulate --verbose=2 "$pkg" 2>&1 || true)
-
-    if echo "$stow_output" | grep -q 'over existing target'; then
-        echo -e "${WARN} Conflicts detected for package: ${YELLOW}${pkg}${NC}. Backing up existing files..."
-        if ! $backed_up_in_this_run; then
-            mkdir -p "$BACKUP_DIR"
-            backed_up_in_this_run=true
-        fi
-
-        local conflicts
-        conflicts=$(echo "$stow_output" | grep 'over existing target' | sed 's/.*over existing target //; s/ .*//' | sort -u)
-
-        for conflict_file in $conflicts; do
-            local full_path="${HOME}/${conflict_file}"
-            echo -e "${INFO} Backing up '${conflict_file}'..."
-            mkdir -p "$(dirname "${BACKUP_DIR}/${conflict_file}")"
-            mv "$full_path" "${BACKUP_DIR}/${conflict_file}"
-        done
-    fi
-
     echo -e "${INFO} Stowing '${pkg}'..."
-    if ! stow --dir="$DOTFILES_DIR" --target="$HOME" --restow "$pkg"; then
-        echo -e "${ERROR}Failed to stow '${pkg}'.${NC}"
-    fi
-
-    if $backed_up_in_this_run; then
-        echo -e "${YELLOW}Backed up files for '${pkg}' are in:${NC} ${BLUE}${BACKUP_DIR}${NC}"
+    # We redirect stderr to /dev/null to avoid stow's verbose error messages
+    if ! stow --dir="$DOTFILES_DIR" --target="$HOME" --restow "$pkg" 2>/dev/null; then
+        echo -e "${WARN} Failed to stow '${pkg}'. Please resolve conflicts manually."
     fi
 }
 
@@ -274,23 +322,27 @@ configure_ssh_hardening() {
     return 0
 }
 
+install_dev_env() {
+    install_neovim
+    stow_package "nvim"
+    install_fzf_from_github
+    install_nerd_font
+}
+
 # --- Main Script Execution ---
 main() {
     install_required_packages
 
-    if ask_to_proceed "Do you want to install Neovim and its configuration?"; then
-        install_neovim
-        stow_package "nvim"
-        local nvim_installed=true
+    if ask_to_proceed "Do you want to install the full development environment (Neovim, fzf, fonts, etc.)?"; then
+        install_dev_env
     else
-        local nvim_installed=false
+        # if ask_to_proceed "Do you want to install a lightweight Vim setup instead?"; then
+        #     echo -e "${INFO} Lightweight Vim setup is not yet implemented. Skipping."
+        # fi
     fi
 
-    if ask_to_proceed "Do you want to install FiraMono Nerd Font?"; then
-        install_nerd_font
-        local font_installed=true
-    else
-        local font_installed=false
+    if ask_to_proceed "Do you want to install the Gemini CLI (gemini-cli)?"; then
+        install_gemini_cli
     fi
 
     if ask_to_proceed "Do you want to configure SSH hardening (Pubkey auth, no password)?"; then
@@ -308,15 +360,9 @@ main() {
 
     echo -e "${GREEN}--- Setup Complete ---${NC}"
     echo -e "${YELLOW}Next Steps:${NC}"
-    if [ "$font_installed" = true ]; then
-        echo -e "1. ${YELLOW}IMPORTANT:${NC} Open your terminal's settings and change its font to 'FiraMono Nerd Font'."
-    else
-        echo -e "1. Open your terminal's settings to your preferred font."
-    fi
+    echo -e "1. ${YELLOW}IMPORTANT:${NC} Open your terminal's settings and change its font to your preferred font."
     echo -e "2. Restart your terminal to apply all changes."
-    if [ "$nvim_installed" = true ]; then
-        echo -e "3. Run \`${BLUE}nvim${NC}\` and then run \`:PackerSync\` to install the plugins."
-    fi
+    echo -e "3. If you installed the dev environment, run \`${BLUE}nvim${NC}\` and then run \`:PackerSync\` to install the plugins."
 }
 
 main
