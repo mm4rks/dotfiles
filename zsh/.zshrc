@@ -35,7 +35,7 @@ setopt histverify           # Show history expansions before executing them.
 # --- Completion System --------------------------------------------------------
 autoload -Uz compinit       # Autoload the completion initialization utility.
 compinit -d ~/.cache/zcompdump # Initialize completions, caching to this file.
-zstyle ':completion:*:*:*:*:*' tag-order arguments options files
+zstyle ':completion:*:*:*:*:*' tag-order files options arguments
 zstyle ':completion:*' completer _expand _complete _ignored _approximate
 zstyle ':completion:*' matcher-list '' 'm:{[:lower:]}={[:upper:]}' 'r:|[._-]=* r:|=*'
 zstyle ':completion:*' max-errors 2 # Allow up to 2 errors for fuzzy matching.
