@@ -304,7 +304,7 @@ main() {
     done
 
     # Setup argcomplete after dotfiles are stowed, as zsh dotfiles add ~/.local/bin to PATH
-    setup_argcomplete
+    # setup_argcomplete
 
     echo -e "${GREEN}--- Setup Complete ---${NC}"
     echo -e "${YELLOW}Next Steps:${NC}"
