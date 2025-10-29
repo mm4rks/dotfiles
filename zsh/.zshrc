@@ -68,9 +68,7 @@ source ~/.zsh_docker.sh
 source ~/.zsh_env.sh
 source ~/.zsh_functions.sh
 source ~/.zsh_plugins.sh
-
-
-eval "$(phpenv init -)"
+source ~/.zsh_phpenv.sh
 
 
 # Automatically attach to a tmux session on terminal start

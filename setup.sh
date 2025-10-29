@@ -19,7 +19,7 @@ SSH_PUBLIC_KEY=""  # e.g., "ssh-rsa AAAA...your-public-key-string...user@host"
 # --- Required APT Packages ---
 # These packages will be installed.
 REQUIRED_APT_PACKAGES=(
-    curl git unzip fontconfig stow pipx
+    curl git unzip fontconfig stow jq
     zsh-syntax-highlighting zsh-autosuggestions command-not-found
     ripgrep tmux python3 python3-pip python3-venv tree xclip bat
 )
@@ -116,7 +116,7 @@ install_fzf_from_github() {
     trap 'rm -rf "$TEMP_DIR"' RETURN # Cleanup on function return
 
     local FZF_LATEST_URL
-    FZF_LATEST_URL=$(curl -s https://api.github.com/repos/junegunn/fzf/releases/latest | grep "browser_download_url.*linux_amd64.tar.gz" | cut -d '"' -f 4)
+    FZF_LATEST_URL=$(curl -s https://api.github.com/repos/junegunn/fzf/releases/latest | jq -r '.assets[] | select(.name | endswith("linux_amd64.tar.gz")) | .browser_download_url')
 
     if [ -z "$FZF_LATEST_URL" ]; then
         echo -e "${WARN} Could not find the latest fzf release URL. Skipping installation."
@@ -142,7 +142,7 @@ install_fzf_from_github() {
     return 0
 }
 
-install_gemini_cli() {
+ensure_nodejs_installed() {
     # Check for a modern version of Node.js (v18+), and install it from NodeSource if needed.
     if ! command -v node &>/dev/null || [[ $(node -v | cut -d'v' -f2 | cut -d'.' -f1) -lt 18 ]]; then
         echo -e "${INFO} A modern version of Node.js (v18+) is required. Installing Node.js v20 LTS..."
@@ -159,19 +159,39 @@ install_gemini_cli() {
         # Install Node.js
         sudo apt-get update -q
         if ! sudo apt-get install -q -y nodejs; then
-            echo -e "${ERROR} Failed to install Node.js from NodeSource. Aborting gemini-cli installation."
+            echo -e "${ERROR} Failed to install Node.js from NodeSource. Aborting npm package installation."
             return 1
         fi
         echo -e "${INFO} Node.js installed successfully."
     fi
+    return 0
+}
 
-    echo -e "\n${STEP} Installing the latest nightly of @google/gemini-cli using npm..."
-    if ! sudo npm install -g @google/gemini-cli@nightly; then
-        echo -e "${ERROR} Failed to install gemini-cli using npm."
+install_npm_packages() {
+    local npm_packages=()
+    
+    if ask_to_proceed "Do you want to install the Gemini CLI (@google/gemini-cli)?"; then
+        npm_packages+=("@google/gemini-cli@nightly")
+    fi
+
+    if ask_to_proceed "Do you want to install additional CLI tools (tldr, devdocs-cli)?"; then
+        npm_packages+=("tldr" "devdocs-cli")
+    fi
+
+    if [ ${#npm_packages[@]} -eq 0 ]; then
+        echo -e "${INFO} No npm packages selected for installation. Skipping."
+        return 0
+    fi
+
+    ensure_nodejs_installed || return 1
+
+    echo -e "\n${STEP} Installing selected npm packages: ${npm_packages[*]}..."
+    if ! sudo npm install -g "${npm_packages[@]}"; then
+        echo -e "${ERROR} Failed to install one or more npm packages."
         return 1
     fi
 
-    echo -e "${INFO} @google/gemini-cli@nightly installed successfully."
+    echo -e "${INFO} npm packages installed successfully."
     return 0
 }
 
@@ -217,25 +237,9 @@ install_neovim() {
     return 0
 }
 
-setup_argcomplete() {
-    echo -e "\n${STEP} Setting up Python Argcomplete..."
-    if ! command -v pipx &>/dev/null; then
-        echo -e "${ERROR} pipx is not installed. This is required."
-        return 1
-    fi
-
-    # Use -q for quiet install
-    pipx install argcomplete -q
-    if activate-global-python-argcomplete &>/dev/null; then
-        echo -e "${INFO} Argcomplete activated."
-    else
-        echo -e "${ERROR} Failed to activate global completions (activate-global-python-argcomplete)."
-        return 1
-    fi
-}
-
 stow_package() {
     local pkg="$1"
+    local stow_output
 
     if [ -z "$pkg" ]; then
         echo -e "${WARN} stow_package called with empty package name. Skipping."
@@ -249,9 +253,9 @@ stow_package() {
     fi
 
     echo -e "${INFO} Stowing '${pkg}'..."
-    # We redirect stderr to /dev/null to avoid stow's verbose error messages
-    if ! stow --dir="$DOTFILES_DIR" --target="$HOME" --restow "$pkg" 2>/dev/null; then
+    if ! stow_output=$(stow --dir="$DOTFILES_DIR" --target="$HOME" --restow "$pkg" 2>&1); then
         echo -e "${WARN} Failed to stow '${pkg}'. Please resolve conflicts manually."
+        echo -e "${YELLOW}Stow output:${NC}\n$stow_output"
     fi
 }
 
@@ -355,6 +359,12 @@ install_dev_env() {
 
 # --- Main Script Execution ---
 main() {
+    # Check for sudo privileges
+    if ! sudo -v; then
+        echo -e "${ERROR} This script requires sudo privileges. Please run it with a user that has sudo access."
+        exit 1
+    fi
+
     install_required_packages
     install_docker
 
@@ -362,13 +372,11 @@ main() {
         install_dev_env
     fi
 
-    if ask_to_proceed "Do you want to install the Gemini CLI (gemini-cli)?"; then
-        install_gemini_cli
-    fi
+    install_npm_packages
 
-    # if ask_to_proceed "Do you want to configure SSH hardening (Pubkey auth, no password)?"; then
-    #     configure_ssh_hardening
-    # fi
+    if ask_to_proceed "Do you want to configure SSH hardening (recommended for servers)?"; then
+        configure_ssh_hardening
+    fi
 
     # Stow all the core, unconditional packages (excluding nvim now)
     echo -e "${STEP} Stowing core dotfiles..."
@@ -378,7 +386,6 @@ main() {
 
     # Setup argcomplete after dotfiles are stowed, as zsh dotfiles add ~/.local/bin to PATH
     # setup_argcomplete
-
     echo -e "${GREEN}--- Setup Complete ---${NC}"
     echo -e "${YELLOW}Next Steps:${NC}"
     echo -e "1. ${YELLOW}IMPORTANT:${NC} Open your terminal's settings and change its font to your preferred font."
