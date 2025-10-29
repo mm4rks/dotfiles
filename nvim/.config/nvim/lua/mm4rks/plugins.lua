@@ -2,7 +2,7 @@
 require'nvim-treesitter.configs'.setup {
   -- A list of parser names, or "all".
   -- To add more parsers, add them to this list and run `:TSUpdate`
-  ensure_installed = { "c", "python" },
+  ensure_installed = { "c", "python", "php" },,
 
   -- Install parsers synchronously (only applied to `ensure_installed`)
   sync_install = false,

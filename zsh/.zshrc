@@ -70,7 +70,7 @@ source ~/.zsh_functions.sh
 source ~/.zsh_plugins.sh
 
 
-
+eval "$(phpenv init -)"
 
 
 # Automatically attach to a tmux session on terminal start

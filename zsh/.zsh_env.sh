@@ -1,4 +1,5 @@
 export PATH=$PATH:$HOME/.local/bin
+export PATH="$HOME/.phpenv/bin:$PATH"
 
 # Set default editor: prefer nvim, but fall back to vim
 if command -v nvim &> /dev/null; then

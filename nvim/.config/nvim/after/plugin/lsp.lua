@@ -4,7 +4,7 @@ local cmp = require('cmp')
 mason.setup()
 
 -- Setup servers
-local servers = { "basedpyright", "ruff", "lua_ls" }
+local servers = { "basedpyright", "ruff", "lua_ls", "intelephense" }
 for _, server in ipairs(servers) do
     vim.lsp.config(server, {
         on_attach = function(client, bufnr)

@@ -75,6 +75,35 @@ install_required_packages() {
     fi
 }
 
+install_docker() {
+    if command -v docker &>/dev/null; then
+        echo -e "${INFO} Docker is already installed. Skipping."
+        return 0
+    fi
+
+    echo -e "\n${STEP} Installing Docker using the official convenience script..."
+    if ! curl -fsSL https://get.docker.com -o get-docker.sh; then
+        echo -e "${ERROR} Failed to download Docker installation script."
+        return 1
+    fi
+
+    if ! sudo sh get-docker.sh; then
+        echo -e "${ERROR} Failed to execute Docker installation script."
+        rm get-docker.sh
+        return 1
+    fi
+    rm get-docker.sh
+
+    echo -e "${INFO} Adding current user to the docker group..."
+    if ! sudo usermod -aG docker "$USER"; then
+        echo -e "${WARN} Failed to add user '$USER' to the 'docker' group. You may need to do this manually and restart your session."
+        return 1
+    fi
+
+    echo -e "${INFO} Docker installed and user added to 'docker' group. Please log out and log back in for group changes to take effect."
+    return 0
+}
+
 install_fzf_from_github() {
     if command -v fzf &>/dev/null; then
         echo -e "${INFO} fzf is already installed. Skipping."
@@ -134,11 +163,6 @@ install_gemini_cli() {
             return 1
         fi
         echo -e "${INFO} Node.js installed successfully."
-    fi
-
-    if command -v gemini &>/dev/null; then
-        echo -e "${INFO} gemini-cli is already installed. Skipping."
-        return 0
     fi
 
     echo -e "\n${STEP} Installing the latest nightly of @google/gemini-cli using npm..."
@@ -332,22 +356,19 @@ install_dev_env() {
 # --- Main Script Execution ---
 main() {
     install_required_packages
+    install_docker
 
     if ask_to_proceed "Do you want to install the full development environment (Neovim, fzf, fonts, etc.)?"; then
         install_dev_env
-    else
-        # if ask_to_proceed "Do you want to install a lightweight Vim setup instead?"; then
-        #     echo -e "${INFO} Lightweight Vim setup is not yet implemented. Skipping."
-        # fi
     fi
 
     if ask_to_proceed "Do you want to install the Gemini CLI (gemini-cli)?"; then
         install_gemini_cli
     fi
 
-    if ask_to_proceed "Do you want to configure SSH hardening (Pubkey auth, no password)?"; then
-        configure_ssh_hardening
-    fi
+    # if ask_to_proceed "Do you want to configure SSH hardening (Pubkey auth, no password)?"; then
+    #     configure_ssh_hardening
+    # fi
 
     # Stow all the core, unconditional packages (excluding nvim now)
     echo -e "${STEP} Stowing core dotfiles..."
