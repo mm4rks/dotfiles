@@ -39,8 +39,31 @@ vim.keymap.set('n', '<C-f>', builtin.find_files, {})
 vim.keymap.set('n', '<C-p>', find_git_or_regular_files, {})
 vim.keymap.set('n', 'ö', find_git_or_regular_files, {})
 vim.keymap.set('n', '<leader>gb', builtin.git_branches, {})
+
+local function get_visual_selection()
+    vim.cmd('noau normal! "vy"')
+    local text = vim.fn.getreg('v')
+    vim.fn.setreg('v', {})
+    text = text:gsub('\n', '')
+    return text
+end
+
 vim.keymap.set('n', '<leader>rg', function()
     builtin.live_grep({ default_text = vim.fn.expand("<cword>") })
 end)
+vim.keymap.set('v', '<leader>rg', function()
+    local text = get_visual_selection()
+    builtin.live_grep({ default_text = text })
+end)
+
+vim.keymap.set('n', '<leader>rr', function()
+    local word_under_cursor = vim.fn.expand("<cword>")
+    builtin.grep_string({ search = vim.fn.input("RGrep> ", word_under_cursor) })
+end)
+vim.keymap.set('v', '<leader>rr', function()
+    local text = get_visual_selection()
+    builtin.grep_string({ search = vim.fn.input("RGrep> ", text) })
+end)
+
 vim.keymap.set('n', '<leader>dg', builtin.diagnostics, {})
 -- nnoremap <leader>rs :Telescope lsp_dynamic_workspace_symbols<CR>
