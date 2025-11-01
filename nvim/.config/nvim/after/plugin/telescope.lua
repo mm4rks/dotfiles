@@ -25,17 +25,22 @@ require('telescope').setup {
 -- load_extension, somewhere after setup function:
 require('telescope').load_extension('fzf')
 
+local function find_git_or_regular_files()
+  local is_git_repo = vim.fn.system("git rev-parse --is-inside-work-tree > /dev/null 2>&1")
+  if vim.v.shell_error == 0 then
+    require('telescope.builtin').git_files()
+  else
+    require('telescope.builtin').find_files()
+  end
+end
+
 vim.keymap.set('n', '<C-f>', builtin.find_files, {})
 -- vim.keymap.set('n', '<C-j>', builtin.git_files, {})
-vim.keymap.set('n', '<C-p>', builtin.git_files, {})
-vim.keymap.set('n', 'ö', builtin.git_files, {})
+vim.keymap.set('n', '<C-p>', find_git_or_regular_files, {})
+vim.keymap.set('n', 'ö', find_git_or_regular_files, {})
 vim.keymap.set('n', '<leader>gb', builtin.git_branches, {})
 vim.keymap.set('n', '<leader>rg', function()
-    builtin.grep_string({ search = vim.fn.input("Grep > ") })
+    builtin.live_grep({ default_text = vim.fn.expand("<cword>") })
 end)
 vim.keymap.set('n', '<leader>dg', builtin.diagnostics, {})
--- vim.keymap.set('n', '<leader>lg', builtin.live_grep, {})
-vim.keymap.set('n', '<leader>rr', function()
-    builtin.lsp_references({ query = vim.fn.expand("<cword>") })
-end)
 -- nnoremap <leader>rs :Telescope lsp_dynamic_workspace_symbols<CR>

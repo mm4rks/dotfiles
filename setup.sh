@@ -81,6 +81,11 @@ install_docker() {
         return 0
     fi
 
+    if ! ask_to_proceed "Do you want to install Docker?"; then
+        echo -e "${INFO} Skipping Docker installation."
+        return 0
+    fi
+
     echo -e "\n${STEP} Installing Docker using the official convenience script..."
     if ! curl -fsSL https://get.docker.com -o get-docker.sh; then
         echo -e "${ERROR} Failed to download Docker installation script."
@@ -174,8 +179,10 @@ install_npm_packages() {
         npm_packages+=("@google/gemini-cli@nightly")
     fi
 
-    if ask_to_proceed "Do you want to install additional CLI tools (tldr, devdocs-cli)?"; then
-        npm_packages+=("tldr" "devdocs-cli")
+    if ! command -v tldr &>/dev/null && ! command -v devdocs-cli &>/dev/null; then
+        if ask_to_proceed "Do you want to install additional CLI tools (tldr, devdocs-cli)?"; then
+            npm_packages+=("tldr" "devdocs-cli")
+        fi
     fi
 
     if [ ${#npm_packages[@]} -eq 0 ]; then
@@ -261,7 +268,7 @@ stow_package() {
 
 # SSH Hardening Configuration
 configure_ssh_hardening() {
-    echo -e "${STEP} Configuring SSH hardening..."
+    sudo apt install openssh-server -q -y
 
     local current_target_user="$SSH_TARGET_USER"
     local current_public_key="$SSH_PUBLIC_KEY"
@@ -290,31 +297,6 @@ configure_ssh_hardening() {
         return 1
     fi
     echo -e "${INFO} Configuring SSH for user: $current_target_user"
-
-    # Helper function for sshd_config specific to this scope, using sudo
-    set_sshd_config_sudo() {
-        local key="$1"
-        local value="$2"
-        echo -e "${INFO} Ensuring $key is set to $value..."
-        if sudo grep -qE "^\s*#*\s*$key\s+" "$SSH_CONFIG_FILE"; then
-            sudo sed -i -E "s/^\s*#*\s*$key\s+.*/$key $value/" "$SSH_CONFIG_FILE"
-        else
-            echo "$key $value" | sudo tee -a "$SSH_CONFIG_FILE" > /dev/null
-        fi
-        if [ $? -ne 0 ]; then
-             echo -e "${ERROR} Failed to set $key in $SSH_CONFIG_FILE."
-             return 1
-        fi
-    }
-
-    echo -e "${INFO} Hardening $SSH_CONFIG_FILE..."
-    set_sshd_config_sudo "PubkeyAuthentication" "yes" || return 1
-    set_sshd_config_sudo "PasswordAuthentication" "no" || return 1
-    set_sshd_config_sudo "PermitRootLogin" "no" || return 1
-    set_sshd_config_sudo "ChallengeResponseAuthentication" "no" || return 1
-    # set_sshd_config_sudo "UsePAM" "no" # Use with extreme caution!
-    echo -e "${INFO} sshd_config modifications completed."
-
     echo -e "${INFO} Adding public key to $AUTH_KEYS_FILE..."
     sudo mkdir -p "$SSH_DIR" || { echo -e "${ERROR} Failed to create $SSH_DIR."; return 1; }
     sudo touch "$AUTH_KEYS_FILE" || { echo -e "${ERROR} Failed to touch $AUTH_KEYS_FILE."; return 1; }\
@@ -332,18 +314,50 @@ configure_ssh_hardening() {
     sudo chmod 600 "$AUTH_KEYS_FILE" || { echo -e "${ERROR} Failed to chmod 600 $AUTH_KEYS_FILE."; return 1; }
     echo -e "${INFO} Permissions set."
 
+    # Helper function for sshd_config specific to this scope, using sudo
+    set_sshd_config_sudo() {
+        local key="$1"
+        local value="$2"
+        echo -e "${INFO} $key $value"
+        if sudo grep -qE "^\s*#*\s*$key\s+" "$SSH_CONFIG_FILE"; then
+            sudo sed -i -E "s/^\s*#*\s*$key\s+.*/$key $value/" "$SSH_CONFIG_FILE"
+        else
+            echo "$key $value" | sudo tee -a "$SSH_CONFIG_FILE" > /dev/null
+        fi
+        if [ $? -ne 0 ]; then
+             echo -e "${ERROR} Failed to set $key in $SSH_CONFIG_FILE."
+             return 1
+        fi
+    }
+
+    echo -e "${INFO} write sshd_config modifications to $SSH_CONFIG_FILE."
+    set_sshd_config_sudo "PubkeyAuthentication" "yes" || return 1
+    set_sshd_config_sudo "PasswordAuthentication" "no" || return 1
+    set_sshd_config_sudo "PermitRootLogin" "no" || return 1
+    set_sshd_config_sudo "ChallengeResponseAuthentication" "no" || return 1
+    # set_sshd_config_sudo "UsePAM" "no" # Use with extreme caution!
+
+    # Create the privilege separation directory if it doesn't exist
+    if [ ! -d /run/sshd ]; then
+        echo -e "${INFO} Creating /run/sshd directory..."
+        sudo mkdir -p /run/sshd
+        sudo chmod 755 /run/sshd
+    fi
+
+    echo -e "${INFO} Generating SSH host keys..."
+    sudo ssh-keygen -A
     echo -e "${INFO} Validating sshd_config..."
     if sudo sshd -t &> /dev/null; then # Redirect stderr to /dev/null to avoid verbose output
         echo -e "${INFO} sshd_config syntax is OK."
         echo -e "${INFO} Restarting sshd service to apply changes..."
-        if sudo systemctl restart sshd; then
+        if sudo systemctl restart ssh; then
             echo -e "${INFO} SSH configuration applied successfully."
         else
             echo -e "${ERROR} Failed to restart sshd service. Please check manually."
             return 1
         fi
     else
-        echo -e "${ERROR} sshd_config syntax check failed! Changes have NOT been applied."
+        echo -e "${ERROR} sshd_config syntax check failed!"
         echo -e "${ERROR} Review $SSH_CONFIG_FILE for errors. It might be in a bad state."
         return 1
     fi
@@ -368,13 +382,17 @@ main() {
     install_required_packages
     install_docker
 
-    if ask_to_proceed "Do you want to install the full development environment (Neovim, fzf, fonts, etc.)?"; then
-        install_dev_env
+    if command -v nvim &>/dev/null; then
+        echo -e "${INFO} Neovim is already installed. Skipping full development environment installation."
+    else
+        if ask_to_proceed "Do you want to install the full development environment (Neovim, fzf, fonts, etc.)?"; then
+            install_dev_env
+        fi
     fi
 
     install_npm_packages
 
-    if ask_to_proceed "Do you want to configure SSH hardening (recommended for servers)?"; then
+    if ask_to_proceed "Do you want to setup sshd?"; then
         configure_ssh_hardening
     fi
 
