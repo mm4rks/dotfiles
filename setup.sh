@@ -87,6 +87,8 @@ install_docker() {
     fi
 
     echo -e "\n${STEP} Installing Docker using the official convenience script..."
+    echo -e "${INFO} Ensuring Zsh vendor completions directory exists..."
+    sudo mkdir -p /usr/share/zsh/vendor-completions
     if ! curl -fsSL https://get.docker.com -o get-docker.sh; then
         echo -e "${ERROR} Failed to download Docker installation script."
         return 1

@@ -33,6 +33,10 @@ setopt histignorespace      # Don't save commands that start with a space.
 setopt histverify           # Show history expansions before executing them.
 
 # --- Completion System --------------------------------------------------------
+# Add Docker completions to fpath
+if [ -d /usr/share/zsh/vendor-completions ]; then
+  fpath=(/usr/share/zsh/vendor-completions $fpath)
+fi
 autoload -Uz compinit       # Autoload the completion initialization utility.
 compinit -d ~/.cache/zcompdump # Initialize completions, caching to this file.
 zstyle ':completion:*:*:*:*:*' tag-order files options arguments
