@@ -28,3 +28,4 @@ if command -v bat &> /dev/null; then
     alias cat='bat --paging=never' # Conditional alias for bat
     alias less='bat'
 fi
+alias devdocs="docker run --name devdocs -d -p 9292:9292 ghcr.io/freecodecamp/devdocs:latest"

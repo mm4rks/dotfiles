@@ -21,7 +21,7 @@ SSH_PUBLIC_KEY=""  # e.g., "ssh-rsa AAAA...your-public-key-string...user@host"
 REQUIRED_APT_PACKAGES=(
     curl git unzip fontconfig stow jq
     zsh-syntax-highlighting zsh-autosuggestions command-not-found
-    ripgrep tmux python3 python3-pip python3-venv tree xclip bat ruby rubygems
+    ripgrep tmux python3 python3-pip python3-venv tree xclip bat
 )
 
 CORE_PACKAGES_TO_STOW=(
@@ -169,50 +169,39 @@ ensure_nodejs_installed() {
     return 0
 }
 
-install_npm_packages() {
-    local npm_packages=()
-    
+install_gemini() {
     if ask_to_proceed "Do you want to install the Gemini CLI (@google/gemini-cli)?"; then
-        npm_packages+=("@google/gemini-cli@nightly")
+        ensure_nodejs_installed || return 1
+
+        echo -e "\n${STEP} Installing @google/gemini-cli..."
+        if ! sudo npm install -g "@google/gemini-cli@nightly"; then
+            echo -e "${ERROR} Failed to install @google/gemini-cli."
+            return 1
+        fi
+        echo -e "${INFO} @google/gemini-cli installed successfully."
     fi
-
-    if ask_to_proceed "Do you want to install tldr?"; then
-        npm_packages+=("tldr")
-    fi
-
-    if [ ${#npm_packages[@]} -eq 0 ]; then
-        return 0
-    fi
-
-    ensure_nodejs_installed || return 1
-
-    echo -e "\n${STEP} Installing selected npm packages: ${npm_packages[*]}..."
-    if ! sudo npm install -g "${npm_packages[@]}"; then
-        echo -e "${ERROR} Failed to install one or more npm packages."
-        return 1
-    fi
-
-    echo -e "${INFO} npm packages installed successfully."
     return 0
 }
 
-install_ruby_gems() {
-    if ! command -v gem &>/dev/null; then
-        echo -e "\n${STEP} Installing Ruby and RubyGems..."
-        if ! sudo apt-get install -y ruby rubygems; then
-            echo -e "${ERROR} Failed to install Ruby or RubyGems."
+install_pipx_packages() {
+    if ! command -v pipx &>/dev/null; then
+        echo -e "\n${STEP} Installing pipx..."
+        if ! sudo apt-get install -y pipx; then
+            echo -e "${ERROR} Failed to install pipx."
             return 1
         fi
-        echo -e "${INFO} Ruby and RubyGems installed successfully."
+        pipx ensurepath
+        echo -e "${INFO} pipx installed successfully."
     fi
 
-    if ask_to_proceed "Do you want to install devdocs?"; then
-        echo -e "\n${STEP} Installing devdocs gem..."
-        if ! sudo gem install devdocs; then
-            echo -e "${ERROR} Failed to install devdocs gem."
-            return 1
+    if ! pipx install semgrep; then
+        echo -e "${WARN} Failed to install semgrep."
+    fi
+
+    if ! command -v tldr &>/dev/null; then
+        if ! pipx install tldr; then
+            echo -e "${WARN} Failed to install tldr."
         fi
-        echo -e "${INFO} devdocs gem installed successfully."
     fi
 }
 
@@ -503,7 +492,7 @@ setup_argcomplete() {
         return 1
     fi
     if command -v activate-global-python-argcomplete &>/dev/null; then
-        activate-global-python-argcomplete
+        sudo activate-global-python-argcomplete
     else
         echo -e "${WARN} 'activate-global-python-argcomplete' not found in PATH."
     fi
@@ -529,8 +518,7 @@ main() {
         fi
     fi
 
-    install_npm_packages
-    install_ruby_gems
+    install_gemini
 
     if ask_to_proceed "Do you want to setup sshd?"; then
         configure_ssh_hardening
