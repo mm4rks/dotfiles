@@ -366,11 +366,145 @@ configure_ssh_hardening() {
     return 0
 }
 
+install_jdk() {
+    echo -e "\n${STEP} Checking for JDK 21..."
+    if java -version 2>&1 | grep -q "version \"21"; then
+        echo -e "${INFO} JDK 21 is already installed. Skipping."
+        return 0
+    fi
+
+    echo -e "${INFO} JDK 21 not found. Installing openjdk-21-jdk..."
+    if ! sudo apt-get install -y openjdk-21-jdk; then
+        echo -e "${ERROR} Failed to install JDK 21."
+        return 1
+    fi
+    echo -e "${INFO} JDK 21 installed successfully."
+}
+
+install_pipx_packages() {
+    if ! command -v pipx &>/dev/null; then
+        echo -e "\n${STEP} Installing pipx..."
+        if ! sudo apt-get install -y pipx; then
+            echo -e "${ERROR} Failed to install pipx."
+            return 1
+        fi
+        pipx ensurepath
+        echo -e "${INFO} pipx installed successfully."
+    fi
+
+    echo -e "\n${STEP} Installing pipx packages..."
+    if ! pipx install semgrep; then
+        echo -e "${WARN} Failed to install semgrep."
+    fi
+}
+
+install_joern() {
+    if command -v joern &>/dev/null; then
+        echo -e "${INFO} Joern is already installed. Skipping."
+        return 0
+    fi
+
+    if ! ask_to_proceed "Do you want to install Joern?"; then
+        echo -e "${INFO} Skipping Joern installation."
+        return 0
+    fi
+
+    install_jdk
+
+    echo -e "\n${STEP} Installing Joern..."
+    local TEMP_DIR
+    TEMP_DIR="$(mktemp -d)"
+    trap 'rm -rf "$TEMP_DIR"' RETURN
+
+    if ! curl -L "https://github.com/joernio/joern/releases/latest/download/joern-install.sh" -o "${TEMP_DIR}/joern-install.sh"; then
+        echo -e "${ERROR} Failed to download Joern installation script."
+        return 1
+    fi
+
+    chmod +x "${TEMP_DIR}/joern-install.sh"
+    if ! sudo "${TEMP_DIR}/joern-install.sh"; then
+        echo -e "${ERROR} Failed to install Joern."
+        return 1
+    fi
+
+    echo -e "${INFO} Joern installed successfully."
+}
+
+install_ghidra() {
+    if command -v ghidra &>/dev/null; then
+        echo -e "${INFO} Ghidra is already installed. Skipping."
+        return 0
+    fi
+
+    if ! ask_to_proceed "Do you want to install Ghidra?"; then
+        echo -e "${INFO} Skipping Ghidra installation."
+        return 0
+    fi
+
+    install_jdk
+
+    echo -e "\n${STEP} Installing Ghidra..."
+    local TEMP_DIR
+    TEMP_DIR="$(mktemp -d)"
+    trap 'rm -rf "$TEMP_DIR"' RETURN
+
+    local GHIDRA_LATEST_URL
+    GHIDRA_LATEST_URL=$(curl -s https://api.github.com/repos/NationalSecurityAgency/ghidra/releases/latest | jq -r '.assets[] | select(.name | endswith(".zip")) | .browser_download_url')
+
+    if [ -z "$GHIDRA_LATEST_URL" ]; then
+        echo -e "${WARN} Could not find the latest Ghidra release URL. Skipping installation."
+        return 1
+    fi
+
+    if ! curl --fail --location -o "${TEMP_DIR}/ghidra.zip" "$GHIDRA_LATEST_URL"; then
+        echo -e "${WARN} Failed to download Ghidra. Skipping installation."
+        return 1
+    fi
+
+    if ! sudo unzip -q -o "${TEMP_DIR}/ghidra.zip" -d /opt/; then
+        echo -e "${WARN} Failed to extract Ghidra. Skipping installation."
+        return 1
+    fi
+
+    local GHIDRA_DIR_NAME
+    GHIDRA_DIR_NAME=$(unzip -l "${TEMP_DIR}/ghidra.zip" | head -n 4 | tail -n 1 | awk '{print $4}')
+    sudo mv /opt/$GHIDRA_DIR_NAME /opt/ghidra
+
+    if ! sudo ln -s /opt/ghidra/ghidraRun /usr/local/bin/ghidra; then
+        echo -e "${WARN} Failed to create symlink for Ghidra. Skipping."
+        return 1
+    fi
+
+
+    echo -e "${INFO} Ghidra installed successfully."
+}
+
+install_code_analysis_tools() {
+    if ask_to_proceed "Do you want to install additional code analysis tools (Semgrep, Joern, Ghidra)?"; then
+        install_pipx_packages
+        install_joern
+        install_ghidra
+    fi
+}
+
 install_dev_env() {
     install_neovim
     stow_package "nvim"
     install_fzf_from_github
     install_nerd_font
+}
+
+setup_argcomplete() {
+    if ! pipx install argcomplete; then
+        echo -e "${WARN} Failed to install argcomplete."
+        return 1
+    fi
+    if command -v activate-global-python-argcomplete &>/dev/null; then
+        echo -e "\n${STEP} Activating global python argcomplete..."
+        activate-global-python-argcomplete
+    else
+        echo -e "${WARN} 'activate-global-python-argcomplete' not found in PATH."
+    fi
 }
 
 # --- Main Script Execution ---
@@ -383,6 +517,7 @@ main() {
 
     install_required_packages
     install_docker
+    install_code_analysis_tools
 
     if command -v nvim &>/dev/null; then
         echo -e "${INFO} Neovim is already installed. Skipping full development environment installation."
@@ -404,8 +539,7 @@ main() {
         stow_package "$pkg"
     done
 
-    # Setup argcomplete after dotfiles are stowed, as zsh dotfiles add ~/.local/bin to PATH
-    # setup_argcomplete
+    setup_argcomplete
     echo -e "${GREEN}--- Setup Complete ---${NC}"
     echo -e "${YELLOW}Next Steps:${NC}"
     echo -e "1. ${YELLOW}IMPORTANT:${NC} Open your terminal's settings and change its font to your preferred font."
