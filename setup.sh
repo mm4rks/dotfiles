@@ -21,7 +21,7 @@ SSH_PUBLIC_KEY=""  # e.g., "ssh-rsa AAAA...your-public-key-string...user@host"
 REQUIRED_APT_PACKAGES=(
     curl git unzip fontconfig stow jq
     zsh-syntax-highlighting zsh-autosuggestions command-not-found
-    ripgrep tmux python3 python3-pip python3-venv tree xclip bat
+    ripgrep tmux python3 python3-pip python3-venv tree xclip bat ruby rubygems
 )
 
 CORE_PACKAGES_TO_STOW=(
@@ -82,12 +82,9 @@ install_docker() {
     fi
 
     if ! ask_to_proceed "Do you want to install Docker?"; then
-        echo -e "${INFO} Skipping Docker installation."
         return 0
     fi
 
-    echo -e "\n${STEP} Installing Docker using the official convenience script..."
-    echo -e "${INFO} Ensuring Zsh vendor completions directory exists..."
     sudo mkdir -p /usr/share/zsh/vendor-completions
     if ! curl -fsSL https://get.docker.com -o get-docker.sh; then
         echo -e "${ERROR} Failed to download Docker installation script."
@@ -101,7 +98,6 @@ install_docker() {
     fi
     rm get-docker.sh
 
-    echo -e "${INFO} Adding current user to the docker group..."
     if ! sudo usermod -aG docker "$USER"; then
         echo -e "${WARN} Failed to add user '$USER' to the 'docker' group. You may need to do this manually and restart your session."
         return 1
@@ -117,7 +113,6 @@ install_fzf_from_github() {
         return 0
     fi
 
-    echo -e "\n${STEP} Installing fzf from GitHub..."
     local TEMP_DIR
     TEMP_DIR="$(mktemp -d)"
     trap 'rm -rf "$TEMP_DIR"' RETURN # Cleanup on function return
@@ -181,14 +176,11 @@ install_npm_packages() {
         npm_packages+=("@google/gemini-cli@nightly")
     fi
 
-    if ! command -v tldr &>/dev/null && ! command -v devdocs-cli &>/dev/null; then
-        if ask_to_proceed "Do you want to install additional CLI tools (tldr, devdocs-cli)?"; then
-            npm_packages+=("tldr" "devdocs-cli")
-        fi
+    if ask_to_proceed "Do you want to install tldr?"; then
+        npm_packages+=("tldr")
     fi
 
     if [ ${#npm_packages[@]} -eq 0 ]; then
-        echo -e "${INFO} No npm packages selected for installation. Skipping."
         return 0
     fi
 
@@ -204,6 +196,26 @@ install_npm_packages() {
     return 0
 }
 
+install_ruby_gems() {
+    if ! command -v gem &>/dev/null; then
+        echo -e "\n${STEP} Installing Ruby and RubyGems..."
+        if ! sudo apt-get install -y ruby rubygems; then
+            echo -e "${ERROR} Failed to install Ruby or RubyGems."
+            return 1
+        fi
+        echo -e "${INFO} Ruby and RubyGems installed successfully."
+    fi
+
+    if ask_to_proceed "Do you want to install devdocs?"; then
+        echo -e "\n${STEP} Installing devdocs gem..."
+        if ! sudo gem install devdocs; then
+            echo -e "${ERROR} Failed to install devdocs gem."
+            return 1
+        fi
+        echo -e "${INFO} devdocs gem installed successfully."
+    fi
+}
+
 install_nerd_font() {
     if [ -d "${FONT_INSTALL_DIR}/${FONT_NAME}" ]; then
         echo -e "${INFO} ${FONT_NAME} Nerd Font is already installed. Skipping."
@@ -214,7 +226,6 @@ install_nerd_font() {
     TEMP_DIR="$(mktemp -d)"
     trap 'rm -rf "$TEMP_DIR"' RETURN # Cleanup on function return
 
-    echo -e "${INFO} Downloading ${FONT_NAME} Nerd Font..."
     if ! curl --fail --location -o "${TEMP_DIR}/font.zip" "${FONT_URL}"; then
         echo -e "${ERROR} Failed to download ${FONT_NAME} Nerd Font. Skipping installation."
         return 1
@@ -226,7 +237,6 @@ install_nerd_font() {
         return 1
     fi
 
-    echo -e "${INFO} Updating font cache..."
     fc-cache -fv >/dev/null
     echo -e "${INFO} ${FONT_NAME} Nerd Font installed successfully."
     return 0
@@ -242,7 +252,6 @@ install_neovim() {
     curl --fail --location -o "$NVIM_APPIMAGE_PATH" "$NVIM_APPIMAGE_URL"
     chmod u+x "$NVIM_APPIMAGE_PATH"
     echo -e "${INFO} Neovim installed to ${NVIM_APPIMAGE_PATH}"
-    echo -e "${WARN} Please ensure '${NVIM_INSTALL_DIR}' is in your PATH."
     return 0
 }
 
@@ -299,7 +308,6 @@ configure_ssh_hardening() {
         return 1
     fi
     echo -e "${INFO} Configuring SSH for user: $current_target_user"
-    echo -e "${INFO} Adding public key to $AUTH_KEYS_FILE..."
     sudo mkdir -p "$SSH_DIR" || { echo -e "${ERROR} Failed to create $SSH_DIR."; return 1; }
     sudo touch "$AUTH_KEYS_FILE" || { echo -e "${ERROR} Failed to touch $AUTH_KEYS_FILE."; return 1; }\
 
@@ -310,11 +318,9 @@ configure_ssh_hardening() {
         echo -e "${INFO} Public key already exists."
     fi
 
-    echo -e "${INFO} Setting correct permissions..."
     sudo chown -R "$current_target_user:$current_target_user" "$SSH_DIR" || { echo -e "${ERROR} Failed to chown $SSH_DIR."; return 1; }
     sudo chmod 700 "$SSH_DIR" || { echo -e "${ERROR} Failed to chmod 700 $SSH_DIR."; return 1; }
     sudo chmod 600 "$AUTH_KEYS_FILE" || { echo -e "${ERROR} Failed to chmod 600 $AUTH_KEYS_FILE."; return 1; }
-    echo -e "${INFO} Permissions set."
 
     # Helper function for sshd_config specific to this scope, using sudo
     set_sshd_config_sudo() {
@@ -367,13 +373,12 @@ configure_ssh_hardening() {
 }
 
 install_jdk() {
-    echo -e "\n${STEP} Checking for JDK 21..."
-    if java -version 2>&1 | grep -q "version \"21"; then
+    if command -v java &>/dev/null && java -version 2>&1 | grep -q "version \"21"; then
         echo -e "${INFO} JDK 21 is already installed. Skipping."
         return 0
     fi
 
-    echo -e "${INFO} JDK 21 not found. Installing openjdk-21-jdk..."
+    echo -e "\n${STEP} Installing JDK 21..."
     if ! sudo apt-get install -y openjdk-21-jdk; then
         echo -e "${ERROR} Failed to install JDK 21."
         return 1
@@ -392,7 +397,6 @@ install_pipx_packages() {
         echo -e "${INFO} pipx installed successfully."
     fi
 
-    echo -e "\n${STEP} Installing pipx packages..."
     if ! pipx install semgrep; then
         echo -e "${WARN} Failed to install semgrep."
     fi
@@ -405,13 +409,11 @@ install_joern() {
     fi
 
     if ! ask_to_proceed "Do you want to install Joern?"; then
-        echo -e "${INFO} Skipping Joern installation."
         return 0
     fi
 
     install_jdk
 
-    echo -e "\n${STEP} Installing Joern..."
     local TEMP_DIR
     TEMP_DIR="$(mktemp -d)"
     trap 'rm -rf "$TEMP_DIR"' RETURN
@@ -461,14 +463,15 @@ install_ghidra() {
         return 1
     fi
 
-    if ! sudo unzip -q -o "${TEMP_DIR}/ghidra.zip" -d /opt/; then
-        echo -e "${WARN} Failed to extract Ghidra. Skipping installation."
+    unzip -q -o "${TEMP_DIR}/ghidra.zip" -d "${TEMP_DIR}"
+    
+    local GHIDRA_DIR_NAME
+    GHIDRA_DIR_NAME=$(unzip -Z -1 "${TEMP_DIR}/ghidra.zip" | head -n 1 | sed 's/\///')
+    
+    if ! sudo mv "${TEMP_DIR}/${GHIDRA_DIR_NAME}" /opt/ghidra; then
+        echo -e "${WARN} Failed to move Ghidra to /opt/ghidra. Skipping."
         return 1
     fi
-
-    local GHIDRA_DIR_NAME
-    GHIDRA_DIR_NAME=$(unzip -l "${TEMP_DIR}/ghidra.zip" | head -n 4 | tail -n 1 | awk '{print $4}')
-    sudo mv /opt/$GHIDRA_DIR_NAME /opt/ghidra
 
     if ! sudo ln -s /opt/ghidra/ghidraRun /usr/local/bin/ghidra; then
         echo -e "${WARN} Failed to create symlink for Ghidra. Skipping."
@@ -500,7 +503,6 @@ setup_argcomplete() {
         return 1
     fi
     if command -v activate-global-python-argcomplete &>/dev/null; then
-        echo -e "\n${STEP} Activating global python argcomplete..."
         activate-global-python-argcomplete
     else
         echo -e "${WARN} 'activate-global-python-argcomplete' not found in PATH."
@@ -528,6 +530,7 @@ main() {
     fi
 
     install_npm_packages
+    install_ruby_gems
 
     if ask_to_proceed "Do you want to setup sshd?"; then
         configure_ssh_hardening
