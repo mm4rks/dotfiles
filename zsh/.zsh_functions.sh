@@ -95,3 +95,21 @@ function genhosts() {
         echo "[!] Failed to update /etc/hosts. Check sudo permissions."
     fi
 } # Description: Generate and append to /etc/hosts using netexec.
+
+edit-in-popup() {
+  local TFILE=$(mktemp -t zshXXXXXX.sh)
+  echo "$BUFFER" > "$TFILE"
+
+  tmux display-popup -B -E nvim "$TFILE"
+
+  BUFFER=$(cat "$TFILE")
+  rm "$TFILE"
+
+  zle redisplay
+} # Description: Edit the current command in a tmux popup
+
+# Create a new widget from the function
+zle -N edit-in-popup
+
+# Bind it to a key (e.g., Ctrl-x)
+bindkey '^x' edit-in-popup
