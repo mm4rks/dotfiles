@@ -86,17 +86,34 @@ install_docker() {
     fi
 
     sudo mkdir -p /usr/share/zsh/vendor-completions
-    if ! curl -fsSL https://get.docker.com -o get-docker.sh; then
-        echo -e "${ERROR} Failed to download Docker installation script."
-        return 1
+
+    local is_kali=false
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        if [ "$ID" = "kali" ]; then
+            is_kali=true
+        fi
     fi
 
-    if ! sudo sh get-docker.sh; then
-        echo -e "${ERROR} Failed to execute Docker installation script."
+    if [ "$is_kali" = true ]; then
+        echo -e "${INFO} Kali Linux detected. Using modified Docker installation script."
+        if ! curl -fsSL https://get.docker.com | sed 's/kali-rolling/bookworm/g' | sudo sh; then
+            echo -e "${ERROR} Failed to execute Docker installation script for Kali."
+            return 1
+        fi
+    else
+        echo -e "${INFO} Using standard Docker installation script."
+        if ! curl -fsSL https://get.docker.com -o get-docker.sh; then
+            echo -e "${ERROR} Failed to download Docker installation script."
+            return 1
+        fi
+        if ! sudo sh get-docker.sh; then
+            echo -e "${ERROR} Failed to execute Docker installation script."
+            rm get-docker.sh
+            return 1
+        fi
         rm get-docker.sh
-        return 1
     fi
-    rm get-docker.sh
 
     if ! sudo usermod -aG docker "$USER"; then
         echo -e "${WARN} Failed to add user '$USER' to the 'docker' group. You may need to do this manually and restart your session."
@@ -201,6 +218,12 @@ install_pipx_packages() {
     if ! command -v tldr &>/dev/null; then
         if ! pipx install tldr; then
             echo -e "${WARN} Failed to install tldr."
+        fi
+    fi
+
+    if ! command -v floss &>/dev/null; then
+        if ! pipx install flare-floss; then
+            echo -e "${WARN} Failed to install flare-floss."
         fi
     fi
 }
@@ -375,21 +398,6 @@ install_jdk() {
     echo -e "${INFO} JDK 21 installed successfully."
 }
 
-install_pipx_packages() {
-    if ! command -v pipx &>/dev/null; then
-        echo -e "\n${STEP} Installing pipx..."
-        if ! sudo apt-get install -y pipx; then
-            echo -e "${ERROR} Failed to install pipx."
-            return 1
-        fi
-        pipx ensurepath
-        echo -e "${INFO} pipx installed successfully."
-    fi
-
-    if ! pipx install semgrep; then
-        echo -e "${WARN} Failed to install semgrep."
-    fi
-}
 
 install_joern() {
     if command -v joern &>/dev/null; then
@@ -472,7 +480,7 @@ install_ghidra() {
 }
 
 install_code_analysis_tools() {
-    if ask_to_proceed "Do you want to install additional code analysis tools (Semgrep, Joern, Ghidra)?"; then
+    if ask_to_proceed "Do you want to install additional code analysis tools (Semgrep, Joern, Ghidra, flare-floss)?"; then
         install_pipx_packages
         install_joern
         install_ghidra
