@@ -1,0 +1,8 @@
+add to nixos gcc, ripgrep, cmake, unzip, npm?, python3, python3-venv, pipx, fd, basedpyright, intelephense
+
+hyprland invert scroll
+
+checkout old alacritty conf
+
+xclip not available on wayland, wl-copy. need change some zsh stuff
+
