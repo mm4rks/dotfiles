@@ -131,7 +131,7 @@ font:
     #   - (macOS) Menlo
     #   - (Linux/BSD) monospace
     #   - (Windows) Consolas
-    family: HackNerdFont
+    family: FiraMono Nerd Font
 
     # The `style` can be specified to pick a specific face.
     #style: Regular
@@ -451,7 +451,6 @@ font:
 #   - (Linux/BSD/macOS) `$SHELL` or the user's login shell, if `$SHELL` is unset
 #   - (Windows) powershell
 shell:
-  program: /usr/bin/zsh
   args:
     - -l
     - -c

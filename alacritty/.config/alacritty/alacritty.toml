@@ -1,0 +1,50 @@
+
+[font.normal]
+family = "FiraMono Nerd Font"
+
+[[hints.enabled]]
+command = "xdg-open"
+hyperlinks = true
+post_processing = true
+regex = "(ipfs:|ipns:|magnet:|mailto:|gemini:|gopher:|https:|http:|news:|file:|git:|ssh:|ftp:)[^\u0000-\u001F\u007F-<>\"\\s{-}\\^⟨⟩`]+"
+
+[hints.enabled.binding]
+key = "U"
+mods = "Control|Shift"
+
+[hints.enabled.mouse]
+enabled = true
+mods = "None"
+
+[[keyboard.bindings]]
+action = "ToggleFullscreen"
+key = "F11"
+
+[[keyboard.bindings]]
+chars = "\u001B[13;2u"
+key = "Return"
+mods = "Shift"
+
+[[keyboard.bindings]]
+chars = "\u001B[13;5u"
+key = "Return"
+mods = "Control"
+
+[general]
+import = ["/home/user/.config/alacritty/rose-pine.toml"]
+
+[terminal]
+
+[terminal.shell]
+program = "zsh"
+
+[window]
+opacity = 1.0
+startup_mode = "Windowed"
+title = "Terminal"
+
+[window.dimensions]
+columns = 280
+lines = 70
+
+[keyboard]

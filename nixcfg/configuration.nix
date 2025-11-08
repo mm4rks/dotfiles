@@ -23,10 +23,12 @@
     unzip
     git
     wget
-    stow 
+    curl
+    tree
+    stow
     neovim
     tmux
-    
+
     firefox
 
     alacritty
@@ -34,6 +36,7 @@
     fzf
     bat
     zsh-syntax-highlighting
+    zsh-autosuggestions
     zsh-vi-mode
 
     keepassxc
@@ -47,13 +50,13 @@
     waybar
     rofi
     flameshot
-    wl-clipboard 
+    wl-clipboard
     pavucontrol
     pamixer
     hyprpaper
     hyprlock
 
-    poppler-utils 
+    poppler-utils
     qpdf
   ];
   
@@ -92,6 +95,7 @@
   hardware.graphics.enable = true;
   fonts.packages = with pkgs; [
     noto-fonts noto-fonts-cjk-sans noto-fonts-color-emoji font-awesome
+    pkgs."nerd-fonts"."fira-mono"
   ];
   system.stateVersion = "23.11";
 }
