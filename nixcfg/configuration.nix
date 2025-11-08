@@ -16,6 +16,11 @@
 
 
   environment.systemPackages = with pkgs; [
+    libgcc
+    gcc
+    ripgrep
+    cmake
+    unzip
     git
     wget
     stow 
