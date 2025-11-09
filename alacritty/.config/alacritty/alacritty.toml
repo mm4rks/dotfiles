@@ -42,9 +42,10 @@ program = "zsh"
 opacity = 1.0
 startup_mode = "Windowed"
 title = "Terminal"
+padding = {x = 5, y = 7}
 
 [window.dimensions]
-columns = 280
-lines = 70
+columns = 0
+lines = 0
 
 [keyboard]
