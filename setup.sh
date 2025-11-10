@@ -21,7 +21,7 @@ SSH_PUBLIC_KEY=""  # e.g., "ssh-rsa AAAA...your-public-key-string...user@host"
 REQUIRED_APT_PACKAGES=(
     curl git unzip fontconfig stow jq
     zsh-syntax-highlighting zsh-autosuggestions command-not-found
-    ripgrep tmux python3 python3-pip python3-venv tree xclip bat
+    ripgrep tmux python3 python3-pip python3-venv tree xclip bat cmake
 )
 
 CORE_PACKAGES_TO_STOW=(
@@ -490,6 +490,7 @@ install_code_analysis_tools() {
 install_dev_env() {
     install_neovim
     stow_package "nvim"
+    if [ -d "$HOME/.local/share/nvim/site/pack/packer/start/telescope-fzf-native.nvim" ]; then (cd $HOME/.local/share/nvim/site/pack/packer/start/telescope-fzf-native.nvim && rm -rf build && cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release --target install); fi
     install_fzf_from_github
     install_nerd_font
 }

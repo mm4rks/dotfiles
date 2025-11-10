@@ -27,6 +27,9 @@
     tree
     stow
     neovim
+    vimPlugins.telescope-fzf-native-nvim
+    vimPlugins.telescope-nvim
+
     tmux
 
     firefox
@@ -37,29 +40,36 @@
     bat
     zsh-syntax-highlighting
     zsh-autosuggestions
-    zsh-vi-mode
+    zsh-completions
 
     keepassxc
     signal-desktop
     obsidian
     nextcloud-client
-    xfce.thunar
+    nautilus
     pdfarranger
     zathura
 
     waybar
     rofi
+    mako
     flameshot
     wl-clipboard
     pavucontrol
     pamixer
     hyprpaper
     hyprlock
+    networkmanagerapplet
+    blueman
 
     poppler-utils
     qpdf
+    jq
+    gnumake
   ];
   
+  services.blueman.enable = true;
+
   environment.variables.EDITOR = "nvim";
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -82,11 +92,15 @@
   };
   programs.hyprlock.enable = true;
   programs.zsh.enable = true;
-  programs.thunar.enable = true;
+  programs.thunar.enable = false;
   services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
-    enable = true; alsa.enable = true; alsa.support32Bit = true; pulse.enable = true;
+    enable = true;
+    alsa.enable = true;
+    alsa.support32Bit = true;
+    pulse.enable = true;
+    wireplumber.enable = true;
   };
   xdg.portal = {
     enable = true; extraPortals = [ pkgs.xdg-desktop-portal-hyprland ];
@@ -95,6 +109,7 @@
   hardware.graphics.enable = true;
   fonts.packages = with pkgs; [
     noto-fonts noto-fonts-cjk-sans noto-fonts-color-emoji font-awesome
+    rose-pine-hyprcursor
     pkgs."nerd-fonts"."fira-mono"
   ];
   system.stateVersion = "23.11";

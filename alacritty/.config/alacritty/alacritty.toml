@@ -42,6 +42,7 @@ program = "zsh"
 opacity = 1.0
 startup_mode = "Windowed"
 title = "Terminal"
+dynamic_title = false
 padding = {x = 5, y = 7}
 
 [window.dimensions]

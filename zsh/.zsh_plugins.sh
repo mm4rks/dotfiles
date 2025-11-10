@@ -6,13 +6,7 @@ source_if_exists() {
     [ -f "$1" ] && source "$1"
 } # Helper function to source a file only if it exists.
 
-zvm_config() {
-    ZVM_SYSTEM_CLIPBOARD_ENABLED=true
-    ZVM_CLIPBOARD_COPY_CMD='xclip -selection clipboard'
-    ZVM_CLIPBOARD_PASTE_CMD='xclip -selection clipboard -o'
-} # Define zsh-vi-mode config before sourcing the plugin.
-
-zvm_after_init() {
+setup_fzf_and_autosuggestions() {
     if command -v fzf &> /dev/null; then
         source <(fzf --zsh)
     fi
@@ -23,7 +17,7 @@ zvm_after_init() {
     fi
 }
 
-source_if_exists ~/.plugins/zsh-vi-mode/zsh-vi-mode.plugin.zsh
+setup_fzf_and_autosuggestions
 
 # ------------------------------------------------------------------------------
 # Color & Prompts

@@ -52,7 +52,7 @@ zstyle ':completion:*' format 'Completing %d'
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
 
-bindkey -v                  # Enable Vi mode for command-line editing.
+
 
 PROMPT_EOL_MARK=""          # Hide the '%' character that appears at the end of lines.
 
