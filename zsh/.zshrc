@@ -33,10 +33,14 @@ setopt histignorespace      # Don't save commands that start with a space.
 setopt histverify           # Show history expansions before executing them.
 
 # --- Completion System --------------------------------------------------------
+# Add Docker completions to fpath
+if [ -d /usr/share/zsh/vendor-completions ]; then
+  fpath=(/usr/share/zsh/vendor-completions $fpath)
+fi
 autoload -Uz compinit       # Autoload the completion initialization utility.
 compinit -d ~/.cache/zcompdump # Initialize completions, caching to this file.
-zstyle ':completion:*:*:*:*:*' tag-order arguments options files
-zstyle ':completion:*' completer _expand _complete _ignored _approximate
+zstyle ':completion:*:*:*:*:*' tag-order files options arguments
+zstyle ':completion:*' completer _files _expand _complete _ignored _approximate
 zstyle ':completion:*' matcher-list '' 'm:{[:lower:]}={[:upper:]}' 'r:|[._-]=* r:|=*'
 zstyle ':completion:*' max-errors 2 # Allow up to 2 errors for fuzzy matching.
 zstyle ':completion:*' menu select              # Enable a selectable completion menu.
@@ -68,7 +72,11 @@ source ~/.zsh_docker.sh
 source ~/.zsh_env.sh
 source ~/.zsh_functions.sh
 source ~/.zsh_plugins.sh
+source ~/.zsh_phpenv.sh
 
 
-
-
+# Automatically attach to a tmux session on terminal start
+if [[ -z "$TMUX" && "$-" == *i* ]]; then
+    SESSION_NAME="main"
+    tmux new-session -A -s "$SESSION_NAME"
+fi

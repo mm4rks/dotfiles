@@ -14,12 +14,18 @@ alias ip='ip --color=auto'
 alias xargs='xargs '
 alias xc="xclip -selection clipboard" # Alias for copying to the clipboard
 alias ntlm.pw='function _ntlm(){ curl https://ntlm.pw/$1; }; _ntlm' # Fetches NTLM hashes from ntlm.pw for a given value
+alias certipy='certipy-ad' # Alias for certipy-ad
 
 if command -v nvim &> /dev/null; then
     alias vim='nvim' # Conditional alias for Neovim
+fi
+
+if command -v batcat &> /dev/null; then
+    alias bat='batcat'
 fi
 
 if command -v bat &> /dev/null; then
     alias cat='bat --paging=never' # Conditional alias for bat
     alias less='bat'
 fi
+alias devdocs="docker run --name devdocs -d -p 9292:9292 ghcr.io/freecodecamp/devdocs:latest"

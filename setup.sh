@@ -1,26 +1,6 @@
 #!/bin/bash
-
-set -eo pipefail # Exit on error and on pipe failures
-
-script_exit_handler() {
-    local exit_code=$?
-    if [ $exit_code -ne 0 ]; then
-        echo -e "\n${ERROR} Script exited prematurely with status ${exit_code}."
-    fi
-}
-trap script_exit_handler EXIT
-
-# --- Configuration ---
 DOTFILES_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
-BACKUP_DIR="$HOME/.dotfiles_backup_$(date +"%Y%m%d-%H%M%S")"
-# These packages will always be stowed. 'nvim' is handled conditionally.
-CORE_PACKAGES_TO_STOW=(
-    "zsh"
-    "tmux"
-    "git"
-    "zsh_plugins"
-    "dockerfiles"
-)
+
 
 # --- Neovim Configuration ---
 NVIM_INSTALL_DIR="$HOME/.local/bin"
@@ -31,6 +11,26 @@ NVIM_APPIMAGE_URL="https://github.com/neovim/neovim/releases/latest/download/nvi
 FONT_URL="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.4.0/FiraMono.zip"
 FONT_NAME="FiraMono"
 FONT_INSTALL_DIR="${HOME}/.local/share/fonts"
+
+# Set these directly to skip prompts, or leave empty to be prompted.
+SSH_TARGET_USER="" # e.g., "your_server_username"
+SSH_PUBLIC_KEY=""  # e.g., "ssh-rsa AAAA...your-public-key-string...user@host"
+
+# --- Required APT Packages ---
+# These packages will be installed.
+REQUIRED_APT_PACKAGES=(
+    curl git unzip fontconfig stow jq
+    zsh-syntax-highlighting zsh-autosuggestions command-not-found
+    ripgrep tmux python3 python3-pip python3-venv tree xclip bat
+)
+
+CORE_PACKAGES_TO_STOW=(
+    "zsh"
+    "tmux"
+    "git"
+    "zsh_plugins"
+    "dockerfiles"
+)
 
 # --- Colors and Logging ---
 RED='\033[0;31m'
@@ -44,6 +44,15 @@ WARN="[${YELLOW}WARN${NC}]"
 ERROR="[${RED}ERROR${NC}]"
 STEP="[${BLUE}STEP${NC}]"
 
+set -eo pipefail # Exit on error and on pipe failures
+
+script_exit_handler() {
+    local exit_code=$?
+    if [ $exit_code -ne 0 ]; then
+        echo -e "\n${ERROR} Script exited prematurely with status ${exit_code}."
+    fi
+}
+trap script_exit_handler EXIT
 
 # A generic function to ask the user a yes/no question.
 ask_to_proceed() {
@@ -59,31 +68,190 @@ ask_to_proceed() {
 
 install_required_packages() {
     echo -e "\n${STEP} Updating package list and installing required packages..."
-    local required_packages=(
-        curl git unzip fontconfig stow fzf pipx
-        zsh-syntax-highlighting zsh-autosuggestions command-not-found
-        ripgrep
-    )
     sudo apt-get update -q
-    sudo apt-get install -q "${required_packages[@]}"
+    if ! sudo apt-get install -q -y "${REQUIRED_APT_PACKAGES[@]}"; then
+        echo -e "${ERROR} Failed to install some required packages with apt-get. Please check the output above."
+        exit 1
+    fi
+}
+
+install_docker() {
+    if command -v docker &>/dev/null; then
+        echo -e "${INFO} Docker is already installed. Skipping."
+        return 0
+    fi
+
+    if ! ask_to_proceed "Do you want to install Docker?"; then
+        return 0
+    fi
+
+    sudo mkdir -p /usr/share/zsh/vendor-completions
+
+    local is_kali=false
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        if [ "$ID" = "kali" ]; then
+            is_kali=true
+        fi
+    fi
+
+    if [ "$is_kali" = true ]; then
+        echo -e "${INFO} Kali Linux detected. Using modified Docker installation script."
+        if ! curl -fsSL https://get.docker.com | sed 's/kali-rolling/bookworm/g' | sudo sh; then
+            echo -e "${ERROR} Failed to execute Docker installation script for Kali."
+            return 1
+        fi
+    else
+        echo -e "${INFO} Using standard Docker installation script."
+        if ! curl -fsSL https://get.docker.com -o get-docker.sh; then
+            echo -e "${ERROR} Failed to download Docker installation script."
+            return 1
+        fi
+        if ! sudo sh get-docker.sh; then
+            echo -e "${ERROR} Failed to execute Docker installation script."
+            rm get-docker.sh
+            return 1
+        fi
+        rm get-docker.sh
+    fi
+
+    if ! sudo usermod -aG docker "$USER"; then
+        echo -e "${WARN} Failed to add user '$USER' to the 'docker' group. You may need to do this manually and restart your session."
+        return 1
+    fi
+
+    echo -e "${INFO} Docker installed and user added to 'docker' group. Please log out and log back in for group changes to take effect."
+    return 0
+}
+
+install_fzf_from_github() {
+    if command -v fzf &>/dev/null; then
+        echo -e "${INFO} fzf is already installed. Skipping."
+        return 0
+    fi
+
+    local TEMP_DIR
+    TEMP_DIR="$(mktemp -d)"
+    trap 'rm -rf "$TEMP_DIR"' RETURN # Cleanup on function return
+
+    local FZF_LATEST_URL
+    FZF_LATEST_URL=$(curl -s https://api.github.com/repos/junegunn/fzf/releases/latest | jq -r '.assets[] | select(.name | endswith("linux_amd64.tar.gz")) | .browser_download_url')
+
+    if [ -z "$FZF_LATEST_URL" ]; then
+        echo -e "${WARN} Could not find the latest fzf release URL. Skipping installation."
+        return 1
+    fi
+
+    if ! curl --fail --location -o "${TEMP_DIR}/fzf.tar.gz" "$FZF_LATEST_URL"; then
+        echo -e "${WARN} Failed to download fzf. Skipping installation."
+        return 1
+    fi
+
+    if ! tar -xzf "${TEMP_DIR}/fzf.tar.gz" -C "$TEMP_DIR"; then
+        echo -e "${WARN} Failed to extract fzf. Skipping installation."
+        return 1
+    fi
+
+    if ! sudo mv "${TEMP_DIR}/fzf" /usr/local/bin/; then
+        echo -e "${WARN} Failed to move fzf binary to /usr/local/bin/. Skipping installation."
+        return 1
+    fi
+
+    echo -e "${INFO} fzf installed successfully."
+    return 0
+}
+
+ensure_nodejs_installed() {
+    # Check for a modern version of Node.js (v18+), and install it from NodeSource if needed.
+    if ! command -v node &>/dev/null || [[ $(node -v | cut -d'v' -f2 | cut -d'.' -f1) -lt 18 ]]; then
+        echo -e "${INFO} A modern version of Node.js (v18+) is required. Installing Node.js v20 LTS..."
+        
+        # Add NodeSource repository
+        sudo apt-get update -q
+        sudo apt-get install -y ca-certificates curl gnupg
+        sudo mkdir -p /etc/apt/keyrings
+        curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+        
+        NODE_MAJOR=20
+        echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+        
+        # Install Node.js
+        sudo apt-get update -q
+        if ! sudo apt-get install -q -y nodejs; then
+            echo -e "${ERROR} Failed to install Node.js from NodeSource. Aborting npm package installation."
+            return 1
+        fi
+        echo -e "${INFO} Node.js installed successfully."
+    fi
+    return 0
+}
+
+install_gemini() {
+    if ask_to_proceed "Do you want to install the Gemini CLI (@google/gemini-cli)?"; then
+        ensure_nodejs_installed || return 1
+
+        echo -e "\n${STEP} Installing @google/gemini-cli..."
+        if ! sudo npm install -g "@google/gemini-cli@nightly"; then
+            echo -e "${ERROR} Failed to install @google/gemini-cli."
+            return 1
+        fi
+        echo -e "${INFO} @google/gemini-cli installed successfully."
+    fi
+    return 0
+}
+
+install_pipx_packages() {
+    if ! command -v pipx &>/dev/null; then
+        echo -e "\n${STEP} Installing pipx..."
+        if ! sudo apt-get install -y pipx; then
+            echo -e "${ERROR} Failed to install pipx."
+            return 1
+        fi
+        pipx ensurepath
+        echo -e "${INFO} pipx installed successfully."
+    fi
+
+    if ! pipx install semgrep; then
+        echo -e "${WARN} Failed to install semgrep."
+    fi
+
+    if ! command -v tldr &>/dev/null; then
+        if ! pipx install tldr; then
+            echo -e "${WARN} Failed to install tldr."
+        fi
+    fi
+
+    if ! command -v floss &>/dev/null; then
+        if ! pipx install flare-floss; then
+            echo -e "${WARN} Failed to install flare-floss."
+        fi
+    fi
 }
 
 install_nerd_font() {
     if [ -d "${FONT_INSTALL_DIR}/${FONT_NAME}" ]; then
         echo -e "${INFO} ${FONT_NAME} Nerd Font is already installed. Skipping."
-        return
+        return 0
     fi
 
     local TEMP_DIR
     TEMP_DIR="$(mktemp -d)"
-    trap 'rm -rf "$TEMP_DIR"' EXIT
+    trap 'rm -rf "$TEMP_DIR"' RETURN # Cleanup on function return
 
-    curl --fail --location -o "${TEMP_DIR}/font.zip" "${FONT_URL}"
+    if ! curl --fail --location -o "${TEMP_DIR}/font.zip" "${FONT_URL}"; then
+        echo -e "${ERROR} Failed to download ${FONT_NAME} Nerd Font. Skipping installation."
+        return 1
+    fi
+
     mkdir -p "${FONT_INSTALL_DIR}/${FONT_NAME}"
-    unzip -q -o "${TEMP_DIR}/font.zip" -d "${FONT_INSTALL_DIR}/${FONT_NAME}"
-    echo -e "${INFO} Updating font cache..."
+    if ! unzip -q -o "${TEMP_DIR}/font.zip" -d "${FONT_INSTALL_DIR}/${FONT_NAME}"; then
+        echo -e "${ERROR} Failed to extract ${FONT_NAME} Nerd Font. Skipping installation."
+        return 1
+    fi
+
     fc-cache -fv >/dev/null
     echo -e "${INFO} ${FONT_NAME} Nerd Font installed successfully."
+    return 0
 }
 
 install_neovim() {
@@ -91,35 +259,17 @@ install_neovim() {
         echo -e "${INFO} Neovim is already installed at '$(command -v nvim)'. Skipping installation."
         return
     fi
-    
+
     mkdir -p "$NVIM_INSTALL_DIR"
     curl --fail --location -o "$NVIM_APPIMAGE_PATH" "$NVIM_APPIMAGE_URL"
     chmod u+x "$NVIM_APPIMAGE_PATH"
     echo -e "${INFO} Neovim installed to ${NVIM_APPIMAGE_PATH}"
-    echo -e "${WARN} Please ensure '${NVIM_INSTALL_DIR}' is in your PATH."
+    return 0
 }
 
-setup_argcomplete() {
-    echo -e "\n${STEP} Setting up Python Argcomplete..."
-    if ! command -v pipx &>/dev/null; then
-        echo -e "${ERROR} pipx is not installed. This is required."
-        return 1
-    fi
-    
-    # Use -q for quiet install
-    pipx install argcomplete -q
-    if activate-global-python-argcomplete &>/dev/null; then
-        echo -e "${INFO} Argcomplete activated."
-    else
-        echo -e "${ERROR} Failed to activate global completions (activate-global-python-argcomplete)."
-        return 1
-    fi
-}
-
-# --- stow package, backup existing on conflict
 stow_package() {
     local pkg="$1"
-    local backed_up_in_this_run=false
+    local stow_output
 
     if [ -z "$pkg" ]; then
         echo -e "${WARN} stow_package called with empty package name. Skipping."
@@ -128,66 +278,272 @@ stow_package() {
 
     local source_dir="${DOTFILES_DIR}/${pkg}"
     if [ ! -d "$source_dir" ]; then
-        echo -e "\n${WARN} Package '${pkg}' not found in dotfiles directory. Skipping."
+        echo -e "${WARN} Package '${pkg}' not found in dotfiles directory. Skipping."
         return 1
     fi
 
-    local stow_output
-    stow_output=$(stow --dir="$DOTFILES_DIR" --target="$HOME" --simulate --verbose=2 "$pkg" 2>&1 || true)
-
-    if echo "$stow_output" | grep -q 'over existing target'; then
-        echo -e "${WARN} Conflicts detected for package: ${YELLOW}${pkg}${NC}. Backing up existing files..."
-        if ! $backed_up_in_this_run; then
-            mkdir -p "$BACKUP_DIR"
-            backed_up_in_this_run=true
-        fi
-
-        local conflicts
-        conflicts=$(echo "$stow_output" | grep 'over existing target' | sed 's/.*over existing target //; s/ .*//' | sort -u)
-
-        for conflict_file in $conflicts; do
-            local full_path="${HOME}/${conflict_file}"
-            echo -e "${INFO} Backing up '${conflict_file}'..."
-            mkdir -p "$(dirname "${BACKUP_DIR}/${conflict_file}")"
-            mv "$full_path" "${BACKUP_DIR}/${conflict_file}"
-        done
-    fi
-
     echo -e "${INFO} Stowing '${pkg}'..."
-    if ! stow --dir="$DOTFILES_DIR" --target="$HOME" --restow "$pkg"; then
-        echo -e "${ERROR}Failed to stow '${pkg}'.${NC}"
+    if ! stow_output=$(stow --dir="$DOTFILES_DIR" --target="$HOME" --restow "$pkg" 2>&1); then
+        echo -e "${WARN} Failed to stow '${pkg}'. Please resolve conflicts manually."
+        echo -e "${YELLOW}Stow output:${NC}\n$stow_output"
+    fi
+}
+
+# SSH Hardening Configuration
+configure_ssh_hardening() {
+    sudo apt install openssh-server -q -y
+
+    local current_target_user="$SSH_TARGET_USER"
+    local current_public_key="$SSH_PUBLIC_KEY"
+
+    # If global variables are empty, prompt the user
+    if [ -z "$current_target_user" ]; then
+        read -p "$(echo -e ${STEP}) Enter the target username for SSH configuration: " current_target_user
+    fi
+    if [ -z "$current_public_key" ]; then
+        read -p "$(echo -e ${STEP}) Enter the SSH public key (e.g., ssh-rsa AAAA...): " current_public_key
     fi
 
-    if $backed_up_in_this_run; then
-        echo -e "${YELLOW}Backed up files for '${pkg}' are in:${NC} ${BLUE}${BACKUP_DIR}${NC}"
+    if [ -z "$current_target_user" ] || [ -z "$current_public_key" ]; then
+        echo -e "${ERROR} Target username or public key cannot be empty. Skipping SSH hardening."
+        return 1
+    fi
+
+    local SSH_CONFIG_FILE="/etc/ssh/sshd_config"
+    # Use || true to prevent 'set -e' from exiting if getent fails (e.g., user doesn't exist)
+    local USER_HOME=$(getent passwd "$current_target_user" | cut -d: -f6 || true)
+    local SSH_DIR="$USER_HOME/.ssh"
+    local AUTH_KEYS_FILE="$SSH_DIR/authorized_keys"
+
+    if [ -z "$USER_HOME" ]; then
+        echo -e "${ERROR} User '$current_target_user' does not exist. Skipping SSH hardening."
+        return 1
+    fi
+    echo -e "${INFO} Configuring SSH for user: $current_target_user"
+    sudo mkdir -p "$SSH_DIR" || { echo -e "${ERROR} Failed to create $SSH_DIR."; return 1; }
+    sudo touch "$AUTH_KEYS_FILE" || { echo -e "${ERROR} Failed to touch $AUTH_KEYS_FILE."; return 1; }\
+
+    if ! sudo grep -q -F "$current_public_key" "$AUTH_KEYS_FILE"; then
+        echo "$current_public_key" | sudo tee -a "$AUTH_KEYS_FILE" > /dev/null || { echo -e "${ERROR} Failed to add public key."; return 1; }
+        echo -e "${INFO} Public key added."
+    else
+        echo -e "${INFO} Public key already exists."
+    fi
+
+    sudo chown -R "$current_target_user:$current_target_user" "$SSH_DIR" || { echo -e "${ERROR} Failed to chown $SSH_DIR."; return 1; }
+    sudo chmod 700 "$SSH_DIR" || { echo -e "${ERROR} Failed to chmod 700 $SSH_DIR."; return 1; }
+    sudo chmod 600 "$AUTH_KEYS_FILE" || { echo -e "${ERROR} Failed to chmod 600 $AUTH_KEYS_FILE."; return 1; }
+
+    # Helper function for sshd_config specific to this scope, using sudo
+    set_sshd_config_sudo() {
+        local key="$1"
+        local value="$2"
+        echo -e "${INFO} $key $value"
+        if sudo grep -qE "^\s*#*\s*$key\s+" "$SSH_CONFIG_FILE"; then
+            sudo sed -i -E "s/^\s*#*\s*$key\s+.*/$key $value/" "$SSH_CONFIG_FILE"
+        else
+            echo "$key $value" | sudo tee -a "$SSH_CONFIG_FILE" > /dev/null
+        fi
+        if [ $? -ne 0 ]; then
+             echo -e "${ERROR} Failed to set $key in $SSH_CONFIG_FILE."
+             return 1
+        fi
+    }
+
+    echo -e "${INFO} write sshd_config modifications to $SSH_CONFIG_FILE."
+    set_sshd_config_sudo "PubkeyAuthentication" "yes" || return 1
+    set_sshd_config_sudo "PasswordAuthentication" "no" || return 1
+    set_sshd_config_sudo "PermitRootLogin" "no" || return 1
+    set_sshd_config_sudo "ChallengeResponseAuthentication" "no" || return 1
+    # set_sshd_config_sudo "UsePAM" "no" # Use with extreme caution!
+
+    # Create the privilege separation directory if it doesn't exist
+    if [ ! -d /run/sshd ]; then
+        echo -e "${INFO} Creating /run/sshd directory..."
+        sudo mkdir -p /run/sshd
+        sudo chmod 755 /run/sshd
+    fi
+
+    echo -e "${INFO} Generating SSH host keys..."
+    sudo ssh-keygen -A
+    echo -e "${INFO} Validating sshd_config..."
+    if sudo sshd -t &> /dev/null; then # Redirect stderr to /dev/null to avoid verbose output
+        echo -e "${INFO} sshd_config syntax is OK."
+        echo -e "${INFO} Restarting sshd service to apply changes..."
+        if sudo systemctl restart ssh; then
+            echo -e "${INFO} SSH configuration applied successfully."
+        else
+            echo -e "${ERROR} Failed to restart sshd service. Please check manually."
+            return 1
+        fi
+    else
+        echo -e "${ERROR} sshd_config syntax check failed!"
+        echo -e "${ERROR} Review $SSH_CONFIG_FILE for errors. It might be in a bad state."
+        return 1
+    fi
+    return 0
+}
+
+install_jdk() {
+    if command -v java &>/dev/null && java -version 2>&1 | grep -q "version \"21"; then
+        echo -e "${INFO} JDK 21 is already installed. Skipping."
+        return 0
+    fi
+
+    echo -e "\n${STEP} Installing JDK 21..."
+    if ! sudo apt-get install -y openjdk-21-jdk; then
+        echo -e "${ERROR} Failed to install JDK 21."
+        return 1
+    fi
+    echo -e "${INFO} JDK 21 installed successfully."
+}
+
+
+install_joern() {
+    if command -v joern &>/dev/null; then
+        echo -e "${INFO} Joern is already installed. Skipping."
+        return 0
+    fi
+
+    if ! ask_to_proceed "Do you want to install Joern?"; then
+        return 0
+    fi
+
+    install_jdk
+
+    local TEMP_DIR
+    TEMP_DIR="$(mktemp -d)"
+    trap 'rm -rf "$TEMP_DIR"' RETURN
+
+    if ! curl -L "https://github.com/joernio/joern/releases/latest/download/joern-install.sh" -o "${TEMP_DIR}/joern-install.sh"; then
+        echo -e "${ERROR} Failed to download Joern installation script."
+        return 1
+    fi
+
+    chmod +x "${TEMP_DIR}/joern-install.sh"
+    if ! sudo "${TEMP_DIR}/joern-install.sh"; then
+        echo -e "${ERROR} Failed to install Joern."
+        return 1
+    fi
+
+    echo -e "${INFO} Joern installed successfully."
+}
+
+install_ghidra() {
+    if command -v ghidra &>/dev/null; then
+        echo -e "${INFO} Ghidra is already installed. Skipping."
+        return 0
+    fi
+
+    if ! ask_to_proceed "Do you want to install Ghidra?"; then
+        echo -e "${INFO} Skipping Ghidra installation."
+        return 0
+    fi
+
+    install_jdk
+
+    echo -e "\n${STEP} Installing Ghidra..."
+    local TEMP_DIR
+    TEMP_DIR="$(mktemp -d)"
+    trap 'rm -rf "$TEMP_DIR"' RETURN
+
+    local GHIDRA_LATEST_URL
+    GHIDRA_LATEST_URL=$(curl -s https://api.github.com/repos/NationalSecurityAgency/ghidra/releases/latest | jq -r '.assets[] | select(.name | endswith(".zip")) | .browser_download_url')
+
+    if [ -z "$GHIDRA_LATEST_URL" ]; then
+        echo -e "${WARN} Could not find the latest Ghidra release URL. Skipping installation."
+        return 1
+    fi
+
+    if ! curl --fail --location -o "${TEMP_DIR}/ghidra.zip" "$GHIDRA_LATEST_URL"; then
+        echo -e "${WARN} Failed to download Ghidra. Skipping installation."
+        return 1
+    fi
+
+    unzip -q -o "${TEMP_DIR}/ghidra.zip" -d "${TEMP_DIR}"
+    
+    local GHIDRA_DIR_NAME
+    GHIDRA_DIR_NAME=$(unzip -Z -1 "${TEMP_DIR}/ghidra.zip" | head -n 1 | sed 's/\///')
+    
+    if ! sudo mv "${TEMP_DIR}/${GHIDRA_DIR_NAME}" /opt/ghidra; then
+        echo -e "${WARN} Failed to move Ghidra to /opt/ghidra. Skipping."
+        return 1
+    fi
+
+    if ! sudo ln -s /opt/ghidra/ghidraRun /usr/local/bin/ghidra; then
+        echo -e "${WARN} Failed to create symlink for Ghidra. Skipping."
+        return 1
+    fi
+
+
+    echo -e "${INFO} Ghidra installed successfully."
+}
+
+install_code_analysis_tools() {
+    if ask_to_proceed "Do you want to install additional code analysis tools (Semgrep, Joern, Ghidra, flare-floss)?"; then
+        install_pipx_packages
+        install_joern
+        install_ghidra
+    fi
+}
+
+install_dev_env() {
+    install_neovim
+    stow_package "nvim"
+    install_fzf_from_github
+    install_nerd_font
+}
+
+setup_argcomplete() {
+    if ! pipx install argcomplete; then
+        echo -e "${WARN} Failed to install argcomplete."
+        return 1
+    fi
+    if command -v activate-global-python-argcomplete &>/dev/null; then
+        sudo activate-global-python-argcomplete
+    else
+        echo -e "${WARN} 'activate-global-python-argcomplete' not found in PATH."
     fi
 }
 
 # --- Main Script Execution ---
 main() {
+    # Check for sudo privileges
+    if ! sudo -v; then
+        echo -e "${ERROR} This script requires sudo privileges. Please run it with a user that has sudo access."
+        exit 1
+    fi
+
     install_required_packages
-    setup_argcomplete
+    install_docker
+    install_code_analysis_tools
 
-    if ask_to_proceed "Do you want to install FiraMono Nerd Font?"; then
-        install_nerd_font
+    if command -v nvim &>/dev/null; then
+        echo -e "${INFO} Neovim is already installed. Skipping full development environment installation."
+    else
+        if ask_to_proceed "Do you want to install the full development environment (Neovim, fzf, fonts, etc.)?"; then
+            install_dev_env
+        fi
     fi
 
-    if ask_to_proceed "Do you want to install Neovim and set up LazyVim?"; then
-        install_neovim
-        stow_package "nvim" # Conditionally stow the nvim package
+    install_gemini
+
+    if ask_to_proceed "Do you want to setup sshd?"; then
+        configure_ssh_hardening
     fi
 
-    # Stow all the core, unconditional packages
-    echo -e "\n${STEP} Stowing core dotfiles..."
+    # Stow all the core, unconditional packages (excluding nvim now)
+    echo -e "${STEP} Stowing core dotfiles..."
     for pkg in "${CORE_PACKAGES_TO_STOW[@]}"; do
         stow_package "$pkg"
     done
 
-    echo -e "\n\n${GREEN}--- Setup Complete ---${NC}"
-    echo -e "\n${YELLOW}Next Steps:${NC}"
-    echo -e "1. ${YELLOW}IMPORTANT:${NC} Open your terminal's settings and change its font to 'FiraMono Nerd Font' (if installed)."
+    setup_argcomplete
+    echo -e "${GREEN}--- Setup Complete ---${NC}"
+    echo -e "${YELLOW}Next Steps:${NC}"
+    echo -e "1. ${YELLOW}IMPORTANT:${NC} Open your terminal's settings and change its font to your preferred font."
     echo -e "2. Restart your terminal to apply all changes."
-    echo -e "3. If you installed Neovim, run \`${BLUE}nvim${NC}\`. LazyVim will automatically install plugins on the first run."
+    echo -e "3. If you installed the dev environment, run \`${BLUE}nvim${NC}\` and then run \`:PackerSync\` to install the plugins."
 }
 
 main
