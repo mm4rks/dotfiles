@@ -103,3 +103,8 @@ vim.api.nvim_set_keymap('n', ',c', '<F7>', { noremap = false })
 
 -- Treesitter incremental selection
 vim.keymap.set("n", "vv", ":lua require('nvim-treesitter.incremental_selection').init_selection()<CR>", { noremap = true, silent = true })
+
+-- Fugitive
+vim.keymap.set("n", "<leader>gs", vim.cmd.Git)
+vim.keymap.set("n", "<leader>gj", [[:diffget //3 <CR>]])
+vim.keymap.set("n", "<leader>gf", [[:diffget //2 <CR>]])
