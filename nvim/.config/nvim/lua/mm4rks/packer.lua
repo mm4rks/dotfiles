@@ -19,19 +19,11 @@ return require('packer').startup(function(use)
         requires = { { 'nvim-lua/plenary.nvim' } }
     }
     use { 'nvim-telescope/telescope-fzf-native.nvim', run = 'make' }
-    use({
-        'rose-pine/neovim',
-        as = 'rose-pine',
-        config = function()
-            vim.cmd.colorscheme('rose-pine')
-        end
-    })
     use('mm4rks/nvim-tmux-navigation')
     use('nvim-treesitter/nvim-treesitter', { run = ':TSUpdate' })
     -- use('nvim-treesitter/nvim-treesitter-context')
     use('windwp/nvim-autopairs')
     use('tpope/vim-fugitive')
-    use('tpope/vim-commentary')
     use('tpope/vim-surround')
     use('tpope/vim-repeat')
     use('lewis6991/gitsigns.nvim')
