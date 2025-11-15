@@ -1,7 +1,7 @@
 return {
     {
         'nvim-telescope/telescope.nvim',
-        tag = 'v0.1.9',
+        version = 'v0.1.9',
         dependencies = { 'nvim-lua/plenary.nvim' }
     },
     { 'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release --target install' },
@@ -15,12 +15,5 @@ return {
     {
         'nvim-lualine/lualine.nvim',
         dependencies = { 'nvim-tree/nvim-web-devicons' }
-    },
-    {
-        'folke/neodev.nvim',
-        event = "VeryLazy",
-        config = function()
-            require('neodev').setup()
-        end
     },
 }

@@ -20,28 +20,36 @@ vim.opt.rtp:prepend(lazypath)
 -- This is also a good place to setup other settings (vim.opt)
 vim.g.mapleader = " "
 vim.g.maplocalleader = ","
-require("config/remap")
-require("config/opt")
 
--- Highlight on yank
-local yankGrp = vim.api.nvim_create_augroup("YankHighlight", { clear = true })
-vim.api.nvim_create_autocmd("TextYankPost", {
-    command = "silent! lua vim.highlight.on_yank()",
-    group = yankGrp,
-})
+require("config/keymaps")
+require("config/options")
+require("config/autocmds")
 
--- Break lines in LaTeX files
-vim.api.nvim_create_autocmd("FileType", {
-    pattern = "tex",
-    command = "setlocal wrap linebreak"
-})
--- Setup lazy.nvim
 require("lazy").setup({
     spec = {
+        -- add LazyVim and import its plugins
+        -- { "LazyVim/LazyVim", import = "lazyvim.plugins" },
+        -- import/override with your plugins
         { import = "plugins" },
     },
-    -- Configure any other settings here. See the documentation for more details.
-    -- colorscheme that will be used when installing plugins.
-    -- automatically check for plugin updates
-    checker = { enabled = true },
+    checker = {
+        enabled = true, -- check for plugin updates periodically
+        notify = false, -- notify on update
+    },                  -- automatically check for plugin updates
+    performance = {
+        rtp = {
+            -- disable some rtp plugins
+            disabled_plugins = {
+                "gzip",
+                -- "matchit",
+                -- "matchparen",
+                -- "netrwPlugin",
+                "tarPlugin",
+                "tohtml",
+                "tutor",
+                "zipPlugin",
+            },
+        },
+    },
 })
+vim.cmd.colorscheme "catppuccin"
