@@ -9,6 +9,7 @@ return {
             local telescope = require('telescope')
             local builtin = require('telescope.builtin')
             local actions = require('telescope.actions')
+            local joern = require('config.joern')
 
             telescope.setup {
                 defaults = {
