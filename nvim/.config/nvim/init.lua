@@ -1,1 +1,1 @@
-require("mm4rks")
+require("config.lazy")

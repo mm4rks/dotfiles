@@ -1,7 +1,3 @@
-# ------------------------------------------------------------------------------
-# Zsh Configuration
-# ------------------------------------------------------------------------------
-
 # --- General Shell Options ----------------------------------------------------
 setopt interactivecomments  # Allow comments in the interactive shell.
 setopt promptsubst          # Enable command substitution in the prompt.
@@ -52,20 +48,30 @@ zstyle ':completion:*' format 'Completing %d'
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
 
-bindkey -v                  # Enable Vi mode for command-line editing.
+# bindkey -v                  # Enable Vi mode for command-line editing.
 
 PROMPT_EOL_MARK=""          # Hide the '%' character that appears at the end of lines.
 
+_fix_cursor() {
+    echo -ne '\e[6 q'
+}
+# Disable cursor blinking (0 = off, 1 = on)
+ZLE_CURSOR_BLINK=0
+
+precmd_functions+=(_fix_cursor)
+fpath+=($HOME/.zsh/pure)
+autoload -U promptinit; promptinit # npm install --global pure-prompt
+prompt pure
 autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey '^R' history-incremental-search-backward # Ctrl+R for history search.
 bindkey ' ' magic-space                          # Space performs history expansion (e.g., '!!').
 bindkey '^[[Z' undo                              # Shift+Tab to undo. TODO change this to undo in insert mode only
 bindkey -s -M vicmd '^?' 'ciw'                   # Backspace executes 'change inner word'.
-#bindkey "^X^E" edit-command-line                 # Ctrl+X, Ctrl+E to open editor.
-#bindkey '^N' forward-word
-#bindkey '^A' beginning-of-line
-#bindkey '^E' end-of-line
+bindkey "^X^E" edit-command-line                 # Ctrl+X, Ctrl+E to open editor.
+bindkey '^N' forward-word
+bindkey '^A' beginning-of-line
+bindkey '^E' end-of-line
 
 source ~/.zsh_alias.sh
 source ~/.zsh_docker.sh
@@ -76,7 +82,7 @@ source ~/.zsh_phpenv.sh
 
 
 # Automatically attach to a tmux session on terminal start
-if [[ -z "$TMUX" && "$-" == *i* ]]; then
-    SESSION_NAME="main"
-    tmux new-session -A -s "$SESSION_NAME"
-fi
+# if [[ -z "$TMUX" && "$-" == *i* ]]; then
+#     SESSION_NAME="main"
+#     tmux new-session -A -s "$SESSION_NAME"
+# fi
