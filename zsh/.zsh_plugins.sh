@@ -2,36 +2,17 @@ source_if_exists() {
     [ -f "$1" ] && source "$1"
 } # Helper function to source a file only if it exists.
 
-zvm_config() {
-    ZVM_SYSTEM_CLIPBOARD_ENABLED=true
-    ZVM_CLIPBOARD_COPY_CMD='xclip -selection clipboard'
-    ZVM_CLIPBOARD_PASTE_CMD='xclip -selection clipboard -o'
-} # Define zsh-vi-mode config before sourcing the plugin.
-
-# zvm_after_init() {
-#     if command -v fzf &> /dev/null; then
-#         source <(fzf --zsh)
-#     fi
-#     source_if_exists /etc/zsh_command_not_found
-#
-#     if source_if_exists /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh; then
-#         ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=244'
-#     fi
-# }
-
 if command -v fzf &> /dev/null; then
     source <(fzf --zsh)
 fi
 source_if_exists /etc/zsh_command_not_found
 
-if source_if_exists /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh; then
+if source_if_exists /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh; then
     ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=244'
 fi
 
-# source_if_exists ~/.plugins/zsh-vi-mode/zsh-vi-mode.plugin.zsh
-
 # zsh-syntax-highlighting plugin should be last
-if source_if_exists /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh; then
+if source_if_exists /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh; then
     ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
     ZSH_HIGHLIGHT_STYLES[default]=none
     ZSH_HIGHLIGHT_STYLES[unknown-token]=underline
