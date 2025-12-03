@@ -7,23 +7,6 @@ git clone https://github.com/mm4rks/dotfiles ~/.dotfiles
 cd ~/.dotfiles && chmod +x setup.sh && ./setup.sh
 ```
 
-This will install:
-
-### Apt Packages
-* `curl`
-* `git`
-* `unzip`
-* `fontconfig`
-* `stow`
-* `fzf`
-* `pipx`
-* `zsh-syntax-highlighting`
-* `zsh-autosuggestions`
-* `command-not-found`
-
-### Pipx Packages
-* `argcomplete`
-
 ## Remove symlinks
 
 ```bash
