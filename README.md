@@ -10,7 +10,7 @@ cd ~/.dotfiles && chmod +x setup.sh && ./setup.sh
 ## SSH
 
 ```bash
-git clone git@github.com:mm4rks/dotfiles.git
+git clone git@github.com:mm4rks/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles && chmod +x setup.sh && ./setup.sh
 ```
 
