@@ -1,6 +1,7 @@
 # Installation
 
 ## HTTPS
+
 ```bash
 git clone https://github.com/mm4rks/dotfiles ~/.dotfiles
 cd ~/.dotfiles && chmod +x setup.sh && ./setup.sh
@@ -8,6 +9,10 @@ cd ~/.dotfiles && chmod +x setup.sh && ./setup.sh
 
 ## SSH
 
+```bash
+git clone git@github.com:mm4rks/dotfiles.git
+cd ~/.dotfiles && chmod +x setup.sh && ./setup.sh
+```
 
 ## Box setup
 
