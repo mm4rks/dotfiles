@@ -72,6 +72,8 @@ bindkey "^X^E" edit-command-line                 # Ctrl+X, Ctrl+E to open editor
 bindkey '^N' forward-word
 bindkey '^A' beginning-of-line
 bindkey '^E' end-of-line
+# Force the correct binding for autosuggestion acceptance
+bindkey '^F' autosuggest-accept
 
 source ~/.zsh_alias.sh
 source ~/.zsh_docker.sh

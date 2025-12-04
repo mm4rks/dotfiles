@@ -1,5 +1,10 @@
 export PATH=$PATH:$HOME/.local/bin
 
+# --- Go Environment Setup ---
+export GOPATH="$HOME/go"
+export PATH="$PATH:$GOPATH/bin"
+export XDG_CONFIG_HOME="$HOME/.config"
+
 # Set default editor: prefer nvim, but fall back to vim
 if command -v nvim &> /dev/null; then
     export EDITOR='nvim'

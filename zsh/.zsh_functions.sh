@@ -100,7 +100,15 @@ edit-in-popup() {
   local TFILE=$(mktemp -t zshXXXXXX.sh)
   echo "$BUFFER" > "$TFILE"
 
-  tmux display-popup -B -E nvim "$TFILE"
+  local width=80
+  local height=80
+
+  tmux display-popup -B \
+	  -x "100%-80" \
+	  -y "48%" \
+	  -h 15 \
+	  -w 70 \
+	  -E nvim "$TFILE"
 
   BUFFER=$(cat "$TFILE")
   rm "$TFILE"
