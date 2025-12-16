@@ -18,7 +18,7 @@ setopt pushdignoredups      # Don't push directories that are already on the sta
 WORDCHARS=${WORDCHARS//\/} # Slashes and minus separate words
 
 # --- History Configuration ----------------------------------------------------
-HISTFILE=~/.zsh_history     # Set path for the history file.
+HISTFILE=~/my_data/.zsh_history     # Set path for the history file.
 HISTSIZE=20000              # Max number of commands to keep in memory.
 SAVEHIST=20000              # Max number of commands to save to the file.
 setopt appendhistory        # Append to history, don't overwrite.
