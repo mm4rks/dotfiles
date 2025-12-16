@@ -7,8 +7,8 @@
   border: none;
   border-radius: 0;
   min-height: 0;
-  font-family: 'CaskaydiaMono Nerd Font Mono';
-  font-size: 18px;
+  font-family: 'JetBrainsMono Nerd Font';
+  font-size: 12px;
 }
 
 .modules-left {
@@ -17,10 +17,6 @@
 
 .modules-right {
   margin-right: 8px;
-}
-
-#workspaces {
-  font-size: 12;
 }
 
 #workspaces button {
@@ -57,7 +53,7 @@
 }
 
 #custom-expand-icon {
-  margin-right: 20px;
+  margin-right: 18px;
 }
 
 tooltip {
@@ -65,12 +61,11 @@ tooltip {
 }
 
 #custom-update {
-  font-size: 14px;
+  font-size: 10px;
 }
 
 #clock {
   margin-left: 8.75px;
-  font-size: 14;
 }
 
 .hidden {
@@ -86,4 +81,3 @@ tooltip {
 #custom-screenrecording-indicator.active {
   color: #a55555;
 }
-
