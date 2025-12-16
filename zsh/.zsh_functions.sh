@@ -96,28 +96,21 @@ function genhosts() {
     fi
 } # Description: Generate and append to /etc/hosts using netexec.
 
-edit-in-popup() {
+edit-command-line-tmux-float() {
   local TFILE=$(mktemp -t zshXXXXXX.sh)
   echo "$BUFFER" > "$TFILE"
 
-  local width=80
-  local height=80
-
-  tmux display-popup -B \
-	  -x "100%-80" \
-	  -y "48%" \
-	  -h 15 \
-	  -w 70 \
-	  -E nvim "$TFILE"
+  if [[ -n "$TMUX" ]]; then
+    tmux display-popup -E "${EDITOR:-nvim} \"$TFILE\""
+  else
+    "${EDITOR:-nvim}" "$TFILE"
+  fi
 
   BUFFER=$(cat "$TFILE")
   rm "$TFILE"
 
   zle redisplay
-} # Description: Edit the current command in a tmux popup
+} # Description: Edit the current command in a floating tmux popup or external editor.
 
 # Create a new widget from the function
-zle -N edit-in-popup
-
-# Bind it to a key (e.g., Ctrl-x)
-bindkey '^x' edit-in-popup
+zle -N edit-command-line-tmux-float

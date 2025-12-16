@@ -2,11 +2,10 @@ source_if_exists() {
     [ -f "$1" ] && source "$1"
 } # Helper function to source a file only if it exists.
 
-zvm_config() {
-    ZVM_SYSTEM_CLIPBOARD_ENABLED=true
-    ZVM_CLIPBOARD_COPY_CMD='xclip -selection clipboard'
-    ZVM_CLIPBOARD_PASTE_CMD='xclip -selection clipboard -o'
-} # Define zsh-vi-mode config before sourcing the plugin.
+if command -v fzf &> /dev/null; then
+    source <(fzf --zsh)
+fi
+source_if_exists /etc/zsh_command_not_found
 
 # zvm_after_init() {
 #     if command -v fzf &> /dev/null; then

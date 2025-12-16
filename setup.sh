@@ -19,7 +19,7 @@ SSH_PUBLIC_KEY=""  # e.g., "ssh-rsa AAAA...your-public-key-string...user@host"
 # --- Required APT Packages ---
 # These packages will be installed.
 REQUIRED_APT_PACKAGES=(
-    curl git unzip fontconfig stow jq make cmake 
+    curl git unzip fontconfig stow jq make cmake zsh-completions 
     zsh-syntax-highlighting zsh-autosuggestions command-not-found eza
     ripgrep tmux python3 python3-pip python3-venv tree xclip bat pipx
 )
@@ -199,6 +199,21 @@ install_gemini() {
     return 0
 }
 
+install_pure_prompt() {
+    if ! command -v pure-prompt &>/dev/null; then
+        if ask_to_proceed "Do you want to install pure-prompt for zsh?"; then
+            ensure_nodejs_installed || return 1
+            echo -e "\n${STEP} Installing pure-prompt..."
+            if ! sudo npm install -g "pure-prompt"; then
+                echo -e "${ERROR} Failed to install pure-prompt."
+                return 1
+            fi
+            echo -e "${INFO} pure-prompt installed successfully."
+        fi
+    fi
+    return 0
+}
+
 install_pipx_packages() {
     if ! command -v pipx &>/dev/null; then
         echo -e "\n${STEP} Installing pipx..."
@@ -269,11 +284,6 @@ install_neovim() {
 stow_package() {
     local pkg="$1"
     local stow_output
-
-    if [ -z "$pkg" ]; then
-        echo -e "${WARN} stow_package called with empty package name. Skipping."
-        return 1
-    fi
 
     local source_dir="${DOTFILES_DIR}/${pkg}"
     if [ ! -d "$source_dir" ]; then
@@ -514,6 +524,7 @@ main() {
     fi
 
     install_required_packages
+    install_pure_prompt
     install_docker
     install_code_analysis_tools
 
