@@ -139,16 +139,16 @@ install_fzf_from_github() {
 }
 
 install_neovim() {
-    if command -v nvim &>/dev/null; then
-        echo -e "${INFO} Neovim is already installed at '$(command -v nvim)''. Skipping installation."
-        return
-    fi
-    
-    echo -e "\n${STEP} Installing Neovim..."
+    echo -e "\n${STEP} Installing/updating to the latest Neovim AppImage..."
     mkdir -p "$NVIM_INSTALL_DIR"
-    curl --fail --location -o "$NVIM_APPIMAGE_PATH" "$NVIM_APPIMAGE_URL"
-    chmod u+x "$NVIM_APPIMAGE_PATH"
-    echo -e "${INFO} Neovim installed to ${NVIM_APPIMAGE_PATH}"
+    if curl --fail --location -o "$NVIM_APPIMAGE_PATH" "$NVIM_APPIMAGE_URL"; then
+        chmod u+x "$NVIM_APPIMAGE_PATH"
+        echo -e "${INFO} Neovim installed/updated to ${NVIM_APPIMAGE_PATH}"
+        echo -e "${WARN} Make sure '$NVIM_INSTALL_DIR' is at the beginning of your PATH to use this version."
+    else
+        echo -e "${ERROR} Failed to download Neovim AppImage."
+        return 1
+    fi
 }
 
 install_pipx_tldr() {
@@ -291,7 +291,7 @@ main() {
     echo -e "\n${GREEN}--- Setup Complete ---${NC}"
     echo -e "${YELLOW}Next Steps:${NC}"
     echo -e "1. ${YELLOW}IMPORTANT:${NC} Log out and log back in to apply shell changes."
-    echo -e "2. Run \"${BLUE}nvim${NC}\" and then execute \":PackerSync\" to install Neovim plugins."
+    echo -e "2. Run \"${BLUE}nvim${NC}\" and then execute \":Lazy install\" to install Neovim plugins."
 }
 
 main
