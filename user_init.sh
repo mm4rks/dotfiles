@@ -16,8 +16,9 @@
 set -eo pipefail # Exit on error and on pipe failures
 
 # --- Configuration ---
-# The script will be inside the dotfiles repo, so we can get the dir dynamically.
-DOTFILES_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+# Resolve the DOTFILES_DIR, following symlinks to find the script's true location.
+SCRIPT_PATH=$(readlink -f "${BASH_SOURCE[0]}")
+DOTFILES_DIR=$(dirname "$SCRIPT_PATH")
 
 # !!! IMPORTANT !!!
 # Replace the placeholder with your actual public SSH key.
@@ -173,6 +174,13 @@ install_pipx_tldr() {
 
 stow_dotfiles() {
     echo -e "\n${STEP} Stowing dotfiles..."
+
+    # Back up existing .zshrc if it's a real file to prevent stow conflicts.
+    if [ -f "$HOME/.zshrc" ] && [ ! -L "$HOME/.zshrc" ]; then
+        echo -e "${INFO} Backing up existing .zshrc to .zshrc.bak..."
+        mv "$HOME/.zshrc" "$HOME/.zshrc.bak"
+    fi
+
     for pkg in "${PACKAGES_TO_STOW[@]}"; do
         local source_dir="${DOTFILES_DIR}/${pkg}"
         if [ ! -d "$source_dir" ]; then
