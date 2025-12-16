@@ -43,7 +43,7 @@ PACKAGES_TO_STOW=(
 # --- Neovim Configuration ---
 NVIM_INSTALL_DIR="$HOME/.local/bin"
 NVIM_APPIMAGE_PATH="$NVIM_INSTALL_DIR/nvim"
-NVIM_APPIMAGE_URL="https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.appimage"
+
 
 # --- Colors and Logging ---
 RED='\033[0;31m'
@@ -140,8 +140,18 @@ install_fzf_from_github() {
 
 install_neovim() {
     echo -e "\n${STEP} Installing/updating to the latest Neovim AppImage..."
+    
+    local latest_url
+    latest_url=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest | jq -r '.assets[] | select(.name == "nvim-linux64.appimage") | .browser_download_url')
+
+    if [ -z "$latest_url" ] || [ "$latest_url" == "null" ]; then
+        echo -e "${ERROR} Could not determine the latest Neovim download URL from GitHub API."
+        return 1
+    fi
+
+    echo -e "${INFO} Downloading Neovim from: $latest_url"
     mkdir -p "$NVIM_INSTALL_DIR"
-    if curl --fail --location -o "$NVIM_APPIMAGE_PATH" "$NVIM_APPIMAGE_URL"; then
+    if curl --fail --location -o "$NVIM_APPIMAGE_PATH" "$latest_url"; then
         chmod u+x "$NVIM_APPIMAGE_PATH"
         echo -e "${INFO} Neovim installed/updated to ${NVIM_APPIMAGE_PATH}"
         echo -e "${WARN} Make sure '$NVIM_INSTALL_DIR' is at the beginning of your PATH to use this version."
