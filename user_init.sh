@@ -43,7 +43,7 @@ PACKAGES_TO_STOW=(
 # --- Neovim Configuration ---
 NVIM_INSTALL_DIR="$HOME/.local/bin"
 NVIM_APPIMAGE_PATH="$NVIM_INSTALL_DIR/nvim"
-NVIM_APPIMAGE_URL="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage"
+NVIM_APPIMAGE_URL="https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.appimage"
 
 # --- Colors and Logging ---
 RED='\033[0;31m'
