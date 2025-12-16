@@ -1,4 +1,5 @@
 alias d='dirs -v | head -5'
+alias 0='cd -0'
 alias 1='cd -'
 alias 2='cd -2'
 alias 3='cd -3'
