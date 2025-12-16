@@ -26,8 +26,8 @@ SSH_TARGET_USER="$USER"
 
 # --- Packages ---
 REQUIRED_APT_PACKAGES=(
-    curl git unzip stow jq make cmake zsh-completions
-    zsh-syntax-highlighting zsh-autosuggestions command-not-found eza
+    curl git unzip stow jq make cmake
+    zsh-syntax-highlighting zsh-autosuggestions command-not-found
     ripgrep tmux python3 python3-pip python3-venv xclip bat pipx
     fd-find openssh-server zsh
 )
