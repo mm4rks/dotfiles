@@ -142,7 +142,7 @@ install_neovim() {
     echo -e "\n${STEP} Installing/updating to the latest Neovim AppImage..."
     
     local latest_url
-    latest_url=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest | jq -r '.assets[] | select(.name == "nvim-linux64.appimage") | .browser_download_url')
+    latest_url=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest | jq -r '.assets[] | select(.name == "nvim-linux-x86_64.appimage") | .browser_download_url')
 
     if [ -z "$latest_url" ] || [ "$latest_url" == "null" ]; then
         echo -e "${ERROR} Could not determine the latest Neovim download URL from GitHub API."
