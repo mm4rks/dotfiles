@@ -38,6 +38,7 @@ PACKAGES_TO_STOW=(
     "tmux"
     "git"
     "nvim"
+    "eza"
 )
 
 # --- Neovim Configuration ---
@@ -137,6 +138,46 @@ install_fzf_from_github() {
     echo -e "${INFO} fzf installed successfully."
     return 0
 }
+
+install_eza_from_github() {
+    if command -v eza &>/dev/null; then
+        echo -e "${INFO} eza is already installed. Skipping."
+        return 0
+    fi
+
+    echo -e "\n${STEP} Installing eza from GitHub..."
+
+    local TEMP_DIR
+    TEMP_DIR="$(mktemp -d)"
+    trap 'rm -rf "$TEMP_DIR"' RETURN # Cleanup on function return
+
+    local EZA_LATEST_URL
+    EZA_LATEST_URL=$(curl -s https://api.github.com/repos/eza-community/eza/releases/latest | jq -r '.assets[] | select(.name | endswith("x86_64-unknown-linux-gnu.zip")) | .browser_download_url')
+
+    if [ -z "$EZA_LATEST_URL" ]; then
+        echo -e "${WARN} Could not find the latest eza release URL. Skipping installation."
+        return 1
+    fi
+
+    if ! curl --fail --location -o "${TEMP_DIR}/eza.zip" "$EZA_LATEST_URL"; then
+        echo -e "${WARN} Failed to download eza. Skipping installation."
+        return 1
+    fi
+
+    if ! unzip -q "${TEMP_DIR}/eza.zip" -d "$TEMP_DIR"; then
+        echo -e "${WARN} Failed to extract eza. Skipping installation."
+        return 1
+    fi
+
+    if ! sudo mv "${TEMP_DIR}/eza" /usr/local/bin/; then
+        echo -e "${WARN} Failed to move eza binary to /usr/local/bin/. Skipping installation."
+        return 1
+    fi
+
+    echo -e "${INFO} eza installed successfully."
+    return 0
+}
+
 
 install_neovim() {
     echo -e "\n${STEP} Installing/updating to the latest Neovim AppImage..."
@@ -313,6 +354,7 @@ main() {
     install_required_packages
     create_symlinks
     install_fzf_from_github
+    install_eza_from_github
     install_neovim
     install_pipx_tldr
     install_netexec_with_pipx

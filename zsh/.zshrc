@@ -59,8 +59,8 @@ _fix_cursor() {
 ZLE_CURSOR_BLINK=0
 
 precmd_functions+=(_fix_cursor)
-PROMPT='%F{242}%m:%~%f
-%(?.%F{white}.%F{red})%(#.#.$)%f '
+PROMPT='%(?.%F{white}.%F{red})%(#.#.$)%f '
+RPROMPT='%F{blue}%~%f'
 autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey '^R' history-incremental-search-backward # Ctrl+R for history search.
@@ -82,7 +82,7 @@ source ~/.zsh_phpenv.sh
 
 
 # Automatically attach to a tmux session on terminal start
-# if [[ -z "$TMUX" && "$-" == *i* ]]; then
-#     SESSION_NAME="main"
-#     tmux new-session -A -s "$SESSION_NAME"
-# fi
+if [[ -z "$TMUX" && "$-" == *i* ]]; then
+    SESSION_NAME="main"
+    tmux new-session -A -s "$SESSION_NAME"
+fi
