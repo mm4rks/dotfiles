@@ -69,8 +69,14 @@ trap script_exit_handler EXIT
 # --- Installation Functions ---
 
 install_required_packages() {
-    echo -e "\n${STEP} Updating package list and installing required packages..."
+    echo -e "\n${STEP} Updating package list and upgrading system with parrot-upgrade..."
     sudo apt-get update -q
+    if ! sudo parrot-upgrade -y; then
+        echo -e "${ERROR} Failed to perform full system upgrade with parrot-upgrade. Please check the output above."
+        exit 1
+    fi
+    echo -e "${INFO} System upgraded with parrot-upgrade."
+    echo -e "${STEP} Installing required packages..."
     if ! sudo apt-get install -q -y "${REQUIRED_APT_PACKAGES[@]}"; then
         echo -e "${ERROR} Failed to install some required packages with apt-get. Please check the output above."
         exit 1
@@ -231,17 +237,12 @@ install_netexec_with_pipx() {
 
     pipx ensurepath # Ensure pipx path is in PATH
 
-    if command -v netexec &>/dev/null; then
-        echo -e "${INFO} NetExec is already installed. Skipping."
-        return 0
-    fi
-
-    echo -e "\n${STEP} Installing NetExec with pipx..."
-    if ! pipx install "git+https://github.com/Pennyw0rth/NetExec"; then
+    echo -e "\n${STEP} Installing/Updating NetExec with pipx..."
+    if ! pipx install --force "git+https://github.com/Pennyw0rth/NetExec"; then
         echo -e "${WARN} Failed to install NetExec with pipx."
         return 1
     fi
-    echo -e "${INFO} NetExec installed."
+    echo -e "${INFO} NetExec installed/updated."
 }
 
 stow_dotfiles() {
