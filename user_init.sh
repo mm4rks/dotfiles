@@ -182,6 +182,27 @@ install_pipx_tldr() {
     echo -e "${INFO} tldr installed."
 }
 
+install_netexec_with_pipx() {
+    if ! command -v pipx &>/dev/null; then
+        echo -e "${ERROR} pipx is not installed. Please add 'pipx' to REQUIRED_APT_PACKAGES."
+        return 1
+    fi
+
+    pipx ensurepath # Ensure pipx path is in PATH
+
+    if command -v netexec &>/dev/null; then
+        echo -e "${INFO} NetExec is already installed. Skipping."
+        return 0
+    fi
+
+    echo -e "\n${STEP} Installing NetExec with pipx..."
+    if ! pipx install "git+https://github.com/Pennyw0rth/NetExec"; then
+        echo -e "${WARN} Failed to install NetExec with pipx."
+        return 1
+    fi
+    echo -e "${INFO} NetExec installed."
+}
+
 stow_dotfiles() {
     echo -e "\n${STEP} Stowing dotfiles..."
 
@@ -294,6 +315,7 @@ main() {
     install_fzf_from_github
     install_neovim
     install_pipx_tldr
+    install_netexec_with_pipx
     configure_ssh
     stow_dotfiles
     change_shell_to_zsh
