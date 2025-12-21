@@ -49,8 +49,8 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 
 # Tools
-alias d='docker'
-alias r='rails'
+# alias d='docker'
+# alias r='rails'
 n() { if [ "$#" -eq 0 ]; then nvim .; else nvim "$@"; fi; }
 
 # Git

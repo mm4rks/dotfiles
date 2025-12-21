@@ -19,9 +19,9 @@ SSH_PUBLIC_KEY=""  # e.g., "ssh-rsa AAAA...your-public-key-string...user@host"
 # --- Required APT Packages ---
 # These packages will be installed.
 REQUIRED_APT_PACKAGES=(
-    curl git unzip fontconfig stow jq
-    zsh-syntax-highlighting zsh-autosuggestions command-not-found zsh-completions
-    ripgrep tmux python3 python3-pip python3-venv tree xclip bat
+    curl git unzip fontconfig stow jq make cmake zsh-completions 
+    zsh-syntax-highlighting zsh-autosuggestions command-not-found eza
+    ripgrep tmux python3 python3-pip python3-venv tree xclip bat pipx
 )
 
 CORE_PACKAGES_TO_STOW=(
@@ -29,7 +29,6 @@ CORE_PACKAGES_TO_STOW=(
     "tmux"
     "git"
     "zsh_plugins"
-    "dockerfiles"
 )
 
 # --- Colors and Logging ---

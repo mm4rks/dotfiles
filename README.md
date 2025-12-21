@@ -1,28 +1,39 @@
 # Installation
 
-This setup script will install necessary packages and symlink the configuration files into your home directory.
+## HTTPS
 
 ```bash
 git clone https://github.com/mm4rks/dotfiles ~/.dotfiles
 cd ~/.dotfiles && chmod +x setup.sh && ./setup.sh
 ```
 
-This will install:
+## SSH
 
-### Apt Packages
-* `curl`
-* `git`
-* `unzip`
-* `fontconfig`
-* `stow`
-* `fzf`
-* `pipx`
-* `zsh-syntax-highlighting`
-* `zsh-autosuggestions`
-* `command-not-found`
+```bash
+git clone git@github.com:mm4rks/dotfiles.git ~/.dotfiles
+cd ~/.dotfiles && chmod +x setup.sh && ./setup.sh
+```
 
-### Pipx Packages
-* `argcomplete`
+## Box setup
+
+```bash
+chsh -s $(which zsh)
+```
+## change hostname
+
+```bash
+NEW_NAME="new-server-name"; OLD_NAME=$(hostnamectl status --static); \
+echo "Changing hostname to $NEW_NAME..."; \
+sudo hostnamectl set-hostname "$NEW_NAME" && \
+sudo sed -i "s/127\.0\.1\.1[[:space:]]\+$OLD_NAME/127.0.1.1 $NEW_NAME/g" /etc/hosts && \
+echo "Verification:" && hostnamectl status | grep "Static hostname" && grep "127.0.1.1" /etc/hosts
+```
+
+## Generate SSH Key
+
+```bash
+ssh-keygen -t ed25519
+```
 
 ## Remove symlinks
 
