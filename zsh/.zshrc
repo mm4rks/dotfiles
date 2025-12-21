@@ -1,3 +1,15 @@
+source_if_exists() {
+    [ -f "$1" ] && source "$1"
+} # Helper function to source a file only if it exists.
+
+os_detect() {
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        echo "$ID"
+    else
+        echo "unknown"
+    fi
+}
 # --- General Shell Options ----------------------------------------------------
 setopt interactivecomments  # Allow comments in the interactive shell.
 setopt promptsubst          # Enable command substitution in the prompt.
@@ -85,6 +97,14 @@ if command -v zoxide &> /dev/null; then
 fi
 
 # Enable syntax highlighting for zsh
-if [ -f /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]; then
-  source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-fi
+source_syntax_highlighting() {
+    local os
+    os=$(os_detect)
+
+    if [[ "$os" == "arch" ]]; then
+        source_if_exists /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+    elif [[ "$os" == "debian" || "$os" == "parrot" ]]; then
+        source_if_exists /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+    fi
+}
+source_syntax_highlighting
