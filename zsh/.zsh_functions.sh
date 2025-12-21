@@ -117,12 +117,11 @@ zle -N edit-command-line-tmux-float
 
 # Smart C-d for tmux detach
 smart_ctrl_d() {
-  if [[ -z "$BUFFER" ]]; then
-    # If the buffer is empty, send a custom escape code to tmux
-    # We use OSC 50, which is for setting terminal features
-    print -Pn "\e]50;tmux_detach\a"
+  if [[ -z "$BUFFER" && -n "$TMUX" ]]; then
+    # If the buffer is empty and we are in a tmux session, detach
+    tmux detach-client
   else
-    # If the buffer is not empty, use the default C-d behavior
+    # If the buffer is not empty, or we are not in tmux, use the default C-d behavior
     zle delete-char-or-list
   fi
 }
