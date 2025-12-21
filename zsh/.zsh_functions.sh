@@ -114,21 +114,3 @@ edit-command-line-tmux-float() {
 
 # Create a new widget from the function
 zle -N edit-command-line-tmux-float
-
-# Smart C-d for tmux detach
-smart_ctrl_d() {
-  echo "smart_ctrl_d: TMUX='$TMUX', BUFFER='$BUFFER'" >> /tmp/smart_d.log
-  if [[ -z "$BUFFER" && -n "$TMUX" ]]; then
-    # If the buffer is empty and we are in a tmux session, detach
-    tmux detach-client
-  else
-    # If the buffer is not empty, or we are not in tmux, use the default C-d behavior
-    zle delete-char-or-list
-  fi
-}
-
-# Create a new widget for our function
-zle -N smart_ctrl_d
-
-# Bind C-d to our new widget
-bindkey '^D' smart_ctrl_d
