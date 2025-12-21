@@ -39,6 +39,30 @@ setopt sharehistory         # Share history instantly between running shells.
 setopt histignoredups       # Don't save duplicate consecutive commands.
 setopt histignorespace      # Don't save commands that start with a space.
 setopt histverify           # Show history expansions before executing them.
+# --- Smart detach ---
+setopt ignore_eof
+
+tmux_smart_detach() {
+  if [[ -z "$BUFFER" ]]; then
+    if [[ -n "$TMUX" ]]; then
+      # INSIDE TMUX: Detach if at top-level shell
+      if [[ "$SHLVL" -le 2 ]]; then
+        tmux detach
+      else
+        builtin exit
+      fi
+    else
+      # NOT IN TMUX: Close the shell normally
+      builtin exit
+    fi
+  else
+    # LINE NOT EMPTY: Delete character
+    zle delete-char-or-list
+  fi
+}
+
+zle -N tmux_smart_detach
+bindkey '^D' tmux_smart_detach
 
 # --- Completion System --------------------------------------------------------
 # Add Docker completions to fpath
