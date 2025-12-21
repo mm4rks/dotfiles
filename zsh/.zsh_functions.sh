@@ -117,6 +117,7 @@ zle -N edit-command-line-tmux-float
 
 # Smart C-d for tmux detach
 smart_ctrl_d() {
+  echo "smart_ctrl_d: TMUX='$TMUX', BUFFER='$BUFFER'" >> /tmp/smart_d.log
   if [[ -z "$BUFFER" && -n "$TMUX" ]]; then
     # If the buffer is empty and we are in a tmux session, detach
     tmux detach-client
