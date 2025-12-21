@@ -264,6 +264,36 @@ install_pure_prompt_from_github() {
     echo -e "${INFO} Pure Prompt cloned successfully."
 }
 
+install_choose() {
+    echo -e "\n${STEP} Installing Rust and 'choose'..."
+
+    # Install Rust (rustup) if cargo is not available
+    if ! command -v cargo &>/dev/null; then
+        echo -e "${INFO} cargo not found. Installing Rust..."
+        # Use -y for non-interactive installation
+        if ! curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y; then
+            echo -e "${ERROR} Failed to install Rust."
+            return 1
+        fi
+        # Add cargo to PATH for the current script's execution
+        source "$HOME/.cargo/env"
+    else
+        echo -e "${INFO} cargo is already installed."
+    fi
+
+    # Install 'choose' using cargo
+    if ! command -v choose &>/dev/null; then
+        echo -e "${INFO} Installing 'choose' with cargo..."
+        if ! cargo install choose; then
+            echo -e "${WARN} Failed to install 'choose' with cargo."
+            return 1
+        fi
+        echo -e "${INFO} 'choose' installed successfully."
+    else
+        echo -e "${INFO} 'choose' is already installed. Skipping."
+    fi
+}
+
 stow_dotfiles() {
     echo -e "\n${STEP} Stowing dotfiles..."
 
@@ -433,6 +463,7 @@ main() {
     install_pipx_tldr
     install_netexec_with_pipx
     install_pure_prompt_from_github
+    install_choose
     configure_ssh
     stow_dotfiles
     configure_pure_prompt
@@ -440,9 +471,7 @@ main() {
     change_shell_to_zsh
 
     echo -e "\n${GREEN}--- Setup Complete ---${NC}"
-    echo -e "${YELLOW}Next Steps:${NC}"
     echo -e "1. ${YELLOW}IMPORTANT:${NC} Log out and log back in to apply shell changes."
-    echo -e "2. Run \"${BLUE}nvim${NC}\" and then execute \":Lazy install\" to install Neovim plugins."
 }
 
 main
