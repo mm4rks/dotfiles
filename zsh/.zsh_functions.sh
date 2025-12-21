@@ -37,25 +37,25 @@ function mcd() {
 
 function sshportfwd() {
     cat <<-EOF
-	\033[1;36mSSH Port Forwarding Information\033[0m
+	[1;36mSSH Port Forwarding Information[0m
 	----------------------------------
 
-	\033[1;32mLocal Port Forwarding (-L):\033[0m
+	[1;32mLocal Port Forwarding (-L):[0m
 	Usage: ssh -L <local_port>:<destination_host>:<destination_port> user@ssh_server
 	[+] Example: ssh -L 8080:localhost:80 user@remote_host
 	[+] Explanation: Forwards connections from your local port 8080 to port 80 on the remote host.
 
-	\033[1;34mRemote Port Forwarding (-R):\033[0m
+	[1;34mRemote Port Forwarding (-R):[0m
 	Usage: ssh -R <remote_port>:<destination_host>:<destination_port> user@ssh_server
 	[+] Example: ssh -R 8080:localhost:80 user@remote_host
 	[+] Explanation: Forwards connections from port 8080 on the remote server to port 80 on your local machine.
 
-	\033[1;35mDynamic Port Forwarding (SOCKS Proxy):\033[0m
+	[1;35mDynamic Port Forwarding (SOCKS Proxy):[0m
 	Usage: ssh -D <local_port> user@ssh_server
 	[+] Example: ssh -D 1080 user@remote_host
 	[+] Explanation: Creates a SOCKS proxy on local port 1080 that tunnels traffic through the SSH server.
 
-	\033[1;36mNotes:\033[0m
+	[1;36mNotes:[0m
 	[i] Local (-L): Your Machine -> SSH Server -> Destination
 	[i] Remote (-R): Remote Machine -> SSH Server -> Your Machine
 	[i] Dynamic (-D): Your Machine (as proxy) -> SSH Server -> Anywhere
@@ -114,3 +114,21 @@ edit-command-line-tmux-float() {
 
 # Create a new widget from the function
 zle -N edit-command-line-tmux-float
+
+# Smart C-d for tmux detach
+smart_ctrl_d() {
+  if [[ -z "$BUFFER" ]]; then
+    # If the buffer is empty, send a custom escape code to tmux
+    # We use OSC 50, which is for setting terminal features
+    print -Pn "\e]50;tmux_detach\a"
+  else
+    # If the buffer is not empty, use the default C-d behavior
+    zle delete-char-or-list
+  fi
+}
+
+# Create a new widget for our function
+zle -N smart_ctrl_d
+
+# Bind C-d to our new widget
+bindkey '^D' smart_ctrl_d

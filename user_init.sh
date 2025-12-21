@@ -237,12 +237,27 @@ install_netexec_with_pipx() {
 
     pipx ensurepath # Ensure pipx path is in PATH
 
-    echo -e "\n${STEP} Installing/Updating NetExec with pipx..."
-    if ! pipx install --force "git+https://github.com/Pennyw0rth/NetExec"; then
-        echo -e "${WARN} Failed to install NetExec with pipx."
-        return 1
+    echo -e "\n${STEP} Ensuring NetExec is up to date with pipx..."
+
+    # Check if NetExec is already installed
+    if pipx list --json | jq -e '.venvs[] | select(.app_paths[] | .app == "netexec")' &>/dev/null; then
+        echo -e "${INFO} NetExec is already installed. Attempting to upgrade..."
+        if ! pipx upgrade netexec; then
+            echo -e "${WARN} Failed to upgrade NetExec with pipx. Attempting a forceful reinstall to ensure latest version."
+            # Fallback to forceful reinstall if upgrade fails
+            if ! pipx install --force "git+https://github.com/Pennyw0rth/NetExec"; then
+                echo -e "${ERROR} Failed to force reinstall NetExec with pipx."
+                return 1
+            fi
+        fi
+    else
+        echo -e "${INFO} NetExec not found. Installing..."
+        if ! pipx install "git+https://github.com/Pennyw0rth/NetExec"; then
+            echo -e "${ERROR} Failed to install NetExec with pipx."
+            return 1
+        fi
     fi
-    echo -e "${INFO} NetExec installed/updated."
+    echo -e "${INFO} NetExec installation/update process completed."
 }
 
 install_pure_prompt_from_github() {
