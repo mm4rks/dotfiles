@@ -22,8 +22,7 @@ if command -v fzf &> /dev/null; then
     source <(fzf --zsh)
 fi
 source_if_exists /etc/zsh_command_not_found
-
-if source_if_exists /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh; then
+if source_if_exists /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh; then
     ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=244'
 fi
 

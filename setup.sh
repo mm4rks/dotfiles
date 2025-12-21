@@ -18,10 +18,18 @@ SSH_PUBLIC_KEY=""  # e.g., "ssh-rsa AAAA...your-public-key-string...user@host"
 
 # --- Required APT Packages ---
 # These packages will be installed.
+REQUIRED_PACMAN_PACKAGES=(
+    curl git unzip fontconfig stow jq make cmake zsh-completions
+    zsh-syntax-highlighting zsh-autosuggestions command-not-found eza
+    ripgrep tmux python python-pip python-pipx tree xclip bat git-delta choose
+)
+
+# ...
+
 REQUIRED_APT_PACKAGES=(
     curl git unzip fontconfig stow jq make cmake zsh-completions 
     zsh-syntax-highlighting zsh-autosuggestions command-not-found eza
-    ripgrep tmux python3 python3-pip python3-venv tree xclip bat pipx
+    ripgrep tmux python3 python3-pip python3-venv tree xclip bat pipx git-delta choose
 )
 
 CORE_PACKAGES_TO_STOW=(
@@ -70,6 +78,15 @@ install_required_packages() {
     sudo apt-get update -q
     if ! sudo apt-get install -q -y "${REQUIRED_APT_PACKAGES[@]}"; then
         echo -e "${ERROR} Failed to install some required packages with apt-get. Please check the output above."
+        exit 1
+    fi
+}
+
+install_required_packages_arch() {
+    echo -e "\n${STEP} Updating package list and installing required packages for Arch Linux..."
+    sudo pacman -Syu --noconfirm
+    if ! sudo pacman -S --noconfirm --needed "${REQUIRED_PACMAN_PACKAGES[@]}"; then
+        echo -e "${ERROR} Failed to install some required packages with pacman. Please check the output above."
         exit 1
     fi
 }
@@ -523,7 +540,17 @@ main() {
         exit 1
     fi
 
-    install_required_packages
+    if [ -f /etc/os-release ]; then
+        . /etc/os-release
+        if [ "$ID" = "arch" ]; then
+            install_required_packages_arch
+        else
+            install_required_packages
+        fi
+    else
+        install_required_packages
+    fi
+
     install_pure_prompt
     install_docker
     install_code_analysis_tools

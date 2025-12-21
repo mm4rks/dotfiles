@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Anki
+Exec=/home/user/.dotfiles/hypr/.config/hypr/run-anki.sh
+Type=Application
+Categories=Office;Education;
+Icon=anki
