@@ -1,0 +1,13 @@
+# Profile for docked state with an external monitor.
+# This profile is activated when both the internal display (eDP-1)
+# and an external display (DP-3) are connected.
+profile docked {
+	output "eDP-1" disable
+	output "DP-3" enable mode 3440x1440 position 2000,0 scale 1
+}
+
+# Profile for laptop only.
+# This profile is activated when only the internal display (eDP-1) is connected.
+profile laptop {
+	output "eDP-1" enable mode 3840x2160@60 position 0,0 scale 2
+}
