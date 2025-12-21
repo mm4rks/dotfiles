@@ -39,6 +39,7 @@ PACKAGES_TO_STOW=(
     "git"
     "nvim"
     "eza"
+    "vivid"
 )
 
 # --- Neovim Configuration ---
