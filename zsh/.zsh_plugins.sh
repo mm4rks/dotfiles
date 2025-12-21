@@ -34,6 +34,7 @@ ZSH_SYNTAX_HIGHLIGHTING_PATHS=(
     /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
     /usr/local/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
     "$HOME/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+    /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 )
 
 for path in "${ZSH_SYNTAX_HIGHLIGHTING_PATHS[@]}"; do
