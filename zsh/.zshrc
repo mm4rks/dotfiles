@@ -67,7 +67,6 @@ zle -N edit-command-line
 bindkey '^R' history-incremental-search-backward # Ctrl+R for history search.
 bindkey ' ' magic-space                          # Space performs history expansion (e.g., '!!').
 bindkey '^[[Z' undo                              # Shift+Tab to undo. TODO change this to undo in insert mode only
-bindkey -s -M vicmd '^?' 'ciw'                   # Backspace executes 'change inner word'.
 bindkey '^x^e' edit-command-line-tmux-float                 # Ctrl+X, Ctrl+E to open editor.
 bindkey '^N' forward-word
 bindkey '^A' beginning-of-line
