@@ -8,7 +8,7 @@ setopt numericglobsort      # Sort filenames with numbers naturally (e.g., 1, 2,
 
 # --- Directory & Navigation ---------------------------------------------------
 DIRSTACKSIZE=8              # Set the directory stack size.
-setopt autocd               # Change directory just by typing the dir name.
+
 setopt autopushd            # Make `cd` push the old directory onto the stack.
 setopt extendedglob         # Enable more advanced globbing features.
 setopt pushdminus           # Swap behavior of `pushd +N` and `pushd -N`.
@@ -35,7 +35,7 @@ if [ -d /usr/share/zsh/vendor-completions ]; then
 fi
 autoload -Uz compinit       # Autoload the completion initialization utility.
 compinit -d ~/.cache/zcompdump # Initialize completions, caching to this file.
-zstyle ':completion:*:*:*:*:*' tag-order files options arguments
+zstyle ':completion:*:*:*:*:*' tag-order options arguments files
 zstyle ':completion:*' completer _files _expand _complete _ignored _approximate
 zstyle ':completion:*' matcher-list '' 'm:{[:lower:]}={[:upper:]}' 'r:|[._-]=* r:|=*'
 zstyle ':completion:*' max-errors 2 # Allow up to 2 errors for fuzzy matching.
@@ -47,8 +47,6 @@ zstyle ':completion:*' auto-description 'specify: %d'
 zstyle ':completion:*' format 'Completing %d'
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
-
-# bindkey -v                  # Enable Vi mode for command-line editing.
 
 PROMPT_EOL_MARK=""          # Hide the '%' character that appears at the end of lines.
 
@@ -78,11 +76,3 @@ source ~/.zsh_docker.sh
 source ~/.zsh_env.sh
 source ~/.zsh_functions.sh
 source ~/.zsh_plugins.sh
-source ~/.zsh_phpenv.sh
-
-
-# Automatically attach to a tmux session on terminal start
-# if [[ -z "$TMUX" && "$-" == *i* ]]; then
-#     SESSION_NAME="main"
-#     tmux new-session -A -s "$SESSION_NAME"
-# fi

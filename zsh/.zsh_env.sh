@@ -1,4 +1,4 @@
-export PATH=$PATH:$HOME/.local/bin
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin"
 
 # --- Go Environment Setup ---
 export GOPATH="$HOME/go"
