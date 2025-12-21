@@ -67,6 +67,8 @@ bindkey ' ' magic-space                          # Space performs history expans
 bindkey '^[[Z' undo                              # Shift+Tab to undo. TODO change this to undo in insert mode only
 bindkey '^x^e' edit-command-line-tmux-float                 # Ctrl+X, Ctrl+E to open editor.
 bindkey '^N' forward-word
+bindkey '\ef' forward-word # Alt-f
+bindkey '\eb' backward-word # Alt-b
 bindkey '^A' beginning-of-line
 bindkey '^E' end-of-line
 bindkey '^F' autosuggest-accept

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=Chromium (SOCKS Proxy)
+Comment=Browse the World Wide Web with SOCKS proxy
+Exec=/usr/bin/chromium --proxy-server="socks5://127.0.0.1:1080" --host-resolver-rules="MAP * ~NOTFOUND , EXCLUDE 127.0.0.1" %U
+Terminal=false
+Icon=chromium
+Type=Application
+Categories=Network;WebBrowser;

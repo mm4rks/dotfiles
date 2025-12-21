@@ -20,7 +20,7 @@ SSH_PUBLIC_KEY=""  # e.g., "ssh-rsa AAAA...your-public-key-string...user@host"
 # These packages will be installed.
 REQUIRED_PACMAN_PACKAGES=(
     curl git unzip fontconfig stow jq make cmake zsh-completions
-    zsh-syntax-highlighting zsh-autosuggestions command-not-found eza
+    zsh-syntax-highlighting zsh-autosuggestions eza
     ripgrep tmux python python-pip python-pipx tree xclip bat git-delta choose
 )
 
@@ -36,8 +36,20 @@ CORE_PACKAGES_TO_STOW=(
     "zsh"
     "tmux"
     "git"
-    "zsh_plugins"
 )
+
+ARCH_PACKAGES_TO_STOW=(
+    "alacritty"
+    "eza"
+    "git"
+    "hypr"
+    "kanshi"
+    "nvim"
+    "tmux"
+    "waybar"
+    "zsh"
+)
+
 
 # --- Colors and Logging ---
 RED='\033[0;31m'
@@ -84,7 +96,7 @@ install_required_packages() {
 
 install_required_packages_arch() {
     echo -e "\n${STEP} Updating package list and installing required packages for Arch Linux..."
-    sudo pacman -Syu --noconfirm
+    sudo pacman -Sy --noconfirm
     if ! sudo pacman -S --noconfirm --needed "${REQUIRED_PACMAN_PACKAGES[@]}"; then
         echo -e "${ERROR} Failed to install some required packages with pacman. Please check the output above."
         exit 1
@@ -315,6 +327,16 @@ stow_package() {
     fi
 }
 
+stow_applications() {
+    local target_dir="$HOME/.local/share/applications"
+    mkdir -p "$target_dir"
+    echo -e "${INFO} Stowing 'applications' to '$target_dir'..."
+    if ! stow --dir="$DOTFILES_DIR" --target="$target_dir" --restow "applications" 2>&1; then
+        echo -e "${WARN} Failed to stow 'applications'. Please check for conflicts."
+    fi
+}
+
+
 # SSH Hardening Configuration
 configure_ssh_hardening() {
     sudo apt install openssh-server -q -y
@@ -540,10 +562,13 @@ main() {
         exit 1
     fi
 
+    local packages_to_stow=("${CORE_PACKAGES_TO_STOW[@]}")
+
     if [ -f /etc/os-release ]; then
         . /etc/os-release
         if [ "$ID" = "arch" ]; then
             install_required_packages_arch
+            packages_to_stow=("${ARCH_PACKAGES_TO_STOW[@]}")
         else
             install_required_packages
         fi
@@ -558,8 +583,13 @@ main() {
     if command -v nvim &>/dev/null; then
         echo -e "${INFO} Neovim is already installed. Skipping full development environment installation."
     else
-        if ask_to_proceed "Do you want to install the full development environment (Neovim, fzf, fonts, etc.)?"; then
+        if [[ " ${packages_to_stow[@]} " =~ " nvim " ]]; then
+            # If nvim is in the list of packages to stow, we don't need to ask to install the dev env
             install_dev_env
+        else
+            if ask_to_proceed "Do you want to install the full development environment (Neovim, fzf, fonts, etc.)?"; then
+                install_dev_env
+            fi
         fi
     fi
 
@@ -571,16 +601,17 @@ main() {
 
     # Stow all the core, unconditional packages (excluding nvim now)
     echo -e "${STEP} Stowing core dotfiles..."
-    for pkg in "${CORE_PACKAGES_TO_STOW[@]}"; do
+    for pkg in "${packages_to_stow[@]}"; do
         stow_package "$pkg"
     done
+    stow_applications
+
 
     setup_argcomplete
     echo -e "${GREEN}--- Setup Complete ---${NC}"
     echo -e "${YELLOW}Next Steps:${NC}"
     echo -e "1. ${YELLOW}IMPORTANT:${NC} Open your terminal's settings and change its font to your preferred font."
     echo -e "2. Restart your terminal to apply all changes."
-    echo -e "3. If you installed the dev environment, run \`${BLUE}nvim${NC}\` and then run \`:PackerSync\` to install the plugins."
 }
 
 main
