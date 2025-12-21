@@ -36,6 +36,7 @@ CORE_PACKAGES_TO_STOW=(
     "zsh"
     "tmux"
     "git"
+    "vivid"
 )
 
 ARCH_PACKAGES_TO_STOW=(
@@ -46,6 +47,7 @@ ARCH_PACKAGES_TO_STOW=(
     "kanshi"
     "nvim"
     "tmux"
+    "vivid"
     "waybar"
     "zsh"
 )

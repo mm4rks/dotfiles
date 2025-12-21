@@ -5,6 +5,7 @@ export GOPATH="$HOME/go"
 export PATH="$PATH:$GOPATH/bin"
 export XDG_CONFIG_HOME="$HOME/.config"
 
+# --- Rust ---
 export PATH="$PATH:$HOME/.cargo/bin"
 
 # Set default editor: prefer nvim, but fall back to vim
@@ -20,4 +21,13 @@ fi
 if command -v bat &> /dev/null; then
     export MANPAGER="sh -c 'col -bx | bat -l man -p'"
     export MANROFFOPT="-c"
+fi
+
+
+VIVID_CACHE="$HOME/.config/vivid_colors"
+
+if command -v vivid >/dev/null 2>&1; then
+    export LS_COLORS="$(vivid generate catppuccin-mocha)"
+elif [ -f "$VIVID_CACHE" ]; then
+    export LS_COLORS="$(cat "$VIVID_CACHE")"
 fi
