@@ -128,12 +128,12 @@ install_core_tools() {
     local apt_packages=(
         curl git stow jq make cmake unzip fontconfig xclip tree
         python3 python3-pip python3-venv pipx zsh tmux ripgrep
-        bat fd-find wl-clipboard fzf fuse3
+        bat fd-find wl-clipboard fuse3
     )
     local arch_packages=(
         curl git stow jq make cmake unzip fontconfig xclip tree
         python python-pip python-pipx zsh tmux ripgrep bat fd
-        eza git-delta choose wl-clipboard fzf
+        eza git-delta choose wl-clipboard
     )
 
     case "$OS_ID" in
@@ -151,6 +151,7 @@ install_core_tools() {
 
     pipx ensurepath
     install_pipx_package "tldr" "tldr"
+    install_fzf_from_github
 }
 
 create_compatibility_symlinks() {
@@ -240,6 +241,26 @@ install_choose_with_cargo() {
     cargo install choose
 }
 
+install_fzf_from_github() {
+    if command -v fzf &>/dev/null; then
+        log_info "fzf is already installed. Skipping."
+        return 0
+    fi
+    log_info "Installing fzf from GitHub..."
+    if ! git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf; then
+        log_error "Failed to clone fzf repository."
+        return 1
+    fi
+    # The --all flag installs for all users, creates a backup of existing files,
+    # and sets up key bindings and fuzzy completion
+    if ! ~/.fzf/install --all; then
+        log_error "Failed to install fzf."
+        return 1
+    fi
+    log_info "fzf installed successfully."
+}
+
+
 install_nerd_font() {
     if fc-list | grep -q "$FONT_NAME"; then
         log_info "${FONT_NAME} Nerd Font is already installed. Skipping."
@@ -321,23 +342,45 @@ stow_dotfiles() {
 }
 
 install_docker() {
+    local current_user="${SUDO_USER:-$(whoami)}"
     if command -v docker &>/dev/null; then
-        log_info "Docker is already installed. Skipping."
-        return 0
-    fi
-    log_step "Installing Docker..."
+        log_info "Docker is already installed. Ensuring service is running and permissions are set."
+    else
+        log_step "Installing Docker..."
+        local docker_script
+        docker_script=$(curl -fsSL https://get.docker.com)
+        
+        if [ "$OS_ID" = "kali" ]; then
+            log_info "Applying Kali-specific patch to Docker install script."
+            docker_script=$(echo "$docker_script" | sed 's/kali-rolling/bookworm/g')
+        fi
 
-    local docker_script
-    docker_script=$(curl -fsSL https://get.docker.com)
+        echo "$docker_script" | sudo sh
+        log_info "Docker installed."
+    fi
     
-    if [ "$OS_ID" = "kali" ]; then
-        log_info "Applying Kali-specific patch to Docker install script."
-        docker_script=$(echo "$docker_script" | sed 's/kali-rolling/bookworm/g')
+    log_step "Starting Docker service and configuring permissions..."
+    
+    # Enable and start Docker service
+    if ! sudo systemctl is-active --quiet docker; then
+        log_info "Starting and enabling Docker service..."
+        sudo systemctl enable --now docker
     fi
 
-    echo "$docker_script" | sudo sh
-    sudo usermod -aG docker "$USER"
-    log_info "Docker installed. Please log out and back in for group changes to take effect."
+    # Create docker group if it doesn't exist
+    if ! getent group docker > /dev/null; then
+        log_info "Creating docker group..."
+        sudo groupadd docker
+    fi
+
+    # Add current user to docker group
+    if groups "$current_user" | grep -q -w "docker"; then
+        log_info "User '$current_user' is already in the 'docker' group."
+    else
+        log_info "Adding user '$current_user' to the 'docker' group..."
+        sudo usermod -aG docker "$current_user"
+        log_warn "You must log out and log back in for group changes to take effect."
+    fi
 }
 
 ensure_nodejs() {
@@ -579,6 +622,7 @@ main() {
         log_step "--- Installing 'pwn' profile ---"
         install_pipx_package "netexec" "git+https://github.com/Pennyw0rth/NetExec"
         install_pipx_package "certipy" "certipy-ad"
+        install_pipx_package "bloodhound-ce" "bloodhound-ce"
         install_bloodhound
         configure_ssh_hardening "$SSH_PUBLIC_KEY"
     fi

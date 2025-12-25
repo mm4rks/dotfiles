@@ -115,7 +115,8 @@ if [ "$_pure_prompt_found" = true ]; then
     autoload -U promptinit; promptinit
     prompt pure
 else
-    PROMPT='%F{blue}%~%f\n%(?.%F{white}.%F{red})%(#.#.$)%f '
+    local NEWLINE=$'\n'
+    PROMPT="%F{blue}%~%f${NEWLINE}%(?.%F{white}.%F{red})%(#.#.\$)%f "
 fi
 
 unset _pure_sources _pure_source _pure_prompt_found
