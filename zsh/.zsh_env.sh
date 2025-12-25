@@ -31,3 +31,8 @@ if command -v vivid >/dev/null 2>&1; then
 elif [ -f "$VIVID_CACHE" ]; then
     export LS_COLORS="$(cat "$VIVID_CACHE")"
 fi
+
+# --- FZF ---
+# Add fzf to the path
+export PATH="$PATH:$HOME/.fzf/bin"
+

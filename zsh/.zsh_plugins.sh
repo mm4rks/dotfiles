@@ -18,10 +18,6 @@ source_if_exists /etc/zsh_command_not_found
 #     fi
 # }
 
-if command -v fzf &> /dev/null; then
-    source <(fzf --zsh)
-fi
-source_if_exists /etc/zsh_command_not_found
 source_autosuggestions() {
     local os
     os=$(os_detect)
