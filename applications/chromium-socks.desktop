@@ -1,8 +1,8 @@
 [Desktop Entry]
 Version=1.0
-Name=Chromium (SOCKS Proxy)
+Name=SOCKS Chromium (Port: 1080)
 Comment=Browse the World Wide Web with SOCKS proxy
-Exec=/usr/bin/chromium --proxy-server="socks5://127.0.0.1:1080" --host-resolver-rules="MAP * ~NOTFOUND , EXCLUDE 127.0.0.1" %U
+Exec=chromium --user-data-dir=/tmp/pentest-chrome --proxy-server="socks5://127.0.0.1:1080"
 Terminal=false
 Icon=chromium
 Type=Application
