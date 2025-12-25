@@ -125,7 +125,7 @@ uninstall_conflicting_packages() {
         log_info "On Parrot OS, ensuring apt versions of nvim and fzf are removed..."
         if dpkg -s "neovim" &>/dev/null; then
             log_info "Removing existing 'neovim' package from apt to install latest from GitHub."
-            sudo apt-get remove -q -y --purge neovim neovim-common
+            sudo apt-get remove -q -y --purge neovim
             sudo apt-get autoremove -q -y
         fi
 
