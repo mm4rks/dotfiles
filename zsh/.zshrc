@@ -45,11 +45,14 @@ setopt ignore_eof
 tmux_smart_detach() {
   if [[ -z "$BUFFER" ]]; then
     if [[ -n "$TMUX" ]]; then
-      # INSIDE TMUX: Detach if at top-level shell
-      if [[ "$SHLVL" -le 2 ]]; then
-        tmux detach
-      else
+      # INSIDE TMUX: Check pane count
+      local num_panes=$(tmux list-panes | wc -l)
+      if [[ "$num_panes" -gt 1 ]]; then
+        # More than one pane, so just exit the current shell/pane
         builtin exit
+      else
+        # Last pane in the window, so detach the client
+        tmux detach-client
       fi
     else
       # NOT IN TMUX: Close the shell normally
