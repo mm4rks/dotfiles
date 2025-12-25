@@ -12,7 +12,14 @@ alias grep='grep --color=auto'
 alias diff='diff --color=auto'
 alias ip='ip --color=auto'
 alias xargs='xargs '
-alias xc="xclip -selection clipboard" # Alias for copying to the clipboard
+# Smart clipboard alias (xc for copy, xp for paste)
+if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
+  alias xc='wl-copy'
+  alias xp='wl-paste'
+else
+  alias xc='xclip -selection clipboard'
+  alias xp='xclip -selection clipboard -o'
+fi
 alias ntlm.pw='function _ntlm(){ curl https://ntlm.pw/$1; }; _ntlm' # Fetches NTLM hashes from ntlm.pw for a given value
 alias certipy='certipy-ad' # Alias for certipy-ad
 

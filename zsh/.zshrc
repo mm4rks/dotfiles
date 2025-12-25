@@ -93,9 +93,15 @@ _fix_cursor() {
 ZLE_CURSOR_BLINK=0
 
 precmd_functions+=(_fix_cursor)
-fpath+=($HOME/.zsh/pure)
-autoload -U promptinit; promptinit # npm install --global pure-prompt
-prompt pure
+# --- Prompt ---
+# Load pure prompt if available, otherwise use a minimal fallback.
+if command -v pure-prompt &>/dev/null; then
+    fpath+=($HOME/.zsh/pure)
+    autoload -U promptinit; promptinit
+    prompt pure
+else
+    PROMPT='%F{blue}%~%f %(?.%F{white}.%F{red})%(#.#.$)%f '
+fi
 autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey '^R' history-incremental-search-backward # Ctrl+R for history search.

@@ -114,3 +114,55 @@ edit-command-line-tmux-float() {
 
 # Create a new widget from the function
 zle -N edit-command-line-tmux-float
+
+updatepwnbox() {
+    # Configuration
+    local TOKEN_FILE="$HOME/htb_token"
+    local SSH_CONFIG="$HOME/.ssh/config"
+    local BOOTSTRAP_URL="https://raw.githubusercontent.com/mm4rks/dotfiles/main/bootstrap.sh"
+    
+    if [[ ! -f "$TOKEN_FILE" ]]; then
+        echo "[-] Error: $TOKEN_FILE not found."
+        return 1
+    fi
+
+    # 1. Fetch credentials from the verified endpoint
+    local TOKEN=$(tr -d '\n\r ' < "$TOKEN_FILE")
+    local RESPONSE=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" \
+        "https://labs.hackthebox.com/api/v4/pwnbox/status")
+
+    # 2. Extract credentials
+    local HOSTNAME=$(echo "$RESPONSE" | jq -r '.data.hostname // empty')
+    local USER_NAME=$(echo "$RESPONSE" | jq -r '.data.username // empty')
+    local PASSWORD=$(echo "$RESPONSE" | jq -r '.data.vnc_password // empty')
+
+    if [[ -z "$HOSTNAME" || "$HOSTNAME" == "null" ]]; then
+        echo "[-] Error: Could not retrieve active Pwnbox data."
+        echo "[-] Response: $RESPONSE"
+        return 1
+    fi
+
+    # 3. Update ~/.ssh/config for the 'htb' alias
+    touch "$SSH_CONFIG"
+    # Remove existing 'htb' block
+    sed -i '/Host htb/,+6d' "$SSH_CONFIG"
+    
+    cat >> "$SSH_CONFIG" <<EOF
+Host htb
+    HostName $HOSTNAME
+    User $USER_NAME
+    ForwardX11 yes
+    ForwardX11Trusted yes
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+EOF
+
+    echo "[+] SSH alias 'htb' updated ($HOSTNAME)."
+    echo "[+] Password: $PASSWORD (Copied to clipboard)"
+    echo -n "$PASSWORD" | xclip -selection clipboard 2>/dev/null || echo -n "$PASSWORD" | pbcopy 2>/dev/null
+
+    # 4. Remote Bootstrap: Curl script from GitHub and execute
+    echo "[*] Executing remote bootstrap on 'htb'..."
+    sshpass -p "$PASSWORD" ssh htb "nohup bash -c 'curl -sL $BOOTSTRAP_URL | bash' > /tmp/bootstrap.log 2>&1 &"
+    echo "[+] Bootstrap process started in the background on 'htb'. You can disconnect."
+} # Description: Fetches Pwnbox credentials, updates SSH config, and triggers remote bootstrap on Hack The Box Pwnbox.

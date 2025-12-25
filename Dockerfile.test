@@ -1,0 +1,36 @@
+# Dockerfile for testing the dotfiles setup script across different distributions.
+
+# --- Ubuntu Test Image ---
+FROM ubuntu:22.04 AS ubuntu-test
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y git sudo curl build-essential && rm -rf /var/lib/apt/lists/*
+RUN useradd -m -G sudo -s /bin/bash tester
+RUN echo "tester ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tester
+USER tester
+WORKDIR /home/tester/dotfiles
+
+# --- Arch Linux Test Image ---
+FROM archlinux:latest AS arch-test
+RUN pacman -Syu --noconfirm git sudo curl base-devel
+RUN useradd -m -G wheel -s /bin/bash tester
+RUN echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+USER tester
+WORKDIR /home/tester/dotfiles
+
+# --- Kali Linux Test Image ---
+FROM kalilinux/kali-rolling AS kali-test
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y git sudo curl build-essential && rm -rf /var/lib/apt/lists/*
+RUN useradd -m -G sudo -s /bin/bash tester
+RUN echo "tester ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tester
+USER tester
+WORKDIR /home/tester/dotfiles
+
+# --- Parrot OS Test Image ---
+FROM parrotsec/core AS parrot-test
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y git sudo curl build-essential && rm -rf /var/lib/apt/lists/*
+RUN useradd -m -G sudo -s /bin/bash tester
+RUN echo "tester ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tester
+USER tester
+WORKDIR /home/tester/dotfiles

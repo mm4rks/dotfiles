@@ -1,0 +1,9 @@
+# Ignore files not needed in the Docker build context to speed up builds.
+.git/
+*.log
+.DS_Store
+
+# Ignore the testing infrastructure itself
+.dockerignore
+Dockerfile.test
+test_runner.sh
