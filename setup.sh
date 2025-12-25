@@ -417,6 +417,35 @@ install_ghidra() {
     log_info "Ghidra installed successfully."
 }
 
+install_bloodhound() {
+    if command -v bloodhound-cli &>/dev/null; then
+        log_info "bloodhound-cli is already installed. Skipping."
+        return 0
+    fi
+    
+    log_step "Installing BloodHound..."
+    
+    # Dependency: Docker
+    install_docker
+
+    local TEMP_DIR
+    TEMP_DIR="$(mktemp -d)"
+    trap 'rm -rf "$TEMP_DIR"' RETURN
+
+    local BLOODHOUND_CLI_URL="https://github.com/SpecterOps/bloodhound-cli/releases/latest/download/bloodhound-cli-linux-amd64.tar.gz"
+    
+    log_info "Downloading bloodhound-cli from ${BLOODHOUND_CLI_URL}..."
+    if ! curl --fail --location -o "${TEMP_DIR}/bloodhound-cli.tar.gz" "$BLOODHOUND_CLI_URL"; then
+        log_error "Failed to download bloodhound-cli."
+        return 1
+    fi
+    
+    tar -xzf "${TEMP_DIR}/bloodhound-cli.tar.gz" -C "${TEMP_DIR}"
+    sudo mv "${TEMP_DIR}/bloodhound-cli" /usr/local/bin/
+    log_info "bloodhound-cli installed to /usr/local/bin/."
+    log_warn "To complete BloodHound setup, run 'bloodhound-cli install'. This will download and start the necessary Docker containers."
+}
+
 configure_ssh_hardening() {
     local public_key="$1"
     if [ -z "$public_key" ]; then
@@ -549,6 +578,8 @@ main() {
     if [ "$PROFILE_PWN" = true ]; then
         log_step "--- Installing 'pwn' profile ---"
         install_pipx_package "netexec" "git+https://github.com/Pennyw0rth/NetExec"
+        install_pipx_package "certipy" "certipy-ad"
+        install_bloodhound
         configure_ssh_hardening "$SSH_PUBLIC_KEY"
     fi
     

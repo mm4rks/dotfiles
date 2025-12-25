@@ -21,7 +21,7 @@ else
   alias xp='xclip -selection clipboard -o'
 fi
 alias ntlm.pw='function _ntlm(){ curl https://ntlm.pw/$1; }; _ntlm' # Fetches NTLM hashes from ntlm.pw for a given value
-alias certipy='certipy-ad' # Alias for certipy-ad
+
 
 if command -v eza &> /dev/null; then
   alias ls='eza -lh --group-directories-first --icons=auto'
