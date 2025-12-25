@@ -121,7 +121,7 @@ install_pipx_package() {
 }
 
 uninstall_conflicting_packages() {
-    if [ "$OS_ID" = "parrot" ]; then
+    if [ "$NAME" = "Parrot Security" ]; then
         log_info "On Parrot OS, ensuring apt versions of nvim and fzf are removed..."
         if dpkg -s "neovim" &>/dev/null; then
             log_info "Removing existing 'neovim' package from apt to install latest from GitHub."
