@@ -98,13 +98,27 @@ ZLE_CURSOR_BLINK=0
 precmd_functions+=(_fix_cursor)
 # --- Prompt ---
 # Load pure prompt if available, otherwise use a minimal fallback.
-if command -v pure-prompt &>/dev/null; then
-    fpath+=($HOME/.zsh/pure)
+_pure_sources=(
+    "$HOME/.zsh/pure"
+    "/usr/lib/node_modules/pure-prompt"
+)
+
+for _pure_source in "${_pure_sources[@]}"; do
+    if [ -f "$_pure_source/pure.zsh" ]; then
+        fpath+=("$_pure_source")
+        _pure_prompt_found=true
+        break
+    fi
+done
+
+if [ "$_pure_prompt_found" = true ]; then
     autoload -U promptinit; promptinit
     prompt pure
 else
-    PROMPT='%F{blue}%~%f %(?.%F{white}.%F{red})%(#.#.$)%f '
+    PROMPT='%F{blue}%~%f\n%(?.%F{white}.%F{red})%(#.#.$)%f '
 fi
+
+unset _pure_sources _pure_source _pure_prompt_found
 autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey '^R' history-incremental-search-backward # Ctrl+R for history search.
