@@ -1,12 +1,10 @@
-export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:$HOME/.local/bin"
-
-# --- Go Environment Setup ---
+export PATH="$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 export GOPATH="$HOME/go"
-export PATH="$PATH:$GOPATH/bin"
-export XDG_CONFIG_HOME="$HOME/.config"
+export PATH="$GOPATH/bin:$PATH"
+export PATH="$HOME/.cargo/bin:$PATH"
+export PATH="$HOME/.fzf/bin:$PATH"
 
-# --- Rust ---
-export PATH="$PATH:$HOME/.cargo/bin"
+export XDG_CONFIG_HOME="$HOME/.config"
 
 # Set default editor: prefer nvim, but fall back to vim
 if command -v nvim &> /dev/null; then
@@ -31,8 +29,4 @@ if command -v vivid >/dev/null 2>&1; then
 elif [ -f "$VIVID_CACHE" ]; then
     export LS_COLORS="$(cat "$VIVID_CACHE")"
 fi
-
-# --- FZF ---
-# Add fzf to the path
-export PATH="$PATH:$HOME/.fzf/bin"
 
