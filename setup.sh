@@ -611,7 +611,6 @@ main() {
     log_step "--- Installing 'default' profile ---"
     install_core_tools
     create_compatibility_symlinks
-    install_nerd_font
     install_neovim
     
     local core_stow_packages=("zsh" "tmux" "eza" "git" "vivid" "nvim")
@@ -626,6 +625,7 @@ main() {
     
     if [ "$PROFILE_DEV" = true ]; then
         log_step "--- Installing 'dev' profile ---"
+        install_nerd_font
         install_docker
         if [ "$OS_ID" != "arch" ]; then
             ensure_nodejs
