@@ -132,6 +132,18 @@ uninstall_conflicting_packages() {
             log_info "Removing existing 'fzf' package from apt to install latest from GitHub."
             sudo apt-get remove -q -y --purge fzf
         fi
+
+        # Remove existing nxc (NetExec) if it exists at /usr/local/bin/nxc
+        if [ -f "/usr/local/bin/nxc" ]; then
+            log_info "Removing existing 'nxc' (NetExec) binary at /usr/local/bin/nxc to ensure latest version can be installed."
+            sudo rm -f "/usr/local/bin/nxc"
+        fi
+
+        # Remove existing netexec if it exists at /usr/local/bin/netexec
+        if [ -f "/usr/local/bin/netexec" ]; then
+            log_info "Removing existing 'netexec' binary at /usr/local/bin/netexec to ensure latest version can be installed."
+            sudo rm -f "/usr/local/bin/netexec"
+        fi
     fi
 }
 
