@@ -53,6 +53,7 @@
 }
 
 #custom-expand-icon {
+  margin-right: 18px;
 }
 
 tooltip {
@@ -60,6 +61,7 @@ tooltip {
 }
 
 #custom-update {
+  font-size: 10px;
 }
 
 #clock {
