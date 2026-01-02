@@ -126,12 +126,22 @@ bindkey '^R' history-incremental-search-backward # Ctrl+R for history search.
 bindkey ' ' magic-space                          # Space performs history expansion (e.g., '!!').
 bindkey '^[[Z' undo                              # Shift+Tab to undo. TODO change this to undo in insert mode only
 bindkey '^x^e' edit-command-line-tmux-float                 # Ctrl+X, Ctrl+E to open editor.
-bindkey '^N' forward-word
 bindkey '\ef' forward-word # Alt-f
 bindkey '\eb' backward-word # Alt-b
 bindkey '^A' beginning-of-line
 bindkey '^E' end-of-line
 bindkey '^F' autosuggest-accept
+bindkey '^[[3~' delete-char
+
+# More bash-like bindings
+bindkey '^H' backward-delete-char   # Backspace
+bindkey '^P' up-line-or-history     # Previous history
+bindkey '^N' down-line-or-history   # Next history
+bindkey '^W' backward-kill-word     # Delete word backward
+bindkey '^U' kill-whole-line        # Delete from cursor to start of line
+bindkey '^K' kill-line              # Delete from cursor to end of line
+bindkey '^Y' yank                   # Paste (yank)
+bindkey '\ed' kill-word             # Alt-d, delete word forward
 
 source ~/.zsh_alias.sh
 source ~/.zsh_docker.sh
