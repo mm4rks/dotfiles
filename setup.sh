@@ -27,7 +27,6 @@ install_base_deps() {
     log "Installing base dependencies..."
     export DEBIAN_FRONTEND=noninteractive
     apt-get update -q
-    # stow is for dotfile management, fuse is for AppImage support (e.g., nvim)
     apt-get install -y -q ca-certificates curl gnupg unzip git build-essential stow wget openssh-server fuse pipx
 }
 
@@ -125,11 +124,6 @@ configure_user_environment() {
     cp "$REPO_DIR/mise/base.toml" "$CONFIG_FILE"
 
     for p in "${PROFILES[@]}"; do
-        # 'base' tools are already in the config from the cp command above
-        if [[ "$p" == "base" ]]; then
-            continue
-        fi
-
         if [ -f "$REPO_DIR/mise/$p.profile" ]; then
             log "Adding tools from profile: $p"
             echo "" >> "$CONFIG_FILE" # Add a newline for readability
@@ -143,9 +137,6 @@ configure_user_environment() {
 
     stow_dotfiles "$REPO_DIR"
 
-    log "Synchronizing Neovim Lazy plugins..."
-    # We need to ensure that the environment is set up correctly for mise to find nvim.
-    mise exec -- nvim --headless "+Lazy! sync" +qa
 }
 
 stow_dotfiles() {
