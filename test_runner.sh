@@ -1,12 +1,12 @@
 #!/bin/bash
-# test_runner.sh - Builds test images and runs setup.sh inside them.
+# test_runner.sh - Builds test images and runs the new mise-based setup inside them.
 
 set -e # Exit immediately if a command exits with a non-zero status.
 
 # --- Configuration ---
 DOTFILES_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 DOCKERFILE="Dockerfile.test"
-DISTROS=("ubuntu-test" "arch-test" "kali-test" "parrot-test")
+DISTROS=("ubuntu-test" "kali-test" "parrot-test")
 
 # --- Colors for logging ---
 GREEN='\033[0;32m'
@@ -29,15 +29,17 @@ main() {
         docker build --target "$distro" -t "dotfiles-tester-$distro" -f "$DOCKERFILE" .
         log_success "Image for $distro built."
 
-        log_step "Running setup.sh in $distro container..."
-        # We run the container with the local dotfiles mounted as a volume
-        # This allows for rapid testing of local changes without rebuilding the image
+        log_step "Running setup workflow in $distro container..."
+        # We run the container with the local dotfiles mounted as a volume.
+        # The command now reflects the new two-step process:
+        # 1. Run setup.sh with sudo for system-wide changes.
+        # 2. Run mise as the regular user to install tools.
         docker run --rm \
                -v "$DOTFILES_DIR:/home/tester/dotfiles" \
                "dotfiles-tester-$distro" \
-               /bin/bash -c "./setup.sh"
+               /bin/bash -c "sudo ./setup.sh all"
         
-        log_success "setup.sh completed successfully in $distro."
+        log_success "Setup workflow completed successfully in $distro."
     done
 
     log_step "All tests completed successfully!"

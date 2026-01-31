@@ -1,0 +1,7 @@
+# mise/pwn.toml
+# Tools for penetration testing and security.
+
+[tools]
+"pipx:netexec" = { version = "latest", "pipx_args" = ["--pip-args", "'--break-system-packages'"] }
+"pipx:certipy-ad" = { version = "latest", "pipx_args" = ["--pip-args", "'--break-system-packages'"] }
+"specterops/bloodhound-cli" = "latest"

@@ -1,0 +1,11 @@
+# mise/base.toml
+# Core tools available in all profiles.
+
+[tools]
+neovim = "latest"
+zoxide = "latest"
+fzf = "latest"
+ripgrep = "latest"
+bat = "latest"
+"eza-community/eza" = "latest"
+"dandavison/delta" = "latest"
