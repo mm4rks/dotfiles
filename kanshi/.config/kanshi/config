@@ -6,6 +6,11 @@ profile docked {
 	output "DP-3" enable mode 3440x1440 position 2000,0 scale 1
 }
 
+profile docked_station {
+	output "eDP-1" disable
+	output "DP-5" enable mode 3440x1440 position 2000,0 scale 1
+}
+
 # Profile for laptop only.
 # This profile is activated when only the internal display (eDP-1) is connected.
 profile laptop {
