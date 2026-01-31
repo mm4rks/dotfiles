@@ -27,7 +27,7 @@ install_base_deps() {
     log "Installing base dependencies..."
     export DEBIAN_FRONTEND=noninteractive
     apt-get update -q
-    apt-get install -y -q ca-certificates curl gnupg unzip git build-essential stow wget libfuse2 pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh linux-headers-generic libkrb5-dev
+    apt-get install -y -q ca-certificates curl gnupg unzip git build-essential stow wget libfuse2 pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh linux-headers-generic libkrb5-dev cmake
 }
 
 install_docker_official() {
@@ -94,6 +94,20 @@ install_mise_system_binary() {
     apt-get install -y -q mise
 }
 
+install_jetbrains_mono_nerd_font() {
+    log "Installing JetBrainsMono Nerd Font..."
+    local FONT_DIR="/usr/local/share/fonts/NerdFonts"
+    local FONT_ZIP="JetBrainsMono.zip"
+    local FONT_URL="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/$FONT_ZIP"
+
+    mkdir -p "$FONT_DIR"
+    wget -qO "/tmp/$FONT_ZIP" "$FONT_URL"
+    unzip -q "/tmp/$FONT_ZIP" -d "$FONT_DIR"
+    rm "/tmp/$FONT_ZIP"
+    fc-cache -fv > /dev/null
+    log "JetBrainsMono Nerd Font installed."
+}
+
 # --- Main Execution ---
 main() {
     local PROFILES=()
@@ -116,6 +130,7 @@ main() {
     install_base_deps
     install_docker_official
     install_mise_system_binary
+    install_jetbrains_mono_nerd_font
 
     if [[ " ${PROFILES[*]} " =~ " ssh " ]]; then
         log "Installing openssh-server..."
