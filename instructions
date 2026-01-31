@@ -1,0 +1,273 @@
+Here is the implementation specification for the developer.
+
+### Objective
+
+Refactor the existing `setup.sh` from an imperative, fragile script into a **declarative, profile-based provisioning tool**. The new architecture uses **Mise** for user-space tools (replacing manual `curl | tar` logic) and a streamlined `setup.sh` for root-level system configuration.
+
+### 1. Repository Structure
+
+Reorganize the dotfiles repository to include a `mise/` directory for profile definitions.
+
+```text
+~/dotfiles/
+├── setup.sh             # Entry point (Runs as Root)
+└── mise/                # Profile Configurations
+    ├── base.toml        # Core tools (nvim, fzf, eza, zoxide)
+    ├── dev.toml         # Dev stack (node, python, docker, gemini-cli)
+    ├── pwn.toml         # Pwn stack (netexec, bloodhound, certipy)
+    └── rev.toml         # Rev stack (ghidra, semgrep)
+
+```
+
+### 2. Migration Tasks
+
+#### Step A: Migrate Logic to Configs
+
+Create the `.toml` files in `mise/`. Move every tool currently installed via a bash function into these files.
+
+* **`mise/base.toml`** (Replaces `install_neovim`, `install_eza`, `install_delta`, `install_fzf`):
+```toml
+[tools]
+neovim = "latest"
+zoxide = "latest"
+"ubicloud/eza" = "latest"          # Replaces install_eza function
+"dandavison/delta" = "latest"      # Replaces install_delta function
+
+```
+
+
+* **`mise/pwn.toml`** (Replaces pipx & manual installs):
+```toml
+[tools]
+"pipx:netexec" = "latest"
+"pipx:certipy-ad" = "latest"
+"specterops/bloodhound-cli" = "latest"
+
+```
+
+
+* **`mise/dev.toml`** & **`mise/rev.toml`**: Add Node, Python, Java, Ghidra, etc.
+
+#### Step B: Implement `setup.sh` (The Bootstrapper)
+
+Replace the current script with this logic. The script must:
+
+1. **Run as Root:** Enforce `EUID == 0`.
+2. **Install System Deps:** Use official repos for Docker and Mise (not `curl | sh`).
+3. **Harden SSH:** Check for `sshd_config.d` support; fallback to safe append if missing.
+4. **Drop Privileges:** Switch to the real user (`su $REAL_USER`) to generate the `~/.config/mise/config.toml` and run `mise install`.
+
+**Core Logic Snippet for User Handoff:**
+
+```bash
+# Inside setup.sh (running as root)
+configure_user() {
+    # Generate ~/.config/mise/config.toml based on selected profiles
+    # Run 'mise install'
+}
+export -f configure_user
+su "$REAL_USER" -c "bash -c 'configure_user \"$REPO_DIR\" ${ACTIVE_PROFILES[*]}'"
+
+```
+
+#### Step C: Clean Up
+
+* **Remove:** Delete all imperative install functions (`install_neovim`, `install_ghidra`, etc.).
+* **Retain:** Keep logic for `apt` updates, Docker group assignment, and SSH hardening.
+
+### 3. Usage for End Users
+
+The workflow simplifies to:
+
+```bash
+# Provision a machine for Pentesting and Reverse Engineering
+sudo ./setup.sh pwn rev --ssh-key "ssh-ed25519 ..."
+
+```
+
+### 4. Technical Constraints & Decisions
+
+* **OS Support:** Drop Arch support. Focus strictly on Debian/Kali/Parrot/Ubuntu for robustness.
+* **Permissions:** User tools (Mise) are owned by the **User**. System tools (Docker, SSH) are owned by **Root**.
+* **Idempotency:** The script must be runnable multiple times without breaking configuration files. Use `cat >` for config files rather than `sed`.
+
+
+
+Here is the revise setup.sh script:
+
+#!/bin/bash
+# setup.sh: Robust system & profile bootstrapper.
+# Usage: sudo ./setup.sh [dev|rev|pwn] [--ssh-key "..."]
+
+set -euo pipefail
+
+# --- Configuration ---
+REPO_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+REAL_USER="${SUDO_USER:-$(whoami)}"
+USER_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
+
+# --- Logging ---
+log() { echo -e "\033[0;32m[INFO]\033[0m $1"; }
+warn() { echo -e "\033[0;33m[WARN]\033[0m $1"; }
+error() { echo -e "\033[0;31m[ERROR]\033[0m $1"; exit 1; }
+
+# --- Root Guard ---
+if [ "$EUID" -ne 0 ]; then
+    error "Please run as root: sudo $0"
+fi
+
+# ==========================================
+# PHASE 1: SYSTEM CONFIGURATION (ROOT)
+# ==========================================
+
+install_base_deps() {
+    log "Installing base dependencies..."
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update -q
+    # ca-certificates and curl are vital for adding repos
+    apt-get install -y -q ca-certificates curl gnupg unzip git build-essential
+}
+
+install_docker_official() {
+    if command -v docker &>/dev/null; then return 0; fi
+    log "Installing Docker (Official Repo)..."
+
+    # 1. Setup Keyrings
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    chmod a+r /etc/apt/keyrings/docker.gpg
+
+    # 2. Add Repo (Detects Debian/Ubuntu/Kali)
+    # Note: For Kali/Parrot, we force "debian" or "ubuntu" codenames if needed, 
+    # but $(. /etc/os-release && echo "$VERSION_CODENAME") usually works.
+    . /etc/os-release
+    echo \
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$ID \
+    $VERSION_CODENAME stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+    # 3. Install
+    apt-get update -q
+    apt-get install -y -q docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+    # 4. Permissions
+    usermod -aG docker "$REAL_USER"
+}
+
+harden_ssh() {
+    log "Hardening SSH..."
+    local CONFIG_CONTENT="PubkeyAuthentication yes
+PasswordAuthentication no
+PermitRootLogin no
+ChallengeResponseAuthentication no"
+
+    # Robust Check: Does sshd_config.d exist AND is it included?
+    if [ -d "/etc/ssh/sshd_config.d" ] && grep -q "^Include /etc/ssh/sshd_config.d" /etc/ssh/sshd_config; then
+        echo "$CONFIG_CONTENT" > /etc/ssh/sshd_config.d/99-hardening.conf
+    else
+        warn "sshd_config.d not supported or included. Appending to main config."
+        # Backup first
+        cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+        echo "$CONFIG_CONTENT" >> /etc/ssh/sshd_config
+    fi
+    
+    # Validate before restart
+    if sshd -t; then
+        systemctl restart ssh
+    else
+        error "SSH Config syntax check failed. Reverting changes..."
+        # If we wrote a file, remove it. If we appended, restore backup.
+        rm -f /etc/ssh/sshd_config.d/99-hardening.conf 2>/dev/null || mv /etc/ssh/sshd_config.bak /etc/ssh/sshd_config
+        exit 1
+    fi
+}
+
+install_mise_system_binary() {
+    if command -v mise &>/dev/null; then return 0; fi
+    log "Installing Mise binary..."
+    
+    install -m 0755 -d /etc/apt/keyrings
+    wget -qO - https://mise.jdx.dev/gpg-key.pub | gpg --dearmor | tee /etc/apt/keyrings/mise-archive-keyring.gpg > /dev/null
+    echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.gpg arch=amd64] https://mise.jdx.dev/deb stable main" | tee /etc/apt/sources.list.d/mise.list
+    
+    apt-get update -q
+    apt-get install -y -q mise
+}
+
+# ==========================================
+# PHASE 2: USER CONFIGURATION (DE-ELEVATED)
+# ==========================================
+
+# We define the user logic in a function, then export it so sudo can see it.
+configure_user_environment() {
+    local REPO_DIR="$1"
+    shift
+    local PROFILES=("$@")
+    local CONFIG_FILE="$HOME/.config/mise/config.toml"
+
+    echo -e "\033[0;32m[INFO]\033[0m Configuring Mise profiles for user $(whoami)..."
+
+    mkdir -p "$(dirname "$CONFIG_FILE")"
+    
+    # Generate Config
+    cat <<EOF > "$CONFIG_FILE"
+# Generated by setup.sh
+[imports]
+base = "$REPO_DIR/mise/base.toml"
+EOF
+
+    for p in "${PROFILES[@]}"; do
+        if [ -f "$REPO_DIR/mise/$p.toml" ]; then
+            echo "$p = \"$REPO_DIR/mise/$p.toml\"" >> "$CONFIG_FILE"
+        fi
+    done
+
+    echo -e "\n[settings]\nexperimental = true" >> "$CONFIG_FILE"
+
+    # Install Tools
+    # 'mise trust' ensures we don't get prompted for the config we just wrote
+    mise trust
+    mise install -y
+}
+
+export -f configure_user_environment
+
+# ==========================================
+# MAIN EXECUTION
+# ==========================================
+
+# Parse Args
+ACTIVE_PROFILES=()
+SSH_KEY=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        dev|rev|pwn) ACTIVE_PROFILES+=("$1"); shift ;;
+        all) ACTIVE_PROFILES+=("dev" "rev" "pwn"); shift ;;
+        --ssh-key) SSH_KEY="$2"; shift 2 ;;
+        *) shift ;;
+    esac
+done
+
+# 1. Run Root Tasks
+install_base_deps
+install_docker_official
+install_mise_system_binary
+harden_ssh
+
+# 2. Add SSH Key (Root task, but affects user file)
+if [ -n "$SSH_KEY" ]; then
+    mkdir -p "$USER_HOME/.ssh"
+    if ! grep -qF "$SSH_KEY" "$USER_HOME/.ssh/authorized_keys" 2>/dev/null; then
+        echo "$SSH_KEY" >> "$USER_HOME/.ssh/authorized_keys"
+        chown -R "$REAL_USER:$REAL_USER" "$USER_HOME/.ssh"
+        chmod 700 "$USER_HOME/.ssh"
+        chmod 600 "$USER_HOME/.ssh/authorized_keys"
+    fi
+fi
+
+# 3. Drop Privileges & Handoff to User
+# We pass the repo dir and profiles as arguments to the de-elevated function
+su "$REAL_USER" -c "bash -c 'configure_user_environment \"$REPO_DIR\" ${ACTIVE_PROFILES[*]}'"
+
+log "Setup Complete."
+warn "Please log out and log back in for Docker group changes to take effect."

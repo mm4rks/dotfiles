@@ -1,7 +1,0 @@
-# mise/rev.toml
-# Tools for reverse engineering.
-
-[tools]
-java = "21"
-"pipx:semgrep" = { version = "latest", "pipx_args" = ["--pip-args", "'--break-system-packages'"] }
-"cargo:floss" = "latest"

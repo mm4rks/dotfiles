@@ -1,7 +1,3 @@
-# mise/dev.toml
-# Tools for software development.
-
-[tools]
 node = "20"
 python = "3.11"
 go = "latest"

@@ -166,3 +166,6 @@ source_syntax_highlighting() {
     fi
 }
 source_syntax_highlighting
+
+# Activate mise for tool version management
+eval "$(mise activate zsh)"

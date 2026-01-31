@@ -1,5 +1,8 @@
-# mise/base.toml
-# Core tools available in all profiles.
+# This is the base config file for mise.
+# It includes the main [settings] and [tools] sections.
+
+[settings]
+experimental = true
 
 [tools]
 neovim = "latest"
@@ -7,5 +10,5 @@ zoxide = "latest"
 fzf = "latest"
 ripgrep = "latest"
 bat = "latest"
-"eza-community/eza" = "latest"
-"dandavison/delta" = "latest"
+eza = "latest"
+delta = "latest"
