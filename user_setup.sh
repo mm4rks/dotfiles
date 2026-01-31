@@ -44,9 +44,6 @@ configure_mise() {
     
     log "Adding mise plugins..."
     mise plugin add ghidra https://github.com/mise-plugins/mise-ghidra.git || true 
-    mise plugin add eza https://github.com/eza-community/eza.git || true
-    mise plugin add delta https://github.com/dandavison/delta.git || true
-    mise plugin add bloodhound-cli https://github.com/specterops/bloodhound-cli.git || true
     
     log "Generating mise config..."
     cp "$REPO_DIR/mise/base.toml" "$CONFIG_FILE"

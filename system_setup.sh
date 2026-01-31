@@ -27,7 +27,7 @@ install_base_deps() {
     log "Installing base dependencies..."
     export DEBIAN_FRONTEND=noninteractive
     apt-get update -q
-    apt-get install -y -q ca-certificates curl gnupg unzip git build-essential stow wget openssh-server fuse pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh
+    apt-get install -y -q ca-certificates curl gnupg unzip git build-essential stow wget fuse pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh
 }
 
 install_docker_official() {
@@ -115,8 +115,13 @@ main() {
 
     install_base_deps
     install_docker_official
-    harden_ssh
     install_mise_system_binary
+
+    if [[ " ${PROFILES[*]} " =~ " ssh " ]]; then
+        log "Installing openssh-server..."
+        apt-get install -y -q openssh-server
+        harden_ssh
+    fi
 
     log "Changing ownership of user's .local directory..."
     mkdir -p "$USER_HOME/.local"
