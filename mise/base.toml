@@ -6,7 +6,7 @@ experimental = true
 
 [tools]
 neovim = "latest"
-node = "20"
+node = "22"
 zoxide = "latest"
 fzf = "latest"
 fd = "latest"
@@ -14,5 +14,5 @@ ripgrep = "latest"
 bat = "latest"
 eza = "latest"
 delta = "latest"
-python = "3.11"
+python = "latest"
 choose = "latest"
