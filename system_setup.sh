@@ -126,6 +126,8 @@ main() {
     log "Changing ownership of user's .local directory..."
     mkdir -p "$USER_HOME/.local"
     chown -R "$REAL_USER":"$REAL_USER" "$USER_HOME/.local" || warn "Could not chown .local, mise may fail."
+    chsh -s "$(which zsh)" "$REAL_USER"
+    
     
     log "Switching to user '$REAL_USER' to run user setup..."
     su - "$REAL_USER" -c "bash ${REPO_DIR}/user_setup.sh ${PROFILES[*]}"

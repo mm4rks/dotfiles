@@ -72,7 +72,6 @@ main() {
     configure_mise "$@"
     stow_dotfiles "$REPO_DIR"
 
-    chsh -s "$(which zsh)"
     log "User setup complete!"
 }
 
