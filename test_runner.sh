@@ -29,6 +29,9 @@ main() {
         docker build --target "$distro" -t "dotfiles-tester-$distro" -f "$DOCKERFILE" .
         log_success "Image for $distro built."
 
+        log_step "Making scripts executable..."
+        chmod +x system_setup.sh user_setup.sh
+
         log_step "Running setup workflow in $distro container..."
         # We run the container with the local dotfiles mounted as a volume.
         # The command now reflects the new two-step process:
@@ -37,7 +40,7 @@ main() {
         docker run --rm \
                -v "$DOTFILES_DIR:/home/tester/dotfiles" \
                "dotfiles-tester-$distro" \
-               /bin/bash -c "sudo ./setup.sh all"
+               /bin/bash -c "sudo /home/tester/dotfiles/system_setup.sh all"
         
         log_success "Setup workflow completed successfully in $distro."
     done

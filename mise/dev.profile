@@ -1,5 +1,3 @@
-node = "20"
-python = "3.11"
 go = "latest"
 rust = "latest"
 "npm:@google/gemini-cli@nightly" = ""

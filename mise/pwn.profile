@@ -1,3 +1,3 @@
 "pipx:netexec" = "latest"
-"pipx:certipy-ad" = "4.8.2"
+"pipx:certipy-ad" = "latest"
 "bloodhound-cli" = "latest"
