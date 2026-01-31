@@ -4,15 +4,11 @@
 
 set -euo pipefail
 
-# --- Configuration ---
 REPO_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
-# --- Logging ---
 log() { echo -e "\033[0;32m[INFO]\033[0m $1"; }
 warn() { echo -e "\033[0;33m[WARN]\033[0m $1"; }
 error() { echo -e "\033[0;31m[ERROR]\033[0m $1"; exit 1; }
-
-# --- User-level functions ---
 
 stow_dotfiles() {
     local REPO_DIR="$1"
@@ -23,7 +19,7 @@ stow_dotfiles() {
         mv "$HOME/.zshrc" "$HOME/.zshrc.bak"
     fi
 
-    local CORE_PACKAGES=(zsh tmux eza git vivid nvim alacritty hypr kanshi waybar)
+    local CORE_PACKAGES=(zsh tmux eza git vivid nvim)
     for pkg in "${CORE_PACKAGES[@]}"; do
         if [ -d "${REPO_DIR}/${pkg}" ]; then
             log "Stowing '${pkg}'..."
@@ -41,9 +37,6 @@ configure_mise() {
 
     log "Configuring Mise profiles for user $(whoami)..."
     mkdir -p "$(dirname "$CONFIG_FILE")"
-    
-    log "Adding mise plugins..."
-    mise plugin add ghidra https://github.com/mise-plugins/mise-ghidra.git || true 
     
     log "Generating mise config..."
     cp "$REPO_DIR/mise/base.toml" "$CONFIG_FILE"
