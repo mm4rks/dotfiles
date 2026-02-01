@@ -97,6 +97,7 @@ PROMPT_EOL_MARK=""          # Hide the '%' character that appears at the end of 
 _fix_cursor() {
     echo -ne '\e[6 q'
 }
+
 # Disable cursor blinking (0 = off, 1 = on)
 ZLE_CURSOR_BLINK=0
 

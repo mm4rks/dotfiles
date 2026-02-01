@@ -96,16 +96,36 @@ install_mise_system_binary() {
 
 install_jetbrains_mono_nerd_font() {
     log "Installing JetBrainsMono Nerd Font..."
+
+    if ! command -v fc-cache &> /dev/null; then
+        warn "fc-cache not found. Skipping JetBrainsMono Nerd Font installation."
+        return 0
+    fi
+
+    local TEMP_DIR
+    TEMP_DIR="$(mktemp -d)"
+    trap 'rm -rf "$TEMP_DIR"' RETURN
+
     local FONT_DIR="/usr/local/share/fonts/NerdFonts"
     local FONT_ZIP="JetBrainsMono.zip"
     local FONT_URL="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/$FONT_ZIP"
 
     mkdir -p "$FONT_DIR"
-    wget -qO "/tmp/$FONT_ZIP" "$FONT_URL"
-    unzip -q "/tmp/$FONT_ZIP" -d "$FONT_DIR"
-    rm "/tmp/$FONT_ZIP"
+
+    log "Downloading JetBrainsMono Nerd Font from ${FONT_URL}..."
+    if ! wget -qO "${TEMP_DIR}/$FONT_ZIP" "$FONT_URL"; then
+        warn "Failed to download JetBrainsMono Nerd Font. Skipping installation."
+        return 1
+    fi
+
+    log "Unzipping font to $FONT_DIR..."
+    if ! unzip -q "${TEMP_DIR}/$FONT_ZIP" -d "$FONT_DIR"; then
+        warn "Failed to unzip JetBrainsMono Nerd Font. Skipping installation."
+        return 1
+    fi
+    
     fc-cache -fv > /dev/null
-    log "JetBrainsMono Nerd Font installed."
+    log "JetBrainsMono Nerd Font installed and cache refreshed."
 }
 
 install_bloodhound() {
@@ -141,7 +161,6 @@ install_joern() {
         log_info "Joern is already installed. Skipping."
         return 0
     fi
-    install_jdk
     log_step "Installing Joern..."
     local TEMP_DIR
     TEMP_DIR="$(mktemp -d)"
