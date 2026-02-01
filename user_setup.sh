@@ -61,6 +61,7 @@ main() {
     if [ "$EUID" -eq 0 ]; then
         error "This script should be run as a regular user, not as root."
     fi
+    eval "$(mise activate bash)"
 
     configure_mise "${PROFILES[@]}"
     stow_dotfiles "$REPO_DIR"
