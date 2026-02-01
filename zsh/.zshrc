@@ -82,6 +82,18 @@ source ~/.zsh_env.sh
 source ~/.zsh_functions.sh
 source ~/.zsh_plugins.sh
 
+# source from zsh_plugins.sh
+source_if_exists /etc/zsh_command_not_found
+source_autosuggestions
+source_syntax_highlighting
+
+if command -v fzf &> /dev/null; then
+    source <(fzf --zsh)
+fi
+
+if command -v zoxide &> /dev/null; then
+    eval "$(zoxide init zsh)"
+fi
 
 # Register widgets from .zsh_functions.sh
 zle -N tmux_smart_detach

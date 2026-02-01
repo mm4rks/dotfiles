@@ -27,7 +27,7 @@ install_base_deps() {
     log "Installing base dependencies..."
     export DEBIAN_FRONTEND=noninteractive
     apt-get update -qq
-    apt-get install -y -qq ca-certificates curl gnupg unzip git build-essential stow wget libfuse2 pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh linux-headers-generic libkrb5-dev cmake
+    apt-get install -y -qq ca-certificates curl gnupg unzip git build-essential stow wget libfuse2 pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh linux-headers-generic libkrb5-dev cmake zsh-autosuggestions zsh-syntax-highlighting
 }
 
 install_docker_official() {
