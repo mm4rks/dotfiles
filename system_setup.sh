@@ -119,7 +119,7 @@ install_jetbrains_mono_nerd_font() {
     fi
 
     log "Unzipping font to $FONT_DIR..."
-    if ! unzip -q "${TEMP_DIR}/$FONT_ZIP" -d "$FONT_DIR"; then
+    if ! unzip -q -o "${TEMP_DIR}/$FONT_ZIP" -d "$FONT_DIR"; then
         warn "Failed to unzip JetBrainsMono Nerd Font. Skipping installation."
         return 1
     fi
@@ -158,10 +158,10 @@ install_bloodhound() {
 
 install_joern() {
     if command -v joern &>/dev/null; then
-        log_info "Joern is already installed. Skipping."
+        log "Joern is already installed. Skipping."
         return 0
     fi
-    log_step "Installing Joern..."
+    log "Installing Joern..."
     local TEMP_DIR
     TEMP_DIR="$(mktemp -d)"
     trap 'rm -rf "$TEMP_DIR"' RETURN
