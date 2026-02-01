@@ -87,6 +87,8 @@ source_autosuggestions
 source_syntax_highlighting
 
 eval "$(mise activate zsh)"
+eval "$(mise completion zsh)"
+    
 
 if command -v fzf &> /dev/null; then
     source <(fzf --zsh)
