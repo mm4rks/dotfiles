@@ -52,7 +52,6 @@ configure_mise() {
     mise trust --yes
     mise install -y
     mise reshim
-    mise completion zsh
 }
 
 
