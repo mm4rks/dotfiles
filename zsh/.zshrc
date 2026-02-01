@@ -75,6 +75,8 @@ bindkey '^K' kill-line              # Delete from cursor to end of line
 bindkey '^Y' yank                   # Paste (yank)
 bindkey '\ed' kill-word             # Alt-d, delete word forward
 
+eval "$(mise activate zsh)"
+eval "$(mise completion zsh)"
 source ~/.zsh_alias.sh
 source ~/.zsh_docker.sh
 source ~/.zsh_env.sh
@@ -86,8 +88,6 @@ source_if_exists /etc/zsh_command_not_found
 source_autosuggestions
 source_syntax_highlighting
 
-eval "$(mise activate zsh)"
-eval "$(mise completion zsh)"
     
 
 if command -v fzf &> /dev/null; then

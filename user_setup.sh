@@ -51,7 +51,6 @@ configure_mise() {
     log "Installing tools with mise..."
     mise trust --yes
     mise install -y
-    mise reshim
 }
 
 
@@ -60,9 +59,11 @@ main() {
     if [ "$EUID" -eq 0 ]; then
         error "This script should be run as a regular user, not as root."
     fi
-    eval "$(mise activate bash)"
 
     configure_mise "${PROFILES[@]}"
+    log "Refreshing mise environment..."
+    eval "$(mise activate bash)"
+    hash -r
     stow_dotfiles "$REPO_DIR"
 
     for profile in "${PROFILES[@]}"; do
