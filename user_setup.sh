@@ -52,6 +52,7 @@ configure_mise() {
     mise trust --yes
     mise install -y
     mise reshim
+    mise completion
 }
 
 
@@ -67,6 +68,7 @@ main() {
     for profile in "${PROFILES[@]}"; do
         case "$profile" in
             pwn)
+                pipx install git+https://github.com/Pennyw0rth/NetExec
                 pipx install git+https://github.com/aniqfakhrul/powerview.py
                 ;;
         esac
