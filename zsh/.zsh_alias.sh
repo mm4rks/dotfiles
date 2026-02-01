@@ -22,6 +22,14 @@ else
 fi
 alias ntlm.pw='function _ntlm(){ curl https://ntlm.pw/$1; }; _ntlm' # Fetches NTLM hashes from ntlm.pw for a given value
 
+if command -v batcat &> /dev/null; then
+    alias bat='batcat'
+fi
+
+if command -v bat &> /dev/null; then
+    alias cat='bat --paging=never' # Conditional alias for bat
+    alias less='bat'
+fi
 
 if command -v eza &> /dev/null; then
   alias ls='eza -lh --group-directories-first --icons=auto'
@@ -59,7 +67,8 @@ alias ....='cd ../../..'
 # Tools
 # alias d='docker'
 # alias r='rails'
-n() { if [ "$#" -eq 0 ]; then nvim .; else nvim "$@"; fi; }
+# n() { if [ "$#" -eq 0 ]; then nvim .; else nvim "$@"; fi; }
+alias n="nvim"
 
 # Git
 alias g='git'
@@ -71,12 +80,4 @@ alias gcad='git commit -a --amend'
 #     alias vim='nvim' # Conditional alias for Neovim
 # fi
 
-if command -v batcat &> /dev/null; then
-    alias bat='batcat'
-fi
-
-if command -v bat &> /dev/null; then
-    alias cat='bat --paging=never' # Conditional alias for bat
-    alias less='bat'
-fi
 alias devdocs="docker run --name devdocs -d -p 9292:9292 ghcr.io/freecodecamp/devdocs:latest"
