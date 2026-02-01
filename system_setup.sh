@@ -193,10 +193,11 @@ install_ghidra() {
     GHIDRA_DIR_NAME=$(unzip -Z -1 "${TEMP_DIR}/ghidra.zip" | head -1 | sed 's/\\\///')
     unzip -q -o "${TEMP_DIR}/ghidra.zip" -d "${TEMP_DIR}"
     
-    sudo mv "${TEMP_DIR}/${GHIDRA_DIR_NAME}" /opt/ghidra
-    sudo ln -sf /opt/ghidra/ghidraRun /usr/local/bin/ghidra
+    mv "${TEMP_DIR}/${GHIDRA_DIR_NAME}" /opt/ghidra
+    ln -sf /opt/ghidra/ghidraRun /usr/local/bin/ghidra
     log "Ghidra installed successfully."
 }
+
 main() {
     local PROFILES=("$@")
 
