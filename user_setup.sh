@@ -55,14 +55,22 @@ configure_mise() {
 
 
 main() {
+    local PROFILES=("$@")
     eval "$(mise activate bash)"
     if [ "$EUID" -eq 0 ]; then
         error "This script should be run as a regular user, not as root."
     fi
 
-    configure_mise "$@"
+    configure_mise "${PROFILES[@]}"
     stow_dotfiles "$REPO_DIR"
 
+    for profile in "${PROFILES[@]}"; do
+        case "$profile" in
+            pwn)
+                pipx install git+https://github.com/aniqfakhrul/powerview.py
+                ;;
+        esac
+    done
     log "User setup complete!"
 }
 
