@@ -26,8 +26,8 @@ fi
 install_base_deps() {
     log "Installing base dependencies..."
     export DEBIAN_FRONTEND=noninteractive
-    apt-get update -q
-    apt-get install -y -q ca-certificates curl gnupg unzip git build-essential stow wget libfuse2 pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh linux-headers-generic libkrb5-dev cmake
+    apt-get update -qq
+    apt-get install -y -qq ca-certificates curl gnupg unzip git build-essential stow wget libfuse2 pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh linux-headers-generic libkrb5-dev cmake
 }
 
 install_docker_official() {
@@ -53,8 +53,8 @@ install_docker_official() {
 
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$DOCKER_OS_ID $DOCKER_CODENAME stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-    apt-get update -q
-    apt-get install -y -q docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    apt-get update -qq
+    apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     usermod -aG docker "$REAL_USER"
 }
 
@@ -108,35 +108,101 @@ install_jetbrains_mono_nerd_font() {
     log "JetBrainsMono Nerd Font installed."
 }
 
-# --- Main Execution ---
-main() {
-    local PROFILES=()
-    while [[ $# -gt 0 ]]; do
-        case $1 in
-            all) 
-                PROFILES+=("dev" "rev" "pwn")
-                shift
-                ;; 
-            *) 
-                PROFILES+=("$1")
-                shift
-                ;; 
-        esac
-    done
+install_bloodhound() {
+    if command -v bloodhound-cli &>/dev/null; then
+        log "bloodhound-cli is already installed. Skipping."
+        return 0
+    fi
+    
+    log "Installing BloodHound..."
+    
+    if command -v docker &>/dev/null; then
+        warn "bloodhound-cli requires docker. abort"
+        return 0
+    fi
 
-    PROFILES+=("base")
-    PROFILES=($(echo "${PROFILES[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
+    local TEMP_DIR
+    TEMP_DIR="$(mktemp -d)"
+    trap 'rm -rf "$TEMP_DIR"' RETURN
+
+    local BLOODHOUND_CLI_URL="https://github.com/SpecterOps/bloodhound-cli/releases/latest/download/bloodhound-cli-linux-amd64.tar.gz"
+    
+    log "Downloading bloodhound-cli from ${BLOODHOUND_CLI_URL}..."
+    if ! curl --fail --location -o "${TEMP_DIR}/bloodhound-cli.tar.gz" "$BLOODHOUND_CLI_URL"; then
+        error "Failed to download bloodhound-cli."
+    fi
+    
+    tar -xzf "${TEMP_DIR}/bloodhound-cli.tar.gz" -C "${TEMP_DIR}"
+    mv "${TEMP_DIR}/bloodhound-cli" /usr/local/bin/
+}
+
+install_joern() {
+    if command -v joern &>/dev/null; then
+        log_info "Joern is already installed. Skipping."
+        return 0
+    fi
+    install_jdk
+    log_step "Installing Joern..."
+    local TEMP_DIR
+    TEMP_DIR="$(mktemp -d)"
+    trap 'rm -rf "$TEMP_DIR"' RETURN
+    curl -L "https://github.com/joernio/joern/releases/latest/download/joern-install.sh" -o "${TEMP_DIR}/joern-install.sh"
+    chmod +x "${TEMP_DIR}/joern-install.sh"
+    sudo "${TEMP_DIR}/joern-install.sh" --non-interactive
+    log "Joern installed successfully."
+}
+
+install_ghidra() {
+    if command -v ghidra &>/dev/null; then
+        log "Ghidra is already installed. Skipping."
+        return 0
+    fi
+    log "Installing Ghidra..."
+    local TEMP_DIR
+    TEMP_DIR="$(mktemp -d)"
+    trap 'rm -rf "$TEMP_DIR"' RETURN
+
+    local GHIDRA_URL
+    GHIDRA_URL=$(curl -s https://api.github.com/repos/NationalSecurityAgency/ghidra/releases/latest | jq -r '.assets[] | select(.name | endswith(".zip")) | .browser_download_url')
+    if [ -z "$GHIDRA_URL" ]; then
+        warn "Could not find Ghidra release URL. Skipping."
+        return 1
+    fi
+
+    curl --fail --location -o "${TEMP_DIR}/ghidra.zip" "$GHIDRA_URL"
+    local GHIDRA_DIR_NAME
+    GHIDRA_DIR_NAME=$(unzip -Z -1 "${TEMP_DIR}/ghidra.zip" | head -1 | sed 's/\\\///')
+    unzip -q -o "${TEMP_DIR}/ghidra.zip" -d "${TEMP_DIR}"
+    
+    sudo mv "${TEMP_DIR}/${GHIDRA_DIR_NAME}" /opt/ghidra
+    sudo ln -sf /opt/ghidra/ghidraRun /usr/local/bin/ghidra
+    log "Ghidra installed successfully."
+}
+main() {
+    local PROFILES=("$@")
 
     install_base_deps
     install_docker_official
     install_mise_system_binary
     install_jetbrains_mono_nerd_font
 
-    if [[ " ${PROFILES[*]} " =~ " ssh " ]]; then
-        log "Installing openssh-server..."
-        apt-get install -y -q openssh-server
-        harden_ssh
-    fi
+    # 2. Loop directly over the provided args
+    for profile in "${PROFILES[@]}"; do
+        case "$profile" in
+            ssh)
+                log "Installing openssh-server..."
+                apt-get install -y -qq openssh-server
+                harden_ssh
+                ;;
+            pwn)
+                install_bloodhound
+                ;;
+            dev)
+                install_joern
+                install_ghidra
+                ;;
+        esac
+    done
 
     log "Changing ownership of user's .local directory..."
     mkdir -p "$USER_HOME/.local"

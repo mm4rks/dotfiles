@@ -41,7 +41,6 @@ configure_mise() {
     log "Generating mise config..."
     cp "$REPO_DIR/mise/base.toml" "$CONFIG_FILE"
     for p in "${PROFILES[@]}"; do
-        if [[ "$p" == "base" ]]; then continue; fi
         if [ -f "$REPO_DIR/mise/$p.profile" ]; then
             log "Adding tools from profile: $p"
             echo "" >> "$CONFIG_FILE"
@@ -55,7 +54,6 @@ configure_mise() {
 }
 
 
-# --- Main Execution ---
 main() {
     eval "$(mise activate bash)"
     if [ "$EUID" -eq 0 ]; then
