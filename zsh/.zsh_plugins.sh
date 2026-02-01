@@ -8,7 +8,7 @@ source_autosuggestions() {
         "/usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
     )
 
-    for l "${locations[@]}"; do
+    for l in "${locations[@]}"; do
         if source_if_exists "$l"; then
             ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=244'
             return
