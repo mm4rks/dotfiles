@@ -51,12 +51,12 @@ configure_mise() {
     log "Installing tools with mise..."
     mise trust --yes
     mise install -y
+    mise reshim
 }
 
 
 main() {
     local PROFILES=("$@")
-    eval "$(mise activate bash)"
     if [ "$EUID" -eq 0 ]; then
         error "This script should be run as a regular user, not as root."
     fi

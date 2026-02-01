@@ -1,15 +1,4 @@
-source_if_exists() {
-    [ -f "$1" ] && source "$1"
-} # Helper function to source a file only if it exists.
 
-os_detect() {
-    if [ -f /etc/os-release ]; then
-        . /etc/os-release
-        echo "$ID"
-    else
-        echo "unknown"
-    fi
-}
 # --- General Shell Options ----------------------------------------------------
 setopt interactivecomments  # Allow comments in the interactive shell.
 setopt promptsubst          # Enable command substitution in the prompt.
@@ -42,30 +31,6 @@ setopt histverify           # Show history expansions before executing them.
 # --- Smart detach ---
 setopt ignore_eof
 
-tmux_smart_detach() {
-  if [[ -z "$BUFFER" ]]; then
-    if [[ -n "$TMUX" ]]; then
-      # INSIDE TMUX: Check pane count
-      local num_panes=$(tmux list-panes | wc -l)
-      if [[ "$num_panes" -gt 1 ]]; then
-        # More than one pane, so just exit the current shell/pane
-        builtin exit
-      else
-        # Last pane in the window, so detach the client
-        tmux detach-client
-      fi
-    else
-      # NOT IN TMUX: Close the shell normally
-      builtin exit
-    fi
-  else
-    # LINE NOT EMPTY: Delete character
-    zle delete-char-or-list
-  fi
-}
-
-zle -N tmux_smart_detach
-bindkey '^D' tmux_smart_detach
 
 # --- Completion System --------------------------------------------------------
 # Add Docker completions to fpath
@@ -87,24 +52,14 @@ zstyle ':completion:*' format 'Completing %d'
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
 
-PROMPT_EOL_MARK=""          # Hide the '%' character that appears at the end of lines.
-
-_fix_cursor() {
-    echo -ne '\e[6 q'
-}
-# Disable cursor blinking (0 = off, 1 = on)
-ZLE_CURSOR_BLINK=0
-
-precmd_functions+=(_fix_cursor)
 
 autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey '^R' history-incremental-search-backward # Ctrl+R for history search.
 bindkey ' ' magic-space                          # Space performs history expansion (e.g., '!!').
-bindkey '^[[Z' undo                              # Shift+Tab to undo. TODO change this to undo in insert mode only
-bindkey '^x^e' edit-command-line-tmux-float                 # Ctrl+X, Ctrl+E to open editor.
-bindkey '\ef' forward-word # Alt-f
-bindkey '\eb' backward-word # Alt-b
+bindkey '^[[Z' undo                              # Shift+Tab to undo.
+bindkey '\ef' forward-word                       # Alt-f
+bindkey '\eb' backward-word                      # Alt-b
 bindkey '^A' beginning-of-line
 bindkey '^E' end-of-line
 bindkey '^F' autosuggest-accept
@@ -120,37 +75,35 @@ bindkey '^K' kill-line              # Delete from cursor to end of line
 bindkey '^Y' yank                   # Paste (yank)
 bindkey '\ed' kill-word             # Alt-d, delete word forward
 
+eval "$(mise activate zsh)"
 source ~/.zsh_alias.sh
 source ~/.zsh_docker.sh
 source ~/.zsh_env.sh
 source ~/.zsh_functions.sh
 source ~/.zsh_plugins.sh
 
-# Initialize zoxide
-if command -v zoxide &> /dev/null; then
-    eval "$(zoxide init zsh)"
-fi
 
-# Enable syntax highlighting for zsh
-source_syntax_highlighting() {
-    local os
-    os=$(os_detect)
-
-    if [[ "$os" == "arch" ]]; then
-        source_if_exists /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-    elif [[ "$os" == "debian" || "$os" == "parrot" ]]; then
-        source_if_exists /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-    fi
-}
-source_syntax_highlighting
-
-# Activate mise for tool version management
-eval "$(mise activate zsh)"
+# Register widgets from .zsh_functions.sh
+zle -N tmux_smart_detach
+zle -N edit-command-line-tmux-float
+bindkey '^D' tmux_smart_detach
+bindkey '^x^e' edit-command-line-tmux-float      # Ctrl+X, Ctrl+E to open editor.
 
 # --- Prompt ---
 # Load pure prompt if available, otherwise use a minimal fallback.
+
+PROMPT_EOL_MARK=""          # Hide the '%' character that appears at the end of lines.
+
+_fix_cursor() {
+    echo -ne '\e[6 q'
+}
+# Disable cursor blinking (0 = off, 1 = on)
+ZLE_CURSOR_BLINK=0
+
+precmd_functions+=(_fix_cursor)
 _pure_sources=(
     "$HOME/.zsh/pure"
+    "$HOME/.mise/installs/pure-prompt/latest/pure.zsh" # mise installation path
     "/usr/lib/node_modules/pure-prompt"
 )
 

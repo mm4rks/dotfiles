@@ -112,8 +112,6 @@ edit-command-line-tmux-float() {
   zle redisplay
 } # Description: Edit the current command in a floating tmux popup or external editor.
 
-# Create a new widget from the function
-zle -N edit-command-line-tmux-float
 
 updatepwnbox() {
     # Configuration
@@ -176,7 +174,7 @@ function tmux_smart_detach() {
         builtin exit
       else # num_panes == 1
         if [[ "$num_windows" -gt 1 ]]; then
-          tmux kill-window
+          builtin exit
         else # num_windows == 1
           tmux detach-client
         fi
