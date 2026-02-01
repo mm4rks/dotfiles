@@ -27,7 +27,7 @@ install_base_deps() {
     log "Installing base dependencies..."
     export DEBIAN_FRONTEND=noninteractive
     apt-get update -qq
-    apt-get install -y -qq ca-certificates curl gnupg unzip git build-essential stow wget libfuse2 pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh linux-headers-generic libkrb5-dev cmake zsh-autosuggestions zsh-syntax-highlighting
+    apt-get install -y -qq ca-certificates curl gnupg unzip git build-essential stow wget libfuse2 pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh linux-headers-generic libkrb5-dev cmake zsh-autosuggestions zsh-syntax-highlighting wl-clipboard xclip
 }
 
 install_docker_official() {
@@ -108,7 +108,7 @@ install_jetbrains_mono_nerd_font() {
         return 0
     fi
 
-    local TEMP_DIR
+    local TEMP_DIR=""
     TEMP_DIR="$(mktemp -d)"
     trap 'rm -rf "$TEMP_DIR"' RETURN
 
@@ -147,7 +147,7 @@ install_bloodhound() {
         return 0
     fi
 
-    local TEMP_DIR
+    local TEMP_DIR=""
     TEMP_DIR="$(mktemp -d)"
     trap 'rm -rf "$TEMP_DIR"' RETURN
 
@@ -168,7 +168,7 @@ install_joern() {
         return 0
     fi
     log "Installing Joern..."
-    local TEMP_DIR
+    local TEMP_DIR=""
     TEMP_DIR="$(mktemp -d)"
     trap 'rm -rf "$TEMP_DIR"' RETURN
     curl -L "https://github.com/joernio/joern/releases/latest/download/joern-install.sh" -o "${TEMP_DIR}/joern-install.sh"
@@ -183,7 +183,7 @@ install_ghidra() {
         return 0
     fi
     log "Installing Ghidra..."
-    local TEMP_DIR
+    local TEMP_DIR=""
     TEMP_DIR="$(mktemp -d)"
     trap 'rm -rf "$TEMP_DIR"' RETURN
 

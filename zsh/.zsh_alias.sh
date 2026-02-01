@@ -4,10 +4,6 @@ alias 2='cd -2'
 alias 3='cd -3'
 alias 4='cd -4'
 alias cd..='cd ..'
-alias ls='ls --color=auto'
-alias la='ls -a'
-alias ll='ls -la'
-alias l='ls'
 alias grep='grep --color=auto'
 alias diff='diff --color=auto'
 alias ip='ip --color=auto'
@@ -38,6 +34,11 @@ if command -v eza &> /dev/null; then
   alias ltt='eza --tree --level=4 --long --icons --git'
   alias lta='lt -a'
   alias ltta='ltt -a'
+else
+  alias ls='ls --color=auto'
+  alias la='ls -a'
+  alias ll='ls -la'
+  alias l='ls'
 fi
 
 alias ff="fzf --preview 'bat --style=numbers --color=always {}'"
