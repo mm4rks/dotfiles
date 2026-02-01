@@ -102,6 +102,12 @@ install_jetbrains_mono_nerd_font() {
         return 0
     fi
 
+    # Check if the font is already installed
+    if fc-list | grep -qi "JetBrainsMono Nerd Font"; then
+        log "JetBrainsMono Nerd Font already appears to be installed. Skipping download and installation."
+        return 0
+    fi
+
     local TEMP_DIR
     TEMP_DIR="$(mktemp -d)"
     trap 'rm -rf "$TEMP_DIR"' RETURN
@@ -217,7 +223,7 @@ main() {
             pwn)
                 install_bloodhound
                 ;;
-            dev)
+            rev)
                 install_joern
                 install_ghidra
                 ;;
