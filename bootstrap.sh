@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# bootstrap.sh: Clones the dotfiles repository and executes the setup script with the 'pwn' profile.
+# bootstrap.sh: Clones the dotfiles repository and executes the setup script with the 'pwn' and 'ssh' profiles.
 
 DOTFILES_REPO="https://github.com/mm4rks/dotfiles.git" # Assuming this is the correct repo URL
 DOTFILES_DIR="$HOME/.dotfiles"
@@ -20,17 +20,18 @@ else
     fi
 fi
 
-# Execute the setup.sh script with the 'pwn' profile
-if [ -f "$DOTFILES_DIR/setup.sh" ]; then
-    echo "[*] Executing setup.sh with 'pwn' profile..."
-    chmod +x "$DOTFILES_DIR/setup.sh"
-    "$DOTFILES_DIR/setup.sh" pwn
+# Execute the setup scripts with the 'pwn' and 'ssh' profiles
+# The system_setup.sh script needs to be run with sudo
+if [ -f "$DOTFILES_DIR/system_setup.sh" ]; then
+    echo "[*] Executing system_setup.sh with 'pwn' and 'ssh' profiles..."
+    chmod +x "$DOTFILES_DIR/system_setup.sh"
+    sudo "$DOTFILES_DIR/system_setup.sh" pwn ssh
     if [ $? -ne 0 ]; then
-        echo "[-] Error: setup.sh failed."
+        echo "[-] Error: system_setup.sh failed."
         exit 1
     fi
 else
-    echo "[-] Error: setup.sh not found in $DOTFILES_DIR."
+    echo "[-] Error: system_setup.sh not found in $DOTFILES_DIR."
     exit 1
 fi
 

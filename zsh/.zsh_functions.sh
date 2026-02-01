@@ -101,7 +101,7 @@ edit-command-line-tmux-float() {
   echo "$BUFFER" > "$TFILE"
 
   if [[ -n "$TMUX" ]]; then
-    tmux display-popup -E "${EDITOR:-nvim} \"$TFILE\""
+    tmux display-popup -h 80% -w 80% -E "${EDITOR:-nvim} \"$TFILE\""
   else
     "${EDITOR:-nvim}" "$TFILE"
   fi
@@ -112,8 +112,6 @@ edit-command-line-tmux-float() {
   zle redisplay
 } # Description: Edit the current command in a floating tmux popup or external editor.
 
-# Create a new widget from the function
-zle -N edit-command-line-tmux-float
 
 updatepwnbox() {
     # Configuration
@@ -166,3 +164,25 @@ EOF
     sshpass -p "$PASSWORD" ssh htb "nohup bash -c 'curl -sL $BOOTSTRAP_URL | bash' > /tmp/bootstrap.log 2>&1 &"
     echo "[+] Bootstrap process started in the background on 'htb'. You can disconnect."
 } # Description: Fetches Pwnbox credentials, updates SSH config, and triggers remote bootstrap on Hack The Box Pwnbox.
+
+function tmux_smart_detach() {
+  if [[ -z "$BUFFER" ]]; then
+    if [[ -n "$TMUX" ]]; then
+      local num_panes=$(tmux list-panes -F '#{pane_id}' | wc -l)
+      local num_windows=$(tmux list-windows -F '#{window_id}' | wc -l)
+      if [[ "$num_panes" -gt 1 ]]; then
+        builtin exit
+      else # num_panes == 1
+        if [[ "$num_windows" -gt 1 ]]; then
+          builtin exit
+        else # num_windows == 1
+          tmux detach-client
+        fi
+      fi
+    else
+      builtin exit
+    fi
+  else
+    zle delete-char-or-list
+  fi
+}

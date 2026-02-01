@@ -1,15 +1,4 @@
-source_if_exists() {
-    [ -f "$1" ] && source "$1"
-} # Helper function to source a file only if it exists.
 
-os_detect() {
-    if [ -f /etc/os-release ]; then
-        . /etc/os-release
-        echo "$ID"
-    else
-        echo "unknown"
-    fi
-}
 # --- General Shell Options ----------------------------------------------------
 setopt interactivecomments  # Allow comments in the interactive shell.
 setopt promptsubst          # Enable command substitution in the prompt.
@@ -42,30 +31,6 @@ setopt histverify           # Show history expansions before executing them.
 # --- Smart detach ---
 setopt ignore_eof
 
-tmux_smart_detach() {
-  if [[ -z "$BUFFER" ]]; then
-    if [[ -n "$TMUX" ]]; then
-      # INSIDE TMUX: Check pane count
-      local num_panes=$(tmux list-panes | wc -l)
-      if [[ "$num_panes" -gt 1 ]]; then
-        # More than one pane, so just exit the current shell/pane
-        builtin exit
-      else
-        # Last pane in the window, so detach the client
-        tmux detach-client
-      fi
-    else
-      # NOT IN TMUX: Close the shell normally
-      builtin exit
-    fi
-  else
-    # LINE NOT EMPTY: Delete character
-    zle delete-char-or-list
-  fi
-}
-
-zle -N tmux_smart_detach
-bindkey '^D' tmux_smart_detach
 
 # --- Completion System --------------------------------------------------------
 # Add Docker completions to fpath
@@ -87,47 +52,14 @@ zstyle ':completion:*' format 'Completing %d'
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
 
-PROMPT_EOL_MARK=""          # Hide the '%' character that appears at the end of lines.
 
-_fix_cursor() {
-    echo -ne '\e[6 q'
-}
-# Disable cursor blinking (0 = off, 1 = on)
-ZLE_CURSOR_BLINK=0
-
-precmd_functions+=(_fix_cursor)
-# --- Prompt ---
-# Load pure prompt if available, otherwise use a minimal fallback.
-_pure_sources=(
-    "$HOME/.zsh/pure"
-    "/usr/lib/node_modules/pure-prompt"
-)
-
-for _pure_source in "${_pure_sources[@]}"; do
-    if [ -f "$_pure_source/pure.zsh" ]; then
-        fpath+=("$_pure_source")
-        _pure_prompt_found=true
-        break
-    fi
-done
-
-if [ "$_pure_prompt_found" = true ]; then
-    autoload -U promptinit; promptinit
-    prompt pure
-else
-    local NEWLINE=$'\n'
-    PROMPT="${NEWLINE}%F{blue}%~%f${NEWLINE}%(?.%F{white}.%F{red})%(#.#.\$)%f "
-fi
-
-unset _pure_sources _pure_source _pure_prompt_found
 autoload -Uz edit-command-line
 zle -N edit-command-line
 bindkey '^R' history-incremental-search-backward # Ctrl+R for history search.
 bindkey ' ' magic-space                          # Space performs history expansion (e.g., '!!').
-bindkey '^[[Z' undo                              # Shift+Tab to undo. TODO change this to undo in insert mode only
-bindkey '^x^e' edit-command-line-tmux-float                 # Ctrl+X, Ctrl+E to open editor.
-bindkey '\ef' forward-word # Alt-f
-bindkey '\eb' backward-word # Alt-b
+bindkey '^[[Z' undo                              # Shift+Tab to undo.
+bindkey '\ef' forward-word                       # Alt-f
+bindkey '\eb' backward-word                      # Alt-b
 bindkey '^A' beginning-of-line
 bindkey '^E' end-of-line
 bindkey '^F' autosuggest-accept
@@ -143,26 +75,96 @@ bindkey '^K' kill-line              # Delete from cursor to end of line
 bindkey '^Y' yank                   # Paste (yank)
 bindkey '\ed' kill-word             # Alt-d, delete word forward
 
+source ~/.zsh_env.sh
+eval "$(mise activate zsh)"
+eval "$(mise completion zsh)"
 source ~/.zsh_alias.sh
 source ~/.zsh_docker.sh
-source ~/.zsh_env.sh
 source ~/.zsh_functions.sh
 source ~/.zsh_plugins.sh
 
-# Initialize zoxide
+# source from zsh_plugins.sh
+source_if_exists /etc/zsh_command_not_found
+source_autosuggestions
+source_syntax_highlighting
+
+    
+
+if command -v fzf &> /dev/null; then
+    source <(fzf --zsh)
+fi
+
 if command -v zoxide &> /dev/null; then
     eval "$(zoxide init zsh)"
 fi
 
-# Enable syntax highlighting for zsh
-source_syntax_highlighting() {
-    local os
-    os=$(os_detect)
+# Register widgets from .zsh_functions.sh
+zle -N tmux_smart_detach
+zle -N edit-command-line-tmux-float
+bindkey '^D' tmux_smart_detach
+bindkey '^x^e' edit-command-line-tmux-float      # Ctrl+X, Ctrl+E to open editor.
 
-    if [[ "$os" == "arch" ]]; then
-        source_if_exists /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-    elif [[ "$os" == "debian" || "$os" == "parrot" ]]; then
-        source_if_exists /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-    fi
+# --- Prompt Configuration ---
+
+PROMPT_EOL_MARK=""          # Hide the '%' character that appears at the end of lines.
+
+_fix_cursor() {
+    echo -ne '\e[6 q'
 }
-source_syntax_highlighting
+
+# Disable cursor blinking (0 = off, 1 = on)
+ZLE_CURSOR_BLINK=0
+
+precmd_functions+=(_fix_cursor)
+
+# Function to find and load pure prompt
+# --- Prompt ---
+# 1. Define candidate directories (Manual & System)
+_pure_sources=(
+    "$HOME/.zsh/pure"
+    "/usr/lib/node_modules/pure-prompt"
+)
+
+# 2. Add dynamic Mise path if found
+# We search for 'pure.zsh' inside the mise installs directory
+if [ -d "$HOME/.local/share/mise/installs" ]; then
+    _mise_pure_path=$(find "$HOME/.local/share/mise/installs" -maxdepth 6 -type f -name "pure.zsh" 2>/dev/null | head -n 1)
+    if [ -n "$_mise_pure_path" ]; then
+        # Prepend the mise directory to the list to give it priority
+        _pure_sources=("$(dirname "$_mise_pure_path")" "${_pure_sources[@]}")
+    fi
+fi
+
+_pure_prompt_found=false
+
+# 3. Iterate and Load
+for _pure_source in "${_pure_sources[@]}"; do
+    # Check for the main file
+    if [ -f "$_pure_source/pure.zsh" ]; then
+        fpath+=("$_pure_source")
+        
+        # VALIDATION: promptinit requires a file named 'prompt_pure_setup'.
+        # If Mise installed it as 'pure.zsh' only, we must symlink it for promptinit to work.
+        if [ ! -f "$_pure_source/prompt_pure_setup" ]; then
+             ln -sf "$_pure_source/pure.zsh" "$_pure_source/prompt_pure_setup"
+        fi
+        
+        # VALIDATION: Pure requires async.zsh.
+        # If it is named 'async.zsh', we must symlink it to 'async' for autoload to find it.
+        if [ -f "$_pure_source/async.zsh" ] && [ ! -f "$_pure_source/async" ]; then
+             ln -sf "$_pure_source/async.zsh" "$_pure_source/async"
+        fi
+
+        _pure_prompt_found=true
+        break
+    fi
+done
+
+if [ "$_pure_prompt_found" = true ]; then
+    autoload -U promptinit; promptinit
+    prompt pure
+else
+    local NEWLINE=$'\n'
+    PROMPT="${NEWLINE}%F{blue}%~%f${NEWLINE}%(?.%F{white}.%F{red})%(#.#.$)%f "
+fi
+unset _mise_pure_path _pure_sources _pure_source _pure_prompt_found

@@ -1,0 +1,80 @@
+#!/bin/bash
+# user_setup.sh: User-level environment configuration.
+# This script is intended to be run as a regular user, not as root.
+
+set -euo pipefail
+
+REPO_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+
+log() { echo -e "\033[0;32m[INFO]\033[0m $1"; }
+warn() { echo -e "\033[0;33m[WARN]\033[0m $1"; }
+error() { echo -e "\033[0;31m[ERROR]\033[0m $1"; exit 1; }
+
+stow_dotfiles() {
+    local REPO_DIR="$1"
+    log "Stowing dotfiles..."
+    
+    if [ -f "$HOME/.zshrc" ] && [ ! -L "$HOME/.zshrc" ]; then
+        warn "Backing up existing .zshrc to .zshrc.bak..."
+        mv "$HOME/.zshrc" "$HOME/.zshrc.bak"
+    fi
+
+    local CORE_PACKAGES=(zsh tmux eza git vivid nvim)
+    for pkg in "${CORE_PACKAGES[@]}"; do
+        if [ -d "${REPO_DIR}/${pkg}" ]; then
+            log "Stowing '${pkg}'..."
+            stow --dir="$REPO_DIR" --target="$HOME" --restow "$pkg" 2>/dev/null || warn "Stow found conflicts for '${pkg}'. It might be partially stowed."
+        fi
+    done
+
+    log "Synchronizing Neovim Lazy plugins..."
+    nvim --headless "+Lazy! sync" +qa
+}
+
+configure_mise() {
+    local PROFILES=($@)
+    local CONFIG_FILE="$HOME/.config/mise/config.toml"
+
+    log "Configuring Mise profiles for user $(whoami)..."
+    mkdir -p "$(dirname "$CONFIG_FILE")"
+    
+    log "Generating mise config..."
+    cp "$REPO_DIR/mise/base.toml" "$CONFIG_FILE"
+    for p in "${PROFILES[@]}"; do
+        if [ -f "$REPO_DIR/mise/$p.profile" ]; then
+            log "Adding tools from profile: $p"
+            echo "" >> "$CONFIG_FILE"
+            cat "$REPO_DIR/mise/$p.profile" >> "$CONFIG_FILE"
+        fi
+    done
+
+    log "Installing tools with mise..."
+    mise trust --yes
+    mise install -y
+}
+
+
+main() {
+    local PROFILES=("$@")
+    if [ "$EUID" -eq 0 ]; then
+        error "This script should be run as a regular user, not as root."
+    fi
+
+    configure_mise "${PROFILES[@]}"
+    log "Refreshing mise environment..."
+    eval "$(mise activate bash)"
+    hash -r
+    stow_dotfiles "$REPO_DIR"
+
+    for profile in "${PROFILES[@]}"; do
+        case "$profile" in
+            pwn)
+                pipx install git+https://github.com/Pennyw0rth/NetExec
+                pipx install git+https://github.com/aniqfakhrul/powerview.py
+                ;;
+        esac
+    done
+    log "User setup complete!"
+}
+
+main "$@"

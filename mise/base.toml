@@ -1,0 +1,19 @@
+# This is the base config file for mise.
+# It includes the main [settings] and [tools] sections.
+
+[settings]
+experimental = true
+
+[tools]
+neovim = "latest"
+node = "22"
+zoxide = "latest"
+fzf = "latest"
+fd = "latest"
+ripgrep = "latest"
+bat = "latest"
+eza = "latest"
+delta = "latest"
+python = "latest"
+choose = "latest"
+"npm:pure-prompt" = "latest"

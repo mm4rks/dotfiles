@@ -75,7 +75,7 @@ return {
                         ---@diagnostic disable-next-line: deprecated
                         return vim.tbl_flatten {
                             args,
-                            { "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case" },
+                            { "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case", "--hidden" },
                         }
                     end,
                     entry_maker = make_entry.gen_from_vimgrep(opts),
@@ -99,7 +99,7 @@ return {
             vim.keymap.set('n', '<leader>dg', builtin.diagnostics, {})
 
             vim.keymap.set('n', '<leader>rg', function()
-                live_multigrep({ default_text = vim.fn.expand("<cword>") })
+                live_multigrep({})
             end)
             vim.keymap.set('v', '<leader>rg', function()
                 local text = get_visual_selection()
