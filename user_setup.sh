@@ -69,9 +69,10 @@ main() {
     for profile in "${PROFILES[@]}"; do
         case "$profile" in
             pwn)
-                pipx install git+https://github.com/Pennyw0rth/NetExec
-                pipx install git+https://github.com/aniqfakhrul/powerview.py
-                mise exec python@3.12 -- pipx install certipy-ad
+                pipx ensurepath
+                pipx install --force git+https://github.com/Pennyw0rth/NetExec
+                pipx install --force git+https://github.com/aniqfakhrul/powerview.py
+                mise exec python@3.12 -- pipx install --force certipy-ad
                 ;;
         esac
     done
