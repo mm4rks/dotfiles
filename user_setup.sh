@@ -71,7 +71,7 @@ main() {
             pwn)
                 pipx install git+https://github.com/Pennyw0rth/NetExec
                 pipx install git+https://github.com/aniqfakhrul/powerview.py
-                pipx install --python "$(mise bin python@3.12)" certipy-ad
+                mise exec python@3.12 -- pipx install certipy-ad
                 ;;
         esac
     done

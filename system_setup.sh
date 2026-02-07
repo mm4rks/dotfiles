@@ -102,6 +102,7 @@ install_jetbrains_mono_nerd_font() {
         return 0
     fi
 
+    local FONT_DIR="/usr/local/share/fonts/NerdFonts"
     # Check if the font is already installed
     if fc-list | grep -qi "JetBrainsMono" && fc-list | grep -qi "Nerd Font"; then
         log "JetBrainsMono Nerd Font already appears to be installed (detected by fc-list). Skipping download and installation."
@@ -110,12 +111,6 @@ install_jetbrains_mono_nerd_font() {
         log "JetBrainsMono font files already exist in $FONT_DIR. Assuming already installed, skipping download and installation."
         return 0
     fi
-
-    local TEMP_DIR=""
-    TEMP_DIR="$(mktemp -d)"
-    trap 'rm -rf "$TEMP_DIR"' RETURN
-
-    local FONT_DIR="/usr/local/share/fonts/NerdFonts"
     local FONT_ZIP="JetBrainsMono.zip"
     local FONT_URL="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/$FONT_ZIP"
 
