@@ -72,6 +72,7 @@ main() {
                 pipx ensurepath
                 pipx install --force git+https://github.com/Pennyw0rth/NetExec
                 pipx install --force git+https://github.com/aniqfakhrul/powerview.py
+                pipx uninstall certipy-ad || true # Uninstall if already present, ignore errors if not
                 mise exec python@3.12 -- pipx install --force certipy-ad
                 ;;
         esac
