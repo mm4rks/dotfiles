@@ -27,7 +27,7 @@ install_base_deps() {
     log "Installing base dependencies..."
     export DEBIAN_FRONTEND=noninteractive
     apt-get update -qq
-    apt-get install -y -qq ca-certificates curl gnupg unzip git build-essential stow wget libfuse2 pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh linux-headers-generic libkrb5-dev cmake zsh-autosuggestions zsh-syntax-highlighting wl-clipboard xclip
+    apt-get install -y -qq ca-certificates curl gnupg unzip git build-essential stow wget libfuse2 pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh linux-headers-generic libkrb5-dev cmake zsh-autosuggestions zsh-syntax-highlighting wl-clipboard xclip python3-dev
 }
 
 install_docker_official() {
@@ -103,8 +103,11 @@ install_jetbrains_mono_nerd_font() {
     fi
 
     # Check if the font is already installed
-    if fc-list | grep -qi "JetBrainsMono Nerd Font"; then
-        log "JetBrainsMono Nerd Font already appears to be installed. Skipping download and installation."
+    if fc-list | grep -qi "JetBrainsMono" && fc-list | grep -qi "Nerd Font"; then
+        log "JetBrainsMono Nerd Font already appears to be installed (detected by fc-list). Skipping download and installation."
+        return 0
+    elif find "$FONT_DIR" -maxdepth 1 -iname "JetBrainsMono*.ttf" -print -quit | grep -q .; then
+        log "JetBrainsMono font files already exist in $FONT_DIR. Assuming already installed, skipping download and installation."
         return 0
     fi
 
