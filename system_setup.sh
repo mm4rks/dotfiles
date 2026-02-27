@@ -8,6 +8,7 @@ set -euo pipefail
 REPO_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 REAL_USER="${SUDO_USER:-$(whoami)}"
 USER_HOME=$(getent passwd "$REAL_USER" | cut -d: -f6)
+TEMP_DIR=""
 
 # --- Logging ---
 log() { echo -e "\033[0;32m[INFO]\033[0m $1"; }
@@ -27,7 +28,7 @@ install_base_deps() {
     log "Installing base dependencies..."
     export DEBIAN_FRONTEND=noninteractive
     apt-get update -qq
-    apt-get install -y -qq ca-certificates curl gnupg unzip git build-essential stow wget libfuse2 pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh linux-headers-generic libkrb5-dev cmake zsh-autosuggestions zsh-syntax-highlighting wl-clipboard xclip python3-dev
+    apt-get install -y -qq ca-certificates curl gnupg unzip git build-essential stow wget libfuse2 pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh linux-headers-generic libkrb5-dev cmake zsh-autosuggestions zsh-syntax-highlighting wl-clipboard xclip python3-dev jq
 }
 
 install_docker_official() {
@@ -134,6 +135,11 @@ install_jetbrains_mono_nerd_font() {
         log "JetBrainsMono font files already exist in $FONT_DIR. Assuming already installed, skipping download and installation."
         return 0
     fi
+
+    local TEMP_DIR=""
+    TEMP_DIR="$(mktemp -d)"
+    trap "rm -rf '$TEMP_DIR'" RETURN
+
     local FONT_ZIP="JetBrainsMono.zip"
     local FONT_URL="https://github.com/ryanoasis/nerd-fonts/releases/download/v3.2.1/$FONT_ZIP"
 
@@ -163,14 +169,14 @@ install_bloodhound() {
     
     log "Installing BloodHound..."
     
-    if command -v docker &>/dev/null; then
+    if ! command -v docker &>/dev/null; then
         warn "bloodhound-cli requires docker. abort"
         return 0
     fi
 
     local TEMP_DIR=""
     TEMP_DIR="$(mktemp -d)"
-    trap 'rm -rf "$TEMP_DIR"' RETURN
+    trap "rm -rf '$TEMP_DIR'" RETURN
 
     local BLOODHOUND_CLI_URL="https://github.com/SpecterOps/bloodhound-cli/releases/latest/download/bloodhound-cli-linux-amd64.tar.gz"
     
@@ -191,7 +197,7 @@ install_joern() {
     log "Installing Joern..."
     local TEMP_DIR=""
     TEMP_DIR="$(mktemp -d)"
-    trap 'rm -rf "$TEMP_DIR"' RETURN
+    trap "rm -rf '$TEMP_DIR'" RETURN
     curl -L "https://github.com/joernio/joern/releases/latest/download/joern-install.sh" -o "${TEMP_DIR}/joern-install.sh"
     chmod +x "${TEMP_DIR}/joern-install.sh"
     sudo "${TEMP_DIR}/joern-install.sh" --non-interactive
@@ -206,7 +212,7 @@ install_ghidra() {
     log "Installing Ghidra..."
     local TEMP_DIR=""
     TEMP_DIR="$(mktemp -d)"
-    trap 'rm -rf "$TEMP_DIR"' RETURN
+    trap "rm -rf '$TEMP_DIR'" RETURN
 
     local GHIDRA_URL
     GHIDRA_URL=$(curl -s https://api.github.com/repos/NationalSecurityAgency/ghidra/releases/latest | jq -r '.assets[] | select(.name | endswith(".zip")) | .browser_download_url')
@@ -217,7 +223,7 @@ install_ghidra() {
 
     curl --fail --location -o "${TEMP_DIR}/ghidra.zip" "$GHIDRA_URL"
     local GHIDRA_DIR_NAME
-    GHIDRA_DIR_NAME=$(unzip -Z -1 "${TEMP_DIR}/ghidra.zip" | head -1 | sed 's/\\\///')
+    GHIDRA_DIR_NAME=$(unzip -Z -1 "${TEMP_DIR}/ghidra.zip" | head -1 | sed 's/\/$//')
     unzip -q -o "${TEMP_DIR}/ghidra.zip" -d "${TEMP_DIR}"
     
     mv "${TEMP_DIR}/${GHIDRA_DIR_NAME}" /opt/ghidra
