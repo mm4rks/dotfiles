@@ -19,7 +19,6 @@ if command -v bat &> /dev/null; then
     export MANROFFOPT="-c"
 fi
 
-
 VIVID_CACHE="$HOME/.config/vivid_colors"
 
 if command -v vivid >/dev/null 2>&1; then
@@ -28,3 +27,4 @@ elif [ -f "$VIVID_CACHE" ]; then
     export LS_COLORS="$(cat "$VIVID_CACHE")"
 fi
 
+export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"

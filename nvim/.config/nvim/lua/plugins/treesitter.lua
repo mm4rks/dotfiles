@@ -5,7 +5,7 @@ return {
         lazy = false, -- Explicitly set to false
         build = ":TSUpdate",
         config = function()
-            require'nvim-treesitter.configs'.setup {
+            require'nvim-treesitter'.setup {
                 ensure_installed = { "vimdoc", "c", "lua", "python", "bash" },
                 sync_install = false,
 
