@@ -10,6 +10,7 @@
     "group/tray-expander",
     "bluetooth",
     "network",
+    "custom/wireguard",
     "pulseaudio",
     "cpu",
     "battery"
@@ -100,6 +101,7 @@
   },
   "bluetooth": {
     "format": "",
+    "format-off": "󰂲",
     "format-disabled": "󰂲",
     "format-connected": "󰂱",
     "format-no-controller": "",
@@ -129,12 +131,28 @@
   },
   "custom/expand-icon": {
     "format": "",
-    "tooltip": false
+    "tooltip": false,
+    "on-scroll-up": "",
+    "on-scroll-down": "",
+    "on-scroll-left": "",
+    "on-scroll-right": ""
   },
   "custom/screenrecording-indicator": {
     "on-click": "omarchy-cmd-screenrecord",
     "exec": "$OMARCHY_PATH/default/waybar/indicators/screen-recording.sh",
     "signal": 8,
+    "return-type": "json"
+  },
+  "custom/idle-indicator": {
+    "on-click": "omarchy-toggle-idle",
+    "exec": "$OMARCHY_PATH/default/waybar/indicators/idle.sh",
+    "signal": 9,
+    "return-type": "json"
+  },
+  "custom/notification-silencing-indicator": {
+    "on-click": "omarchy-toggle-notification-silencing",
+    "exec": "$OMARCHY_PATH/default/waybar/indicators/notification-silencing.sh",
+    "signal": 10,
     "return-type": "json"
   },
   "custom/voxtype": {
@@ -150,17 +168,11 @@
     "on-click-right": "omarchy-voxtype-config",
     "on-click": "omarchy-voxtype-model"
   },
-  "custom/idle-indicator": {
-    "on-click": "omarchy-toggle-idle",
-    "exec": "$OMARCHY_PATH/default/waybar/indicators/idle.sh",
-    "signal": 9,
-    "return-type": "json"
-  },
-  "custom/notification-silencing-indicator": {
-    "on-click": "omarchy-toggle-notification-silencing",
-    "exec": "$OMARCHY_PATH/default/waybar/indicators/notification-silencing.sh",
-    "signal": 10,
-    "return-type": "json"
+  "custom/wireguard": {
+    "exec": "~/.config/waybar/scripts/wg-status.sh",
+    "return-type": "json",
+    "interval": 5,
+    "tooltip": false
   },
   "tray": {
     "icon-size": 12,
