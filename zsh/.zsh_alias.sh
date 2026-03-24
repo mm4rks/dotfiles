@@ -29,7 +29,9 @@ fi
 
 if command -v eza &> /dev/null; then
   alias ls='eza -lh --group-directories-first --icons=auto'
-  alias lsa='ls -a'
+  alias la='ls -a'
+  alias ll='ls -la'
+  alias l='ls'
   alias lt='eza --tree --level=2 --long --icons --git'
   alias ltt='eza --tree --level=4 --long --icons --git'
   alias lta='lt -a'
@@ -39,6 +41,10 @@ else
   alias la='ls -a'
   alias ll='ls -la'
   alias l='ls'
+fi
+
+if command -v rg &> /dev/null; then
+    alias rgh='rg --hidden -i -g "!.git/"'
 fi
 
 alias ff="fzf --preview 'bat --style=numbers --color=always {}'"
