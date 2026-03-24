@@ -1,3 +1,3 @@
 go = "latest"
 rust = "latest"
-gemini-cli = "nightly"
+"npm:opencode-ai" = "latest"

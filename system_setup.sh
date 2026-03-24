@@ -28,7 +28,23 @@ install_base_deps() {
     log "Installing base dependencies..."
     export DEBIAN_FRONTEND=noninteractive
     apt-get update -qq
-    apt-get install -y -qq ca-certificates curl gnupg unzip git build-essential stow wget libfuse2 pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh linux-headers-generic libkrb5-dev cmake zsh-autosuggestions zsh-syntax-highlighting wl-clipboard xclip python3-dev jq
+    apt-get install -y -qq ca-certificates curl gnupg unzip git build-essential stow wget libfuse2 pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh libkrb5-dev cmake zsh-autosuggestions zsh-syntax-highlighting wl-clipboard xclip python3-dev jq
+
+    # Kernel header package names vary across Debian/Ubuntu/Kali.
+    local HEADER_PKG=""
+    if apt-cache show linux-headers-generic >/dev/null 2>&1; then
+        HEADER_PKG="linux-headers-generic"
+    elif apt-cache show "linux-headers-$(uname -r)" >/dev/null 2>&1; then
+        HEADER_PKG="linux-headers-$(uname -r)"
+    elif apt-cache show linux-headers-amd64 >/dev/null 2>&1; then
+        HEADER_PKG="linux-headers-amd64"
+    fi
+
+    if [ -n "$HEADER_PKG" ]; then
+        apt-get install -y -qq "$HEADER_PKG"
+    else
+        warn "No compatible kernel headers package found. Skipping headers installation."
+    fi
 }
 
 install_docker_official() {
@@ -40,11 +56,14 @@ install_docker_official() {
 
     . /etc/os-release
     local DOCKER_OS_ID="$ID"
-    local DOCKER_CODENAME="$VERSION_CODENAME"
+    local DOCKER_CODENAME="${VERSION_CODENAME:-}"
 
     if [[ "${PRETTY_NAME}" == *"Parrot"* || "$ID" == "parrot" || "$ID" == "kali" ]]; then
         warn "Docker does not provide a repo for '${PRETTY_NAME}'. Using the upstream Debian 'bookworm' repo instead."
         DOCKER_OS_ID="debian"
+        DOCKER_CODENAME="bookworm"
+    elif [ -z "$DOCKER_CODENAME" ]; then
+        warn "Could not detect VERSION_CODENAME. Falling back to 'bookworm' for Docker repo."
         DOCKER_CODENAME="bookworm"
     fi
 
@@ -54,8 +73,28 @@ install_docker_official() {
 
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/$DOCKER_OS_ID $DOCKER_CODENAME stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-    apt-get update -qq
-    apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    if ! apt-get update -qq; then
+        warn "Docker repo metadata refresh failed. Falling back to distro docker packages."
+        rm -f /etc/apt/sources.list.d/docker.list
+        apt-get update -qq
+        if ! apt-get install -y -qq docker.io docker-compose-plugin; then
+            warn "docker-compose-plugin unavailable. Installing docker.io only."
+            apt-get install -y -qq docker.io
+        fi
+        usermod -aG docker "$REAL_USER"
+        return 0
+    fi
+
+    if ! apt-get install -y -qq docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin; then
+        warn "Official Docker packages are unavailable for this distro snapshot. Falling back to distro docker packages."
+        rm -f /etc/apt/sources.list.d/docker.list
+        apt-get update -qq
+        if ! apt-get install -y -qq docker.io docker-compose-plugin; then
+            warn "docker-compose-plugin unavailable. Installing docker.io only."
+            apt-get install -y -qq docker.io
+        fi
+    fi
+
     usermod -aG docker "$REAL_USER"
 }
 
@@ -112,7 +151,9 @@ install_mise_system_binary() {
     
     install -m 0755 -d /etc/apt/keyrings
     wget -qO - https://mise.jdx.dev/gpg-key.pub | gpg --dearmor | tee /etc/apt/keyrings/mise-archive-keyring.gpg > /dev/null
-    echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.gpg arch=amd64] https://mise.jdx.dev/deb stable main" | tee /etc/apt/sources.list.d/mise.list > /dev/null
+    local MISE_ARCH
+    MISE_ARCH="$(dpkg --print-architecture)"
+    echo "deb [signed-by=/etc/apt/keyrings/mise-archive-keyring.gpg arch=${MISE_ARCH}] https://mise.jdx.dev/deb stable main" | tee /etc/apt/sources.list.d/mise.list > /dev/null
     
     apt-get update -q
     apt-get install -y -q mise

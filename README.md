@@ -7,7 +7,7 @@ This repository contains a collection of dotfiles and a powerful, automated scri
 -   **Automated & Non-Interactive:** The `setup.sh` script runs without requiring user input, making it ideal for automated provisioning.
 -   **Profile-Based Installation:** Install only what you need. The setup is modularized into profiles:
     -   `default`: Core tools, Zsh, Tmux, and Neovim. (Always installed)
-    -   `dev`: Development tools like Docker, Node.js, and the Gemini CLI.
+    -   `dev`: Development tools like Docker, Node.js, and OpenCode.
     -   `rev`: Reverse engineering tools like Ghidra and Joern.
     -   `pwn`: Penetration testing tools and SSH hardening.
 -   **Cross-Distro Support:** Works on Debian, Ubuntu, Kali, Parrot, and Arch Linux.
@@ -60,7 +60,7 @@ This repository contains a collection of dotfiles and a powerful, automated scri
 -   **`dev`**:
     -   Docker and Docker Compose.
     -   Node.js (LTS) and `pure-prompt`.
-    -   Gemini CLI (`@google/gemini-cli@nightly`).
+    -   OpenCode (`opencode-ai`).
 
 -   **`rev`**:
     -   Ghidra, Joern, Semgrep, and `flare-floss`.

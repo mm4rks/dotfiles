@@ -13,7 +13,7 @@ Reorganize the dotfiles repository to include a `mise/` directory for profile de
 ├── setup.sh             # Entry point (Runs as Root)
 └── mise/                # Profile Configurations
     ├── base.toml        # Core tools (nvim, fzf, eza, zoxide)
-    ├── dev.toml         # Dev stack (node, python, docker, gemini-cli)
+    ├── dev.toml         # Dev stack (node, python, docker, opencode)
     ├── pwn.toml         # Pwn stack (netexec, bloodhound, certipy)
     └── rev.toml         # Rev stack (ghidra, semgrep)
 
