@@ -78,6 +78,17 @@ bindkey '\ed' kill-word             # Alt-d, delete word forward
 source ~/.zsh_env.sh
 eval "$(mise activate zsh)"
 eval "$(mise completion zsh)"
+
+# Set default editor: prefer nvim, but fall back to vim
+# Checked after mise activate so mise-installed nvim is found
+if command -v nvim &> /dev/null; then
+    export EDITOR='nvim'
+    export VISUAL='nvim'
+else
+    export EDITOR='vim'
+    export VISUAL='vim'
+fi
+
 source ~/.zsh_alias.sh
 source ~/.zsh_docker.sh
 source ~/.zsh_functions.sh
