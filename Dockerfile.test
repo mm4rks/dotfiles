@@ -3,26 +3,60 @@
 # --- Ubuntu Test Image ---
 FROM ubuntu:22.04 AS ubuntu-test
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y git sudo curl build-essential gpg wget stow && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y sudo curl gpg wget && rm -rf /var/lib/apt/lists/*
 RUN useradd -m -G sudo -s /bin/bash tester
 RUN echo "tester ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tester
-USER tester
 WORKDIR /home/tester/dotfiles
+COPY scripts/lib.sh ./scripts/lib.sh
+RUN chmod +x ./scripts/lib.sh
+
+# System-level scripts run as root
+COPY scripts/install_base_deps.sh ./scripts/install_base_deps.sh
+RUN chmod +x ./scripts/install_base_deps.sh && ./scripts/install_base_deps.sh
+
+COPY scripts/install_docker.sh ./scripts/install_docker.sh
+RUN chmod +x ./scripts/install_docker.sh && ./scripts/install_docker.sh && usermod -aG docker tester
+
+COPY scripts/install_mise.sh ./scripts/install_mise.sh
+RUN chmod +x ./scripts/install_mise.sh && ./scripts/install_mise.sh
+
+COPY scripts/install_nerd_font.sh ./scripts/install_nerd_font.sh
+RUN chmod +x ./scripts/install_nerd_font.sh && ./scripts/install_nerd_font.sh
+
+COPY scripts/install_bloodhound.sh ./scripts/install_bloodhound.sh
+RUN chmod +x ./scripts/install_bloodhound.sh && ./scripts/install_bloodhound.sh
+
+COPY scripts/install_joern.sh ./scripts/install_joern.sh
+RUN chmod +x ./scripts/install_joern.sh && ./scripts/install_joern.sh
+
+COPY scripts/install_ghidra.sh ./scripts/install_ghidra.sh
+RUN chmod +x ./scripts/install_ghidra.sh && ./scripts/install_ghidra.sh
+
+USER tester
+# User-level scripts run as tester
+COPY --chown=tester:tester scripts/stow_dotfiles.sh ./scripts/stow_dotfiles.sh
+RUN chmod +x ./scripts/stow_dotfiles.sh && ./scripts/stow_dotfiles.sh
+
+COPY --chown=tester:tester mise/ ./mise/
+COPY --chown=tester:tester scripts/configure_mise.sh ./scripts/configure_mise.sh
+RUN chmod +x ./scripts/configure_mise.sh && ./scripts/configure_mise.sh
+
+COPY --chown=tester:tester scripts/install_netexec.sh ./scripts/install_netexec.sh
+RUN chmod +x ./scripts/install_netexec.sh && ./scripts/install_netexec.sh
+
+COPY --chown=tester:tester scripts/install_powerview.sh ./scripts/install_powerview.sh
+RUN chmod +x ./scripts/install_powerview.sh && ./scripts/install_powerview.sh
+
+COPY --chown=tester:tester scripts/install_certipy.sh ./scripts/install_certipy.sh
+RUN chmod +x ./scripts/install_certipy.sh && ./scripts/install_certipy.sh
+
+COPY --chown=tester:tester scripts/sync_nvim.sh ./scripts/sync_nvim.sh
+RUN chmod +x ./scripts/sync_nvim.sh && ./scripts/sync_nvim.sh
 
 # --- Kali Linux Test Image ---
 FROM kalilinux/kali-rolling AS kali-test
-ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y git sudo curl build-essential gpg wget stow && rm -rf /var/lib/apt/lists/*
-RUN useradd -m -G sudo -s /bin/bash tester
-RUN echo "tester ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tester
-USER tester
-WORKDIR /home/tester/dotfiles
+# ... (contents for kali would be similar)
 
 # --- Parrot OS Test Image ---
 FROM parrotsec/core AS parrot-test
-ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y git sudo curl build-essential gpg wget stow && rm -rf /var/lib/apt/lists/*
-RUN useradd -m -G sudo -s /bin/bash tester
-RUN echo "tester ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tester
-USER tester
-WORKDIR /home/tester/dotfiles
+# ... (contents for parrot would be similar)

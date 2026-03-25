@@ -34,6 +34,8 @@ if command -v eza &> /dev/null; then
   alias l='ls'
   alias lt='eza --tree --level=2 --long --icons --git'
   alias ltt='eza --tree --level=4 --long --icons --git'
+  alias ltd='eza --tree --level=3 --long --icons --git -D'
+  alias lttd='eza --tree --level=5 --long --icons --git -D'
   alias lta='lt -a'
   alias ltta='ltt -a'
 else
