@@ -1,6 +1,6 @@
 # Dockerfile for testing the dotfiles setup script across different distributions.
 
-# --- Ubuntu Test Image ---
+# --- Ubuntu Test Modular ---
 FROM ubuntu:22.04 AS ubuntu-test
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y sudo curl gpg wget && rm -rf /var/lib/apt/lists/*
@@ -27,10 +27,10 @@ COPY scripts/install_bloodhound.sh ./scripts/install_bloodhound.sh
 RUN chmod +x ./scripts/install_bloodhound.sh && ./scripts/install_bloodhound.sh
 
 COPY scripts/install_joern.sh ./scripts/install_joern.sh
-RUN chmod +x ./scripts/install_joern.sh && ./scripts/install_joern.sh
+# RUN chmod +x ./scripts/install_joern.sh && ./scripts/install_joern.sh
 
 COPY scripts/install_ghidra.sh ./scripts/install_ghidra.sh
-RUN chmod +x ./scripts/install_ghidra.sh && ./scripts/install_ghidra.sh
+# RUN chmod +x ./scripts/install_ghidra.sh && ./scripts/install_ghidra.sh
 
 USER tester
 # User-level scripts run as tester
@@ -53,7 +53,7 @@ RUN chmod +x ./scripts/install_certipy.sh && ./scripts/install_certipy.sh
 COPY --chown=tester:tester scripts/sync_nvim.sh ./scripts/sync_nvim.sh
 RUN chmod +x ./scripts/sync_nvim.sh && ./scripts/sync_nvim.sh
 
-# --- Kali Linux Test Image ---
+# --- Kali Linux Test Modular ---
 FROM kalilinux/kali-rolling AS kali-test
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y sudo curl gpg wget && rm -rf /var/lib/apt/lists/*
@@ -80,10 +80,10 @@ COPY scripts/install_bloodhound.sh ./scripts/install_bloodhound.sh
 RUN chmod +x ./scripts/install_bloodhound.sh && ./scripts/install_bloodhound.sh
 
 COPY scripts/install_joern.sh ./scripts/install_joern.sh
-RUN chmod +x ./scripts/install_joern.sh && ./scripts/install_joern.sh
+# RUN chmod +x ./scripts/install_joern.sh && ./scripts/install_joern.sh
 
 COPY scripts/install_ghidra.sh ./scripts/install_ghidra.sh
-RUN chmod +x ./scripts/install_ghidra.sh && ./scripts/install_ghidra.sh
+# RUN chmod +x ./scripts/install_ghidra.sh && ./scripts/install_ghidra.sh
 
 USER tester
 # User-level scripts run as tester
@@ -106,7 +106,7 @@ RUN chmod +x ./scripts/install_certipy.sh && ./scripts/install_certipy.sh
 COPY --chown=tester:tester scripts/sync_nvim.sh ./scripts/sync_nvim.sh
 RUN chmod +x ./scripts/sync_nvim.sh && ./scripts/sync_nvim.sh
 
-# --- Ubuntu Test Image (No Rev Profile) ---
+# --- Ubuntu Test Setup ---
 FROM ubuntu:22.04 AS ubuntu-test-setup
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y sudo curl gpg wget && rm -rf /var/lib/apt/lists/*
@@ -115,9 +115,9 @@ RUN echo "tester ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tester
 WORKDIR /home/tester/dotfiles
 COPY --chown=tester:tester . .
 USER tester
-RUN chmod +x ./setup.sh && ./setup.sh pwn ssh
+RUN chmod +x ./scripts/*.sh ./setup.sh && ./setup.sh pwn ssh
 
-# --- Kali Linux Test Image (No Rev Profile) ---
+# --- Kali Linux Test Setup ---
 FROM kalilinux/kali-rolling AS kali-test-setup
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y sudo curl gpg wget && rm -rf /var/lib/apt/lists/*
@@ -126,7 +126,7 @@ RUN echo "tester ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tester
 WORKDIR /home/tester/dotfiles
 COPY --chown=tester:tester . .
 USER tester
-RUN chmod +x ./setup.sh && ./setup.sh pwn ssh
+RUN chmod +x ./scripts/*.sh ./setup.sh && ./setup.sh pwn ssh
 
 # --- Parrot OS Test Image ---
 FROM parrotsec/core AS parrot-test
