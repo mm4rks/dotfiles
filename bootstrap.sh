@@ -22,16 +22,16 @@ fi
 
 # Execute the setup scripts with the 'pwn' and 'ssh' profiles
 # The system_setup.sh script needs to be run with sudo
-if [ -f "$DOTFILES_DIR/system_setup.sh" ]; then
-    echo "[*] Executing system_setup.sh with 'pwn' and 'ssh' profiles..."
-    chmod +x "$DOTFILES_DIR/system_setup.sh"
-    sudo "$DOTFILES_DIR/system_setup.sh" pwn ssh
+if [ -f "$DOTFILES_DIR/setup.sh" ]; then
+    echo "[*] Executing setup.sh with 'pwn' and 'ssh' profiles..."
+    chmod +x "$DOTFILES_DIR/setup.sh"
+    "$DOTFILES_DIR/setup.sh" pwn ssh
     if [ $? -ne 0 ]; then
-        echo "[-] Error: system_setup.sh failed."
+        echo "[-] Error: setup.sh failed."
         exit 1
     fi
 else
-    echo "[-] Error: system_setup.sh not found in $DOTFILES_DIR."
+    echo "[-] Error: setup.sh not found in $DOTFILES_DIR."
     exit 1
 fi
 

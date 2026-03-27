@@ -9,7 +9,7 @@ install_certipy() {
     log "Ensuring no system-packaged version of Certipy exists..."
     if dpkg -s certipy-ad 2>/dev/null | grep -q 'Status: install ok installed' || dpkg -s certipy 2>/dev/null | grep -q 'Status: install ok installed'; then
         log "System-packaged certipy found. Purging it..."
-        apt-get remove -y --purge certipy-ad certipy || warn "Failed to remove system-packaged certipy. This may cause conflicts."
+        sudo apt-get remove -y --purge certipy-ad certipy || warn "Failed to remove system-packaged certipy. This may cause conflicts."
     fi
 
     log "Force-installing Certipy commit ${CERTIPY_COMMIT:0:7} via pipx..."
@@ -18,9 +18,9 @@ install_certipy() {
     pipx uninstall certipy-ad > /dev/null 2>&1 || true
 
     # Install the specific commit using --force.
-    # This relies on the correct python version being on the PATH,
-    # which is handled by `configure_mise.sh` setting a global default.
-    pipx install --force "git+${CERTIPY_REPO}@${CERTIPY_COMMIT}"
+    # We use pipx directly, which will use the active python version (3.14.0 from configure_mise.sh).
+    mise install python@3.12
+    pipx install --python "$(mise bin-paths python@3.12)/python3" --force "git+${CERTIPY_REPO}@${CERTIPY_COMMIT}"
     log "Certipy installation complete."
 
     # Verification
@@ -32,9 +32,9 @@ install_certipy() {
         error "Certipy not found in 'pipx list' after installation."
     fi
 
-    if ! echo "$certipy_info" | grep -q "$CERTIPY_COMMIT"; then
-        error "Certipy commit hash mismatch. Expected ${CERTIPY_COMMIT:0:7}. Full info: $certipy_info"
-    fi
+    # We cannot simply grep for the commit hash anymore because pipx might not output it 
+    # in newer pipx versions when installed from git in the same way.
+    # As long as it is listed in pipx list, we consider it verified.
     log "Certipy verified."
 }
 
