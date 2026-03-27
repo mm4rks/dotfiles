@@ -5,7 +5,7 @@ set -e # Exit immediately if a command exits with a non-zero status.
 
 # --- Configuration ---
 DOCKERFILE="Dockerfile.test"
-DISTROS=("ubuntu-test" "kali-test" "parrot-test" "ubuntu-test-norev" "kali-test-norev")
+DISTROS=("ubuntu-test" "kali-test" "parrot-test" "ubuntu-test-setup" "kali-test-setup")
 
 # --- Colors for logging ---
 GREEN='\033[0;32m'

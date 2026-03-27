@@ -107,7 +107,7 @@ COPY --chown=tester:tester scripts/sync_nvim.sh ./scripts/sync_nvim.sh
 RUN chmod +x ./scripts/sync_nvim.sh && ./scripts/sync_nvim.sh
 
 # --- Ubuntu Test Image (No Rev Profile) ---
-FROM ubuntu:22.04 AS ubuntu-test-norev
+FROM ubuntu:22.04 AS ubuntu-test-setup
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y sudo curl gpg wget && rm -rf /var/lib/apt/lists/*
 RUN useradd -m -G sudo -s /bin/bash tester
@@ -154,7 +154,7 @@ COPY --chown=tester:tester scripts/sync_nvim.sh ./scripts/sync_nvim.sh
 RUN chmod +x ./scripts/sync_nvim.sh && ./scripts/sync_nvim.sh
 
 # --- Kali Linux Test Image (No Rev Profile) ---
-FROM kalilinux/kali-rolling AS kali-test-norev
+FROM kalilinux/kali-rolling AS kali-test-setup
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y sudo curl gpg wget && rm -rf /var/lib/apt/lists/*
 RUN useradd -m -G sudo -s /bin/bash tester
