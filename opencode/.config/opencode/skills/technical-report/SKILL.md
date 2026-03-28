@@ -4,9 +4,9 @@ description: Instructions for writing reports with high cohesion and concrete la
 ---
 ## Technical Report Writing Guidelines
 
-This skill focuses on the structural principles of *Writing Science* by Joshua Schimel and a high-quality "Quality Gate" for technical documentation.
+This skill focuses on the structural principles and a quality gate for technical documentation.
 
-### 1. Structural Cohesion (Writing Science)
+### 1. Structural Cohesion
 - **Topic Position (The Hook)**: Start sentences with "old information" that links back to the previous sentence.
 - **Stress Position (The Payoff)**: Place the most important new information or the main action at the end of the sentence.
 - **The Chain of Thought**: Create a cohesive flow where the topic of sentence $N$ refers to the stress of sentence $N-1$.
@@ -19,20 +19,54 @@ This skill focuses on the structural principles of *Writing Science* by Joshua S
   - **Action**: Detail the implementation or findings.
   - **Resolution**: Provide the "So What?" and the kicker for the next section.
 
-### 2. The Quality Gate
-- **ABSOLUTE**: Never use em dashes (—). Convert them to commas, colons, or periods.
-- **Banned Vocabulary**: Replace "Additionally" with "Also"; "Crucial/Pivotal/Key" with specific reasons; "Landscape/Tapestry" with the actual domain or pattern; "Underscore/Highlight/Showcase" with "shows" or direct statements.
-- **Banned Patterns**:
-  - "Not just X, it's Y" / "Not A, but B" → State Y directly.
-  - Rule of three → Use only the number of items needed.
-  - "-ing" analysis ("highlighting the importance of...") → State the importance directly.
-  - Synonym cycling → Pick one term and stick to it.
-  - Melodramatic one-liners ("Exciting times lie ahead") → Delete or replace with facts.
+### Quality Gate
+Separate pass. Do not skip.
+
+Re-read the full draft and fix every instance of:
+
+#### Banned Vocabulary (Never use these. Find concrete alternatives.)
+| Banned | Use instead |
+| :--- | :--- |
+| Additionally | "Also" or restructure |
+| Crucial / Pivotal / Key (adj) | Be specific about why it matters |
+| Delve / Delve into | "examine", "look at", or just start |
+| Enhance / Fostering | Be specific about what improved |
+| Landscape (abstract) | Name the actual domain |
+| Tapestry (figurative) | Name the actual pattern |
+| Underscore / Highlight (verb) | State the point directly |
+| Showcase | "shows", "demonstrates" |
+| Vibrant / Rich (figurative) | Be specific |
+| Testament / Enduring | Just state the fact |
+| Groundbreaking / Renowned | Be specific about what's notable |
+| Garner | "get", "earn", "attract" |
+| Intricate / Intricacies | "complex" or describe the actual complexity |
+| Interplay | "relationship", "tension", or describe it |
+| Serves as / Stands as | Use "is" |
+| Nestled / In the heart of | Just name the location |
+
+#### Banned Structures
+| Pattern | Fix |
+| :--- | :--- |
+| "Not just X, it's Y" / "Not A, but B" | State Y directly |
+| Rule of three ("innovation, inspiration, and insights") | Use the number of items the content needs |
+| "-ing" analysis ("highlighting the importance of...") | State the importance directly |
+| "From X to Y" (false ranges) | List the actual items |
+| Synonym cycling (protagonist/hero/central figure) | Pick one term, reuse it |
+| "Despite challenges, the future looks bright" | State the actual situation |
+| "Exciting times lie ahead" | End with a specific fact |
+| "X wasn't Y. It was Z." (dramatic reveal) | Collapse to single positive statement |
+| "The detail that stopped me in my tracks" | Start with the fact |
+| "genuinely revolutionary" | Use a specific descriptor |
+| Any melodramatic one-liner meant to sound profound | Delete it |
+| "I'd forgotten I knew" | Delete. Never frame knowledge as rediscovered. |
 
 ### 3. Checklist
+- **ABSOLUTE**: NEVER use em dashes (—). Convert to commas, colons, or periods.
+- **Check links**: Every source has a real URL. No placeholders.
+- **Check word repetition**: Any word appearing 3+ times in a paragraph. Vary or reduce.
+- **Opening Integrity**: Does it sound like a person or like an AI summarizing a book? If the latter, rewrite.
+- **Synthesis**: Verify every section connects to material beyond the source itself. No pure summary.
 - **Active Voice**: Transform passive constructions to active ones.
-- **Quantifiable Metrics**: Replace vague descriptors (e.g., "significantly improved") with data (e.g., "reduced latency by 45%").
+- **Quantifiable Metrics**: Replace vague descriptors with data (e.g., "reduced latency by 45%").
 - **Eliminate "Ease" Words**: Ban "simply," "easily," "just," and "obviously."
-- **Parallelism**: Ensure all bullet points in a list start with the same part of speech.
-- **Opening Integrity**: Verify the opening sounds like a person, not an AI summary.
-- **Synthesis**: Every section must connect to material beyond the immediate summary.
+- **Parallelism**: Bullet points must start with the same part of speech.
