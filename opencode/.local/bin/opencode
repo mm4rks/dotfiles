@@ -1,0 +1,39 @@
+#!/bin/bash
+set -euo pipefail
+
+# Ensure interactive mode if running in a terminal
+DOCKER_FLAGS=("-i")
+if [ -t 0 ]; then
+    DOCKER_FLAGS+=("-t")
+fi
+
+# Map common git configs
+if [ -f "$HOME/.gitconfig" ]; then
+    DOCKER_FLAGS+=("-v" "$HOME/.gitconfig:/root/.gitconfig:ro")
+fi
+
+# Ensure opencode config is available
+if [ -d "$HOME/.config/opencode" ]; then
+    DOCKER_FLAGS+=("-v" "$HOME/.config/opencode:/root/.config/opencode:rw")
+fi
+
+# Execute opencode inside docker container
+# -u matches current user to avoid permission issues
+# -w /workspace sets working directory inside container
+# -v $PWD:/workspace mounts current directory
+# --network host allows connecting to local services (e.g., ollama)
+# --security-opt=no-new-privileges:true --cap-drop=ALL harden the container
+
+exec docker run \
+    --rm \
+    "${DOCKER_FLAGS[@]}" \
+    -u "$(id -u):$(id -g)" \
+    -e HOME="/root" \
+    -e USER="$(whoami)" \
+    -v "$PWD":"$PWD" \
+    -w "$PWD" \
+    --network host \
+    --security-opt=no-new-privileges:true \
+    --cap-drop=ALL \
+    opencode-sandbox:latest \
+    "$@"

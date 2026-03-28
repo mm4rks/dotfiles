@@ -13,7 +13,7 @@ stow_dotfiles() {
         mv "$HOME/.zshrc" "$HOME/.zshrc.bak"
     fi
 
-    local CORE_PACKAGES=(zsh tmux eza git vivid nvim)
+    local CORE_PACKAGES=(zsh tmux eza git vivid nvim opencode)
     for pkg in "${CORE_PACKAGES[@]}"; do
         if [ -d "${REPO_DIR}/${pkg}" ]; then
             log "Stowing '${pkg}'..."

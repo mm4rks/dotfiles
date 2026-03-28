@@ -2,3 +2,4 @@ gef/
 *.log
 GEMINI.md
 *.bak.*
+.opencode/

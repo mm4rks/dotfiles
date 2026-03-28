@@ -22,6 +22,7 @@ sudo chsh -s "$(which zsh)" "$(whoami)" 2>/dev/null || true
 # 2. User Environment
 echo "[INFO] --- Phase 2: User Environment ---"
 "${REPO_DIR}/scripts/configure_mise.sh" "$@"
+"${REPO_DIR}/scripts/install_opencode.sh"
 "${REPO_DIR}/scripts/stow_dotfiles.sh"
 "${REPO_DIR}/scripts/sync_nvim.sh"
 
