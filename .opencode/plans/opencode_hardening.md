@@ -32,9 +32,14 @@
     -   Add `--add-host=host.docker.internal:host-gateway`.
     -   Replace `-v "$HOME":"$HOME"` with `-v opencode-home-cache:"$HOME"`.
     -   Add `--tmpfs /tmp:exec`.
-    -   Ensure the config mounts remain `:ro`.
+    -   Ensure the config mounts remain `:ro` for `.gitconfig`, but allow `:rw` for `.config/opencode` to support plugin authentication.
 
-### Phase 3: Verification
+### Phase 3: Subscription & Authentication
+- **Wrapper Change**: Pass `GOOGLE_GENERATIVE_AI_API_KEY` and `ANTHROPIC_API_KEY` from the host environment to the container.
+- **Plugin Support**: Mount `.config/opencode` as Read-Write (`:rw`) to allow authentication plugins to persist tokens.
+- **Why**: Providing both environment variable pass-through and writable config mounts ensures compatibility with both direct API keys and account-based plugin authentication.
+
+### Phase 4: Verification
 -   Test execution in `$HOME` (should fail).
     -   Test execution in a subfolder (should succeed).
     -   Test connectivity to Ollama (should succeed via `host.docker.internal`).

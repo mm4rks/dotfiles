@@ -28,9 +28,9 @@ if [ -f "$HOME/.gitconfig" ]; then
     DOCKER_FLAGS+=("-v" "$HOME/.gitconfig:$INT_HOME/.gitconfig:ro")
 fi
 
-# Ensure opencode config is available (Read-Only)
+# Ensure opencode config is available (Read-Write)
 if [ -d "$HOME/.config/opencode" ]; then
-    DOCKER_FLAGS+=("-v" "$HOME/.config/opencode:$INT_HOME/.config/opencode:ro")
+    DOCKER_FLAGS+=("-v" "$HOME/.config/opencode:$INT_HOME/.config/opencode:rw")
 fi
 
 # Execute opencode inside docker container
@@ -48,6 +48,8 @@ exec docker run \
     -u "$(id -u):$(id -g)" \
     -e HOME="$INT_HOME" \
     -e USER="node" \
+    -e GOOGLE_GENERATIVE_AI_API_KEY="${GOOGLE_GENERATIVE_AI_API_KEY:-}" \
+    -e ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}" \
     -v opencode-home-cache:"$INT_HOME" \
     -v "$PWD":"$PWD" \
     -w "$PWD" \
