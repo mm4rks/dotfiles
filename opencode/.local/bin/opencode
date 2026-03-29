@@ -13,9 +13,15 @@ fi
 docker volume create opencode-home-cache >/dev/null
 
 # Internal container paths
-# node:22-slim image has /home/node owned by 1000:1000
-# Docker will automatically set the volume ownership to match on first mount.
 INT_HOME="/home/node"
+
+# Ensure plugins are discovered by opencode-ai
+# We link the global npm plugins into the user's local node_modules in the persistent volume.
+docker run --rm -u "$(id -u):$(id -g)" -v opencode-home-cache:"$INT_HOME" --entrypoint bash opencode-sandbox:latest -c "mkdir -p \"$INT_HOME/node_modules\" && ln -sf /usr/local/lib/node_modules/opencode-*-auth \"$INT_HOME/node_modules/\""
+
+# Determine the dotfiles repo location (resolving symlinks)
+SCRIPT_PATH=$(readlink -f "${BASH_SOURCE[0]}")
+DOTFILES_DIR=$(cd -- "$(dirname -- "$SCRIPT_PATH")/../../.." &>/dev/null && pwd)
 
 # Ensure interactive mode if running in a terminal
 DOCKER_FLAGS=("-i")
@@ -29,8 +35,10 @@ if [ -f "$HOME/.gitconfig" ]; then
 fi
 
 # Ensure opencode config is available (Read-Write)
+# We mount the directory, and also the dotfiles repo so symlinks resolve.
 if [ -d "$HOME/.config/opencode" ]; then
     DOCKER_FLAGS+=("-v" "$HOME/.config/opencode:$INT_HOME/.config/opencode:rw")
+    DOCKER_FLAGS+=("-v" "$DOTFILES_DIR:$INT_HOME/.dotfiles:ro")
 fi
 
 # Execute opencode inside docker container
@@ -48,6 +56,7 @@ exec docker run \
     -u "$(id -u):$(id -g)" \
     -e HOME="$INT_HOME" \
     -e USER="node" \
+    -e NODE_PATH="/usr/local/lib/node_modules" \
     -e GOOGLE_GENERATIVE_AI_API_KEY="${GOOGLE_GENERATIVE_AI_API_KEY:-}" \
     -e ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}" \
     -v opencode-home-cache:"$INT_HOME" \
