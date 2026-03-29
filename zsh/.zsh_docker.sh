@@ -2,7 +2,7 @@ alias dockershell="docker run --rm -i -t --entrypoint=/bin/bash"
 
 # run dockershell as current user and mount PWD
 function dockershellhere() {
-    dirname=${PWD##*/}
+    local dirname="${PWD##*/}"
     docker run --rm -it \
         --entrypoint=/bin/bash \
         -v "$(pwd)":"/home/user/${dirname}" \
@@ -10,6 +10,6 @@ function dockershellhere() {
         --net=none \
         --cap-drop=ALL \
         --security-opt="no-new-privileges=true" \
-        --user $(id -u):$(id -g) \
+        --user "$(id -u):$(id -g)" \
         "$@"
 }

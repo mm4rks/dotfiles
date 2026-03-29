@@ -23,6 +23,20 @@ install_base_deps() {
     else
         warn "No compatible kernel headers package found. Skipping headers installation."
     fi
+
+    # Fix Pure prompt symlinks if installed via npm or located in common paths
+    # This prevents .zshrc from having to do it on every startup.
+    local PURE_PATHS=(
+        "/usr/local/lib/node_modules/pure-prompt"
+        "/usr/lib/node_modules/pure-prompt"
+        "$HOME/.zsh/pure"
+    )
+    for p in "${PURE_PATHS[@]}"; do
+        if [ -d "$p" ]; then
+            [ -f "$p/pure.zsh" ] && [ ! -f "$p/prompt_pure_setup" ] && ln -sf "$p/pure.zsh" "$p/prompt_pure_setup"
+            [ -f "$p/async.zsh" ] && [ ! -f "$p/async" ] && ln -sf "$p/async.zsh" "$p/async"
+        fi
+    done
 }
 
 install_base_deps

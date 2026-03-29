@@ -157,7 +157,7 @@ EOF
 
     echo "[+] SSH alias 'htb' updated ($HOSTNAME)."
     echo "[+] Password: $PASSWORD (Copied to clipboard)"
-    echo -n "$PASSWORD" | xclip -selection clipboard 2>/dev/null || echo -n "$PASSWORD" | pbcopy 2>/dev/null
+    echo -n "$PASSWORD" | xc 2>/dev/null
 
     # 4. Remote Bootstrap: Curl script from GitHub and execute
     echo "[*] Executing remote bootstrap on 'htb'..."

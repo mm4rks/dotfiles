@@ -94,12 +94,8 @@ source ~/.zsh_docker.sh
 source ~/.zsh_functions.sh
 source ~/.zsh_plugins.sh
 
-# source from zsh_plugins.sh
+# Load additional shell components if they exist
 source_if_exists /etc/zsh_command_not_found
-source_autosuggestions
-source_syntax_highlighting
-
-    
 
 if command -v fzf &> /dev/null; then
     source <(fzf --zsh)
@@ -116,7 +112,6 @@ bindkey '^D' tmux_smart_detach
 bindkey '^x^e' edit-command-line-tmux-float      # Ctrl+X, Ctrl+E to open editor.
 
 # --- Prompt Configuration ---
-
 PROMPT_EOL_MARK=""          # Hide the '%' character that appears at the end of lines.
 
 _fix_cursor() {
@@ -128,44 +123,25 @@ ZLE_CURSOR_BLINK=0
 
 precmd_functions+=(_fix_cursor)
 
-# Function to find and load pure prompt
-# --- Prompt ---
-# 1. Define candidate directories (Manual & System)
-_pure_sources=(
+# --- Prompt Loading (Pure) ---
+# We prioritize locations where the prompt is already set up (symlinks created by install script)
+_pure_search_dirs=(
+    "$HOME/.local/share/mise/installs/pure/latest/pure.zsh"
     "$HOME/.zsh/pure"
+    "/usr/share/zsh/pure"
     "/usr/lib/node_modules/pure-prompt"
+    "/usr/local/lib/node_modules/pure-prompt"
 )
 
-# 2. Add dynamic Mise path if found
-# We search for 'pure.zsh' inside the mise installs directory
-if [ -d "$HOME/.local/share/mise/installs" ]; then
-    _mise_pure_path=$(find "$HOME/.local/share/mise/installs" -maxdepth 6 -type f -name "pure.zsh" 2>/dev/null | head -n 1)
-    if [ -n "$_mise_pure_path" ]; then
-        # Prepend the mise directory to the list to give it priority
-        _pure_sources=("$(dirname "$_mise_pure_path")" "${_pure_sources[@]}")
-    fi
-fi
-
 _pure_prompt_found=false
-
-# 3. Iterate and Load
-for _pure_source in "${_pure_sources[@]}"; do
-    # Check for the main file
-    if [ -f "$_pure_source/pure.zsh" ]; then
-        fpath+=("$_pure_source")
-        
-        # VALIDATION: promptinit requires a file named 'prompt_pure_setup'.
-        # If Mise installed it as 'pure.zsh' only, we must symlink it for promptinit to work.
-        if [ ! -f "$_pure_source/prompt_pure_setup" ]; then
-             ln -sf "$_pure_source/pure.zsh" "$_pure_source/prompt_pure_setup"
-        fi
-        
-        # VALIDATION: Pure requires async.zsh.
-        # If it is named 'async.zsh', we must symlink it to 'async' for autoload to find it.
-        if [ -f "$_pure_source/async.zsh" ] && [ ! -f "$_pure_source/async" ]; then
-             ln -sf "$_pure_source/async.zsh" "$_pure_source/async"
-        fi
-
+for _dir in "${_pure_search_dirs[@]}"; do
+    if [ -d "$_dir" ] && [ -f "$_dir/prompt_pure_setup" ]; then
+        fpath+=("$_dir")
+        _pure_prompt_found=true
+        break
+    elif [ -f "$_dir" ] && [[ "$_dir" == *".zsh" ]]; then
+        # Handle single-file pure.zsh if promptinit isn't needed or if path is mise-specific
+        fpath+=("$(dirname "$_dir")")
         _pure_prompt_found=true
         break
     fi
@@ -178,4 +154,4 @@ else
     local NEWLINE=$'\n'
     PROMPT="${NEWLINE}%F{blue}%~%f${NEWLINE}%(?.%F{white}.%F{red})%(#.#.$)%f "
 fi
-unset _mise_pure_path _pure_sources _pure_source _pure_prompt_found
+unset _pure_search_dirs _dir _pure_prompt_found

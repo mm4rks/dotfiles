@@ -18,12 +18,13 @@ else
 fi
 alias ntlm.pw='function _ntlm(){ curl https://ntlm.pw/$1; }; _ntlm' # Fetches NTLM hashes from ntlm.pw for a given value
 
+# Smart bat/cat alias
 if command -v batcat &> /dev/null; then
     alias bat='batcat'
 fi
 
-if command -v bat &> /dev/null; then
-    alias cat='bat --paging=never' # Conditional alias for bat
+if command -v bat &> /dev/null || command -v batcat &> /dev/null; then
+    alias cat='bat --paging=never'
     alias less='bat'
 fi
 
