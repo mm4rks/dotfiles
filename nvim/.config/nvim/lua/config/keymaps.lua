@@ -1,5 +1,3 @@
-vim.g.mapleader = " "
-
 -- Open file browser
 -- vim.keymap.set("n", "<leader>e", vim.cmd.Ex)
 

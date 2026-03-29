@@ -47,3 +47,9 @@ download_and_verify() {
 command_exists() {
     command -v "$1" &>/dev/null
 }
+
+# Checks if the current user is in a specific group.
+# Usage: user_in_group docker
+user_in_group() {
+    groups | grep -q "\b$1\b"
+}

@@ -9,10 +9,12 @@ echo "[INFO] Profiles selected:${PROFILES:- default}"
 
 # 1. System Base (Elevated)
 echo "[INFO] --- Phase 1: System Base (Elevated) ---"
-sudo "${REPO_DIR}/scripts/install_base_deps.sh"
-sudo "${REPO_DIR}/scripts/install_docker.sh"
-sudo "${REPO_DIR}/scripts/install_mise.sh"
-sudo "${REPO_DIR}/scripts/install_nerd_font.sh"
+sudo "${REPO_DIR}/scripts/install_base_deps.sh" || { echo "[ERROR] Base dependencies installation failed."; exit 1; }
+# Note: install_docker.sh is now handled by opencode if missing
+# but we can still call it here for an initial clean install.
+sudo "${REPO_DIR}/scripts/install_docker.sh" || { echo "[ERROR] Docker installation failed."; exit 1; }
+sudo "${REPO_DIR}/scripts/install_mise.sh" || { echo "[ERROR] Mise installation failed."; exit 1; }
+sudo "${REPO_DIR}/scripts/install_nerd_font.sh" || { echo "[ERROR] Nerd font installation failed."; exit 1; }
 
 # Fix permissions on ~/.local if it was created by root processes
 sudo chown -R "$(whoami)":"$(whoami)" "$HOME/.local" 2>/dev/null || true
@@ -21,10 +23,10 @@ sudo chsh -s "$(which zsh)" "$(whoami)" 2>/dev/null || true
 
 # 2. User Environment
 echo "[INFO] --- Phase 2: User Environment ---"
-"${REPO_DIR}/scripts/configure_mise.sh" "$@"
-"${REPO_DIR}/scripts/install_opencode.sh"
-"${REPO_DIR}/scripts/stow_dotfiles.sh"
-"${REPO_DIR}/scripts/sync_nvim.sh"
+"${REPO_DIR}/scripts/configure_mise.sh" "$@" || { echo "[ERROR] Mise configuration failed."; exit 1; }
+"${REPO_DIR}/scripts/install_opencode.sh" || { echo "[ERROR] OpenCode installation failed."; exit 1; }
+"${REPO_DIR}/scripts/stow_dotfiles.sh" || { echo "[ERROR] Dotfiles stowing failed."; exit 1; }
+"${REPO_DIR}/scripts/sync_nvim.sh" || { echo "[ERROR] Neovim sync failed."; exit 1; }
 
 # 3. Profile: pwn
 if [[ "$PROFILES" == *" pwn "* ]]; then

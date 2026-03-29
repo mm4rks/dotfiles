@@ -1,6 +1,6 @@
 local function on_attach(client, bufnr)
     print("LSP client attached: " .. client.name .. " to buffer: " .. bufnr)
-    vim.api.nvim_buf_set_option(bufnr, 'omnunc', 'v:lua.vim.lsp.omnifunc')
+    vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
     local opts = { noremap = true, silent = true, buffer = bufnr }
 
     vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
@@ -76,15 +76,20 @@ return {
                             capabilities = capabilities
                         })
                     end,
+                    ["lua_ls"] = function()
+                        lspconfig.lua_ls.setup({
+                            on_attach = on_attach,
+                            capabilities = capabilities,
+                            settings = {
+                                Lua = {
+                                    diagnostics = {
+                                        globals = { "vim" }
+                                    }
+                                }
+                            }
+                        })
+                    end,
                 },
-                vim.lsp.config("lua_ls", {
-                    settings = {
-                        Lua = {
-                            diagnostics = {
-                                globals = { "vim" } }
-                        }
-                    }
-                })
             })
         end
     },

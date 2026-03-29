@@ -10,6 +10,7 @@ local M = {
 }
 
 function M.joern_results_picker(results_file)
+  results_file = vim.fn.expand(results_file)
   local results = {}
   local file = io.open(results_file, "r")
   if not file then
