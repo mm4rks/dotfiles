@@ -9,18 +9,18 @@ fi
 
 # Map common git configs
 if [ -f "$HOME/.gitconfig" ]; then
-    DOCKER_FLAGS+=("-v" "$HOME/.gitconfig:/root/.gitconfig:ro")
+    DOCKER_FLAGS+=("-v" "$HOME/.gitconfig:$HOME/.gitconfig:ro")
 fi
 
 # Ensure opencode config is available
 if [ -d "$HOME/.config/opencode" ]; then
-    DOCKER_FLAGS+=("-v" "$HOME/.config/opencode:/root/.config/opencode:rw")
+    DOCKER_FLAGS+=("-v" "$HOME/.config/opencode:$HOME/.config/opencode:ro")
 fi
 
 # Execute opencode inside docker container
 # -u matches current user to avoid permission issues
 # -w /workspace sets working directory inside container
-# -v $PWD:/workspace mounts current directory
+# -v $PWD:$PWD mounts current directory
 # --network host allows connecting to local services (e.g., ollama)
 # --security-opt=no-new-privileges:true --cap-drop=ALL harden the container
 
@@ -28,8 +28,9 @@ exec docker run \
     --rm \
     "${DOCKER_FLAGS[@]}" \
     -u "$(id -u):$(id -g)" \
-    -e HOME="/root" \
+    -e HOME="$HOME" \
     -e USER="$(whoami)" \
+    -v "$HOME":"$HOME" \
     -v "$PWD":"$PWD" \
     -w "$PWD" \
     --network host \

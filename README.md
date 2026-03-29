@@ -60,7 +60,7 @@ This repository contains a collection of dotfiles and a powerful, automated scri
 -   **`dev`**:
     -   Docker and Docker Compose.
     -   Node.js (LTS) and `pure-prompt`.
-    -   OpenCode (`opencode-ai`).
+    -   OpenCode Sandbox (a dockerized `opencode-ai` wrapper).
 
 -   **`rev`**:
     -   Ghidra, Joern, Semgrep, and `flare-floss`.
