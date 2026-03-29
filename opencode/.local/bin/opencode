@@ -1,27 +1,40 @@
 #!/bin/bash
 set -euo pipefail
 
+# Security Guard: Prevent running in the user's base home directory
+if [[ "$PWD" == "$HOME" ]]; then
+    echo "Error: Running opencode in your HOME directory is forbidden for security reasons." >&2
+    echo "Please run it from within a specific project directory." >&2
+    exit 1
+fi
+
+# Ensure a persistent volume for the container's home (caches, state, etc.)
+# This keeps the container writable without exposing the host's actual $HOME.
+docker volume create opencode-home-cache >/dev/null
+
 # Ensure interactive mode if running in a terminal
 DOCKER_FLAGS=("-i")
 if [ -t 0 ]; then
     DOCKER_FLAGS+=("-t")
 fi
 
-# Map common git configs
+# Map common git configs (Read-Only)
 if [ -f "$HOME/.gitconfig" ]; then
     DOCKER_FLAGS+=("-v" "$HOME/.gitconfig:$HOME/.gitconfig:ro")
 fi
 
-# Ensure opencode config is available
+# Ensure opencode config is available (Read-Only)
 if [ -d "$HOME/.config/opencode" ]; then
     DOCKER_FLAGS+=("-v" "$HOME/.config/opencode:$HOME/.config/opencode:ro")
 fi
 
 # Execute opencode inside docker container
 # -u matches current user to avoid permission issues
-# -w /workspace sets working directory inside container
-# -v $PWD:$PWD mounts current directory
-# --network host allows connecting to local services (e.g., ollama)
+# -e HOME="$HOME" tells the tool where to look for config in the volume
+# -v opencode-home-cache:"$HOME" isolates the container's home
+# -v "$PWD":"$PWD" -w "$PWD" mounts only the current project directory
+# --add-host allows connecting to local services (e.g., ollama) via host.docker.internal
+# --tmpfs /tmp:exec ensures a clean, in-memory /tmp with execution permissions
 # --security-opt=no-new-privileges:true --cap-drop=ALL harden the container
 
 exec docker run \
@@ -30,10 +43,11 @@ exec docker run \
     -u "$(id -u):$(id -g)" \
     -e HOME="$HOME" \
     -e USER="$(whoami)" \
-    -v "$HOME":"$HOME" \
+    -v opencode-home-cache:"$HOME" \
     -v "$PWD":"$PWD" \
     -w "$PWD" \
-    --network host \
+    --add-host=host.docker.internal:host-gateway \
+    --tmpfs /tmp:exec \
     --security-opt=no-new-privileges:true \
     --cap-drop=ALL \
     opencode-sandbox:latest \
