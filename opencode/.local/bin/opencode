@@ -1,6 +1,24 @@
 #!/bin/bash
 set -euo pipefail
 
+# Container name for targeting via side-channels (e.g. callback)
+CONTAINER_NAME="opencode-sandbox-$(id -u)"
+
+# Callback Helper: Triggers an internal curl to complete OAuth flows
+if [[ "${1:-}" == "callback" ]]; then
+    URL="${2:-}"
+    if [[ -z "$URL" ]]; then
+        echo "Usage: opencode callback <url>" >&2
+        exit 1
+    fi
+    if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+        echo "Error: opencode is not currently running." >&2
+        exit 1
+    fi
+    echo "Triggering callback inside sandbox..."
+    exec docker exec "$CONTAINER_NAME" curl -sL "$URL"
+fi
+
 # Security Guard: Prevent running in the user's base home directory
 if [[ "$PWD" == "$HOME" ]]; then
     echo "Error: Running opencode in your HOME directory is forbidden for security reasons." >&2
@@ -9,14 +27,12 @@ if [[ "$PWD" == "$HOME" ]]; then
 fi
 
 # Ensure a persistent volume for the container's home (caches, state, etc.)
-# This keeps the container writable without exposing the host's actual $HOME.
 docker volume create opencode-home-cache >/dev/null
 
 # Internal container paths
 INT_HOME="/home/node"
 
 # Ensure plugins are discovered by opencode-ai
-# We link the global npm plugins into the user's local node_modules in the persistent volume.
 docker run --rm -u "$(id -u):$(id -g)" -v opencode-home-cache:"$INT_HOME" --entrypoint bash opencode-sandbox:latest -c "mkdir -p \"$INT_HOME/node_modules\" && ln -sf /usr/local/lib/node_modules/opencode-*-auth \"$INT_HOME/node_modules/\""
 
 # Determine the dotfiles repo location (resolving symlinks)
@@ -35,23 +51,15 @@ if [ -f "$HOME/.gitconfig" ]; then
 fi
 
 # Ensure opencode config is available (Read-Write)
-# We mount the directory, and also the dotfiles repo so symlinks resolve.
 if [ -d "$HOME/.config/opencode" ]; then
     DOCKER_FLAGS+=("-v" "$HOME/.config/opencode:$INT_HOME/.config/opencode:rw")
     DOCKER_FLAGS+=("-v" "$DOTFILES_DIR:$INT_HOME/.dotfiles:ro")
 fi
 
 # Execute opencode inside docker container
-# -u matches current user to avoid permission issues
-# -e HOME="$INT_HOME" tells the tool to use the isolated volume home
-# -v opencode-home-cache:"$INT_HOME" isolates the container's home
-# -v "$PWD":"$PWD" -w "$PWD" mounts only the current project directory
-# --add-host allows connecting to local services (e.g., ollama) via host.docker.internal
-# --tmpfs /tmp:exec ensures a clean, in-memory /tmp with execution permissions
-# --security-opt=no-new-privileges:true --cap-drop=ALL harden the container
-
 exec docker run \
     --rm \
+    --name "$CONTAINER_NAME" \
     "${DOCKER_FLAGS[@]}" \
     -u "$(id -u):$(id -g)" \
     -e HOME="$INT_HOME" \

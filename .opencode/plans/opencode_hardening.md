@@ -37,7 +37,16 @@
 ### Phase 3: Subscription & Authentication
 - **Wrapper Change**: Pass `GOOGLE_GENERATIVE_AI_API_KEY` and `ANTHROPIC_API_KEY` from the host environment to the container.
 - **Plugin Support**: Mount `.config/opencode` as Read-Write (`:rw`) to allow authentication plugins to persist tokens.
-- **Why**: Providing both environment variable pass-through and writable config mounts ensures compatibility with both direct API keys and account-based plugin authentication.
+- **Side-Channel Callback**:
+    - Added `opencode callback <url>` command to the wrapper.
+    - Added helper script `scripts/opencode_auth_callback.sh`.
+    - Assigned predictable container name `opencode-sandbox-UID` to allow targeting.
+- **Workflow**:
+    1. Run `opencode providers login google`.
+    2. Authenticate in browser.
+    3. Copy the failed `localhost` redirect URL.
+    4. Run `opencode callback "URL"` in a second terminal to complete auth inside the sandbox.
+
 
 ### Phase 4: Verification
 -   Test execution in `$HOME` (should fail).
