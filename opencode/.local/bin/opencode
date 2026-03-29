@@ -12,6 +12,11 @@ fi
 # This keeps the container writable without exposing the host's actual $HOME.
 docker volume create opencode-home-cache >/dev/null
 
+# Internal container paths
+# node:22-slim image has /home/node owned by 1000:1000
+# Docker will automatically set the volume ownership to match on first mount.
+INT_HOME="/home/node"
+
 # Ensure interactive mode if running in a terminal
 DOCKER_FLAGS=("-i")
 if [ -t 0 ]; then
@@ -20,18 +25,18 @@ fi
 
 # Map common git configs (Read-Only)
 if [ -f "$HOME/.gitconfig" ]; then
-    DOCKER_FLAGS+=("-v" "$HOME/.gitconfig:$HOME/.gitconfig:ro")
+    DOCKER_FLAGS+=("-v" "$HOME/.gitconfig:$INT_HOME/.gitconfig:ro")
 fi
 
 # Ensure opencode config is available (Read-Only)
 if [ -d "$HOME/.config/opencode" ]; then
-    DOCKER_FLAGS+=("-v" "$HOME/.config/opencode:$HOME/.config/opencode:ro")
+    DOCKER_FLAGS+=("-v" "$HOME/.config/opencode:$INT_HOME/.config/opencode:ro")
 fi
 
 # Execute opencode inside docker container
 # -u matches current user to avoid permission issues
-# -e HOME="$HOME" tells the tool where to look for config in the volume
-# -v opencode-home-cache:"$HOME" isolates the container's home
+# -e HOME="$INT_HOME" tells the tool to use the isolated volume home
+# -v opencode-home-cache:"$INT_HOME" isolates the container's home
 # -v "$PWD":"$PWD" -w "$PWD" mounts only the current project directory
 # --add-host allows connecting to local services (e.g., ollama) via host.docker.internal
 # --tmpfs /tmp:exec ensures a clean, in-memory /tmp with execution permissions
@@ -41,9 +46,9 @@ exec docker run \
     --rm \
     "${DOCKER_FLAGS[@]}" \
     -u "$(id -u):$(id -g)" \
-    -e HOME="$HOME" \
-    -e USER="$(whoami)" \
-    -v opencode-home-cache:"$HOME" \
+    -e HOME="$INT_HOME" \
+    -e USER="node" \
+    -v opencode-home-cache:"$INT_HOME" \
     -v "$PWD":"$PWD" \
     -w "$PWD" \
     --add-host=host.docker.internal:host-gateway \
