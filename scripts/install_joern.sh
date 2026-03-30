@@ -6,11 +6,19 @@ JOERN_VERSION="v4.0.510"
 JOERN_URL="https://github.com/joernio/joern/releases/download/${JOERN_VERSION}/joern-install.sh"
 JOERN_SHA256="790a4c7e0d99a71a101292189e6607c62b2e8aafd81f41df177ffc61dfde26cf"
 
+ensure_dependencies() {
+    log "Checking for Joern dependencies..."
+    # Ensure Java 21 is installed (consistent with Ghidra and Mise profile)
+    "$(dirname "$0")/install_java.sh"
+}
+
 install_joern() {
     if command_exists joern; then
         log "Joern is already installed. Skipping."
         return 0
     fi
+    
+    ensure_dependencies
     log "Installing Joern ${JOERN_VERSION}..."
 
     local TEMP_DIR
@@ -26,4 +34,11 @@ install_joern() {
     log "Joern installed successfully."
 }
 
-install_joern
+main() {
+    if [[ $EUID -ne 0 ]]; then
+       error "This script must be run as root (use sudo)."
+    fi
+    install_joern
+}
+
+main "$@"

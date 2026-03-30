@@ -8,11 +8,26 @@ GHIDRA_DATE="20260303"
 GHIDRA_URL="https://github.com/NationalSecurityAgency/ghidra/releases/download/${GHIDRA_BUILD}/ghidra_${GHIDRA_VERSION}_PUBLIC_${GHIDRA_DATE}.zip"
 GHIDRA_SHA256="c3b458661d69e26e203d739c0c82d143cc8a4a29d9e571f099c2cf4bda62a120"
 
+ensure_dependencies() {
+    log "Checking for Ghidra dependencies..."
+
+    # Check for unzip
+    if ! command_exists unzip; then
+        log "Installing unzip..."
+        apt-get update -qq && apt-get install -y -qq unzip
+    fi
+
+    # Ensure Java 21 is installed
+    "$(dirname "$0")/install_java.sh"
+}
+
 install_ghidra() {
     if command_exists ghidra; then
         log "Ghidra is already installed. Skipping."
         return 0
     fi
+    
+    ensure_dependencies
     log "Installing Ghidra ${GHIDRA_VERSION}..."
 
     local TEMP_DIR
@@ -38,4 +53,11 @@ install_ghidra() {
     log "Ghidra installed successfully."
 }
 
-install_ghidra
+main() {
+    if [[ $EUID -ne 0 ]]; then
+       error "This script must be run as root (use sudo)."
+    fi
+    install_ghidra
+}
+
+main "$@"
