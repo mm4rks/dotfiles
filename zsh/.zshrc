@@ -126,7 +126,8 @@ precmd_functions+=(_fix_cursor)
 # --- Prompt Loading (Pure) ---
 # We prioritize locations where the prompt is already set up (symlinks created by install script)
 _pure_search_dirs=(
-    "$HOME/.local/share/mise/installs/pure/latest/pure.zsh"
+    "$HOME/.local/share/mise/installs/npm-pure-prompt/latest/lib/node_modules/pure-prompt"
+    "$HOME/.local/share/mise/installs/npm-pure-prompt"
     "$HOME/.zsh/pure"
     "/usr/share/zsh/pure"
     "/usr/lib/node_modules/pure-prompt"

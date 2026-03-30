@@ -31,8 +31,19 @@ main() {
         log "Added $(whoami) to the docker group. Please re-login for changes to take effect."
     fi
 
+    # Determine if we need sudo for docker (useful if user was just added to group and hasn't re-logged)
+    local DOCKER_CMD="docker"
+    if ! docker info &>/dev/null; then
+        warn "Current user cannot access Docker daemon. Trying with sudo..."
+        if sudo docker info &>/dev/null; then
+            DOCKER_CMD="sudo docker"
+        else
+            error "Cannot access Docker daemon even with sudo. Please check if Docker service is running."
+        fi
+    fi
+
     log "Building opencode-sandbox Docker image..."
-    if docker build $CACHE_FLAG -t opencode-sandbox:latest -f "${REPO_DIR}/docker/opencode/Dockerfile" "${REPO_DIR}/docker/opencode"; then
+    if $DOCKER_CMD build $CACHE_FLAG -t opencode-sandbox:latest -f "${REPO_DIR}/docker/opencode/Dockerfile" "${REPO_DIR}/docker/opencode"; then
         log "Successfully built opencode-sandbox:latest"
     else
         error "Failed to build opencode-sandbox Docker image."

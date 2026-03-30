@@ -22,7 +22,7 @@ function rf() {
         fzf --bind "change:reload:$RG_PREFIX {q} -- '$search_path' || true" \
             --ansi --disabled --query "$INITIAL_QUERY" \
             --height=50% --layout=reverse \
-            --preview "bat --color=always {1} --highlight-line {2}" \
+            --preview "${BAT_CMD:-cat} --color=always {1} --highlight-line {2}" \
             --preview-window "up,60%,border-bottom,+{2}+3/3,~3"
 } # Description: Interactively search inside files in a directory (optional argument) with rg and fzf.
 

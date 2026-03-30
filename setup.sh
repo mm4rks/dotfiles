@@ -4,6 +4,11 @@ set -euo pipefail
 PROFILES=" $* "
 REPO_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
+# Helper log functions if not sourced from lib.sh
+log() { echo -e "\033[0;32m[INFO]\033[0m $1"; }
+warn() { echo -e "\033[0;33m[WARN]\033[0m $1"; }
+error() { echo -e "\033[0;31m[ERROR]\033[0m $1"; exit 1; }
+
 echo "[INFO] Starting Dotfiles Setup..."
 echo "[INFO] Profiles selected:${PROFILES:- default}"
 
@@ -24,6 +29,13 @@ sudo chsh -s "$(which zsh)" "$(whoami)" 2>/dev/null || true
 # 2. User Environment
 echo "[INFO] --- Phase 2: User Environment ---"
 "${REPO_DIR}/scripts/configure_mise.sh" "$@" || { echo "[ERROR] Mise configuration failed."; exit 1; }
+
+# Important: Activate mise in the current shell so subsequent scripts (like sync_nvim.sh) can find their tools
+if command -v mise &>/dev/null; then
+    eval "$(mise activate bash)"
+    log "Mise activated for current session."
+fi
+
 "${REPO_DIR}/scripts/install_opencode.sh" || { echo "[ERROR] OpenCode installation failed."; exit 1; }
 "${REPO_DIR}/scripts/stow_dotfiles.sh" || { echo "[ERROR] Dotfiles stowing failed."; exit 1; }
 "${REPO_DIR}/scripts/sync_nvim.sh" || { echo "[ERROR] Neovim sync failed."; exit 1; }

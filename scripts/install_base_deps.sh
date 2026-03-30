@@ -6,7 +6,7 @@ install_base_deps() {
     log "Installing base dependencies..."
     export DEBIAN_FRONTEND=noninteractive
     apt-get update -qq
-    apt-get install -y -qq ca-certificates curl gnupg unzip git build-essential stow wget libfuse2 pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh libkrb5-dev cmake zsh-autosuggestions zsh-syntax-highlighting wl-clipboard xclip python3-dev
+    apt-get install -y -qq ca-certificates curl gnupg unzip git build-essential stow wget libfuse2 pipx libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev zsh libkrb5-dev cmake zsh-autosuggestions zsh-syntax-highlighting wl-clipboard xclip python3-dev tmux vivid bat
 
     # Kernel header package names vary across Debian/Ubuntu/Kali.
     local HEADER_PKG=""

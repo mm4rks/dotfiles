@@ -19,13 +19,16 @@ fi
 alias ntlm.pw='function _ntlm(){ curl https://ntlm.pw/$1; }; _ntlm' # Fetches NTLM hashes from ntlm.pw for a given value
 
 # Smart bat/cat alias
-if command -v batcat &> /dev/null; then
-    alias bat='batcat'
-fi
-
-if command -v bat &> /dev/null || command -v batcat &> /dev/null; then
+BAT_CMD=""
+if command -v bat &> /dev/null; then
+    BAT_CMD="bat"
     alias cat='bat --paging=never'
     alias less='bat'
+elif command -v batcat &> /dev/null; then
+    BAT_CMD="batcat"
+    alias bat='batcat'
+    alias cat='batcat --paging=never'
+    alias less='batcat'
 fi
 
 if command -v eza &> /dev/null; then
@@ -50,7 +53,7 @@ if command -v rg &> /dev/null; then
     alias rgh='rg --hidden -i -g "!.git/"'
 fi
 
-alias ff="fzf --preview 'bat --style=numbers --color=always {}'"
+alias ff="fzf --preview '${BAT_CMD:-cat} --style=numbers --color=always {}'"
 
 if command -v zoxide &> /dev/null; then
   alias cd="zd"
