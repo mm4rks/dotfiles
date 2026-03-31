@@ -20,8 +20,11 @@ When debugging or developing for a specific target OS, testing the entire suite 
 # Test strictly on Ubuntu
 docker build --target ubuntu-test -t dotfiles-tester-ubuntu-test -f Dockerfile.test .
 
-# Test strictly on Kali Linux
+# Test strictly on Kali Linux (Standard Setup)
 docker build --target kali-test -t dotfiles-tester-kali-test -f Dockerfile.test .
+
+# Test strictly on Kali Linux (Guest/Sandbox Setup)
+docker build --target kali-guest-test -t dotfiles-tester-kali-guest -f Dockerfile.test .
 
 # Test strictly on Parrot OS
 docker build --target parrot-test -t dotfiles-tester-parrot-test -f Dockerfile.test .
@@ -35,6 +38,9 @@ shellcheck script_name.sh
 ```
 Address all warnings and errors surfaced by `shellcheck`. Use appropriate `# shellcheck disable=SCXXXX` directives only if the warning is strictly a false positive and the reasoning is clear.
 
+### 1.4. Build Process
+This repository does not have a traditional "build" step for the dotfiles themselves, but any changes to the `Dockerfile.test` or the core setup logic should be verified by rebuilding the test images. If you modify a dependency in `scripts/install_base_deps.sh`, you MUST run the relevant Docker test to ensure the dependency is correctly resolved.
+
 ## 2. Code Style Guidelines
 
 The following conventions must be strictly followed when writing or modifying Bash scripts and configuration files in this repository.
@@ -47,27 +53,39 @@ set -euo pipefail
 ```
 - `-e`: Exit immediately if a pipeline, list, or compound command exits with a non-zero status.
 - `-u`: Treat unset variables and parameters as an error when performing parameter expansion.
-- `-o pipefail`: Return value of a pipeline is the status of the last command to exit with a non-zero status, or zero if no command exited with a non-zero status.
+- `-o pipefail`: Return value of a pipeline is the status of the last command to exit with a non-zero status.
 
-### 2.2. Error Handling & Idempotency
-- **Idempotency:** Scripts must be completely safe to run multiple times without causing negative side effects, duplicating configuration lines, or crashing. Always check if a binary or tool is already installed before attempting an installation:
+### 2.2. Idempotency and Command Verification
+- **Idempotency:** Scripts must be completely safe to run multiple times without causing negative side effects, duplicating configuration lines, or crashing. Always check if a binary or tool is already installed before attempting an installation.
+- **Verification:** Use the `command_exists` utility defined in `scripts/lib.sh` instead of raw `command -v`:
   ```bash
-  if command -v tool_name &>/dev/null; then
+  if command_exists tool_name; then
       log "tool_name is already installed. Skipping."
       return 0
   fi
   ```
-- **Graceful Failures:** Use `if ! command; then` constructs to handle potential failures and provide graceful fallbacks (e.g., trying alternative package managers or repositories) rather than abruptly crashing the setup, unless the failure is absolutely critical to the core system.
+- **Utility Functions:** Leverage `scripts/lib.sh` for common tasks:
+    - `download_and_verify <url> <path> [sha256sum]`: Safe downloads with optional checksum verification.
+    - `user_in_group <group>`: Check if the current user belongs to a specific group (e.g., `docker`).
 
-### 2.3. Logging Conventions
-Do not use raw `echo` or `printf` commands for status updates in the main execution flow. Use the centralized, color-coded logging functions defined within the setup scripts:
-- `log "Message"`: For standard, expected informational output (prints in Green).
-- `warn "Message"`: For non-critical warnings or fallback notifications (prints in Yellow).
-- `error "Message"`: For critical failures. This function automatically invokes `exit 1` after printing the message (prints in Red).
+### 2.3. Error Handling & Cleanup
+- **Graceful Failures:** Use `if ! command; then` constructs to handle potential failures and provide graceful fallbacks (e.g., trying alternative package managers or repositories).
+- **Cleanup with Trap:** When using temporary resources, always use `trap` to ensure cleanup even if the script fails:
+  ```bash
+  local TEMP_DIR
+  TEMP_DIR="$(mktemp -d)"
+  trap "rm -rf '$TEMP_DIR'" RETURN
+  ```
 
-### 2.4. Functions and Structure
-- **Modularity:** Encapsulate logical, distinct units of work into well-named, descriptive functions (e.g., `install_docker_official()`, `stow_dotfiles()`). Do not write long procedural scripts.
-- **Main Function:** Every executable script must define a `main()` function at the bottom of the file. This function acts as the entry point and is invoked with all script arguments passed down:
+### 2.4. Logging Conventions
+Do not use raw `echo` or `printf` commands for status updates in the main execution flow. Use the centralized, color-coded logging functions defined within `scripts/lib.sh`:
+- `log "Message"`: For standard, expected informational output (Green).
+- `warn "Message"`: For non-critical warnings or fallback notifications (Yellow).
+- `error "Message"`: For critical failures. This function automatically invokes `exit 1` (Red).
+
+### 2.5. Functions and Structure
+- **Modularity:** Encapsulate logical, distinct units of work into well-named, descriptive functions (e.g., `install_docker_official()`, `stow_dotfiles()`).
+- **Main Function:** Every executable script must define a `main()` function at the bottom of the file as the entry point:
   ```bash
   main() {
       # Core logic and function calls here
@@ -75,40 +93,45 @@ Do not use raw `echo` or `printf` commands for status updates in the main execut
   main "$@"
   ```
 
-### 2.5. Variables and Scope
-- **Global Variables:** Use `UPPER_CASE` syntax for global configuration variables (e.g., `REPO_DIR`, `REAL_USER`, `DISTROS`).
-- **Local Variables:** Use `UPPER_CASE` or `lower_case` but ALWAYS tightly scope variables within functions using the `local` keyword to prevent global namespace pollution and unintended collisions:
+### 2.6. Variables and Scope
+- **Global Variables:** Use `UPPER_CASE` for global configuration (e.g., `REPO_DIR`, `REAL_USER`).
+- **Local Variables:** ALWAYS tightly scope variables within functions using the `local` keyword:
   ```bash
-  local TEMP_DIR=""
+  local target_path="/tmp/output"
   ```
-- **Quoting:** Always quote variable expansions to prevent word splitting and globbing issues, especially when dealing with user input or file paths (e.g., `"$USER_HOME"`, `"${PROFILES[@]}"`).
+- **Quoting:** Always quote variable expansions to prevent word splitting: `"$USER_HOME"`, `"${PROFILES[@]}"`.
 
-### 2.6. Paths and Temporary Directories
-- **Dynamic Repository Root:** Scripts should dynamically determine their absolute execution path rather than relying on an assumed current working directory:
+### 2.7. Paths and Temporary Directories
+- **Dynamic Repository Root:** Scripts should dynamically determine their absolute execution path:
   ```bash
   REPO_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
   ```
-- **Temporary Files:** When generating temporary directories or downloading ephemeral files via `wget`/`curl`, use `mktemp` and guarantee their cleanup via the `trap` command. Ensure the cleanup fires upon function return:
-  ```bash
-  local TEMP_DIR=""
-  TEMP_DIR="$(mktemp -d)"
-  trap "rm -rf '$TEMP_DIR'" RETURN # Cleanup when the function scope exits
-  ```
+- **Absolute Paths:** Always use absolute paths for file operations to avoid ambiguity during nested script calls.
 
-### 2.7. Privilege Management
-The `setup.sh` script is the primary entry point and handles elevation internally using `sudo` for system-level phases (Phase 1).
-- **Standard Setup:** Executes all phases, including system dependencies and `GNU Stow` for home directory symlinks.
-- **Guest/Sandbox Mode:** If the `guest` profile is passed to `setup.sh`, it skips all `sudo` operations and does NOT use `stow`. Instead, it prepares a sandboxed environment within the repository that can be activated using `source activate.sh`.
+### 2.8. Package and Dependency Management
+- **Apt:** Use for core system dependencies (libatomic1, sudo, curl, etc.).
+- **Mise:** Use for tool-specific versions (Neovim, Java, etc.) to maintain environment consistency.
+- **Custom Scripts:** Add specialized tool installations under `scripts/install_<tool_name>.sh`.
 
-### 2.8. Configuration Management
-- This repository utilizes `GNU Stow` for managing configuration symlinks to the user's home directory in standard setups.
-- For Guest/Sandbox setups, environment variables like `ZDOTDIR` and `XDG_CONFIG_HOME` are used to redirect tools to the repository's configuration files without modifying the system's home directory.
-- Ensure dotfiles are structured logically (e.g., `nvim/`, `tmux/`, `zsh/`) to support both `stow` and sandboxed redirection.
+### 2.9. Configuration Management
+- **GNU Stow:** Used for managing configuration symlinks to the user's home directory in standard setups.
+- **Sandbox/Guest Setup:** In `guest` mode, scripts must skip `stow` and instead use environment variables like `ZDOTDIR` and `XDG_CONFIG_HOME` to point to the repository's configuration files without modifying the system home.
 
-### 2.9. Code Formatting
-- **Indentation:** Use exactly 4 spaces for all indentation. Do not use hard tabs under any circumstances.
-- **Control Structures:** Place `then` on the exact same line as `if`, cleanly separated by a semicolon: `if [ condition ]; then`
-- **Loops:** Place `do` on the exact same line as `for` or `while`: `for item in "${items[@]}"; do`
+### 2.10. Code Formatting
+- **Indentation:** Use exactly 4 spaces for all indentation. NO hard tabs.
+- **Control Structures:** Place `then` on the same line as `if`: `if [ condition ]; then`
+- **Loops:** Place `do` on the same line as `for` or `while`: `for item in "${items[@]}"; do`
 
-### 2.10. External Agent Rules
-There are currently no explicit `.cursorrules`, `.cursor/rules/`, or `.github/copilot-instructions.md` configured for this repository. Adhere safely and solely to the conventions defined inside this `AGENTS.md` file when operating autonomously.
+## 3. Environment Specifics
+
+### 3.1. Profiles
+- **Standard:** Full installation with sudo privileges and home directory symlinking via Stow.
+- **Guest:** Sandbox mode for restricted environments. Skips sudo and Stow. Activated via `source activate.sh`.
+
+### 3.2. Critical Variables
+- `ZDOTDIR`: Redirects Zsh configuration to `zsh/` within the repo.
+- `XDG_CONFIG_HOME`: Redirects application configs to `config/` within the repo.
+
+## 4. External Agent Rules
+
+Adhere strictly to the conventions defined in this `AGENTS.md` file. There are currently no explicit `.cursorrules` or `.github/copilot-instructions.md` configured. If they are added in the future, they should be integrated into this document to maintain a single source of truth for all autonomous agents.
