@@ -6,7 +6,8 @@ REPO_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 export ZDOTDIR="${REPO_DIR}/zsh"
 export XDG_CONFIG_HOME="${REPO_DIR}/config"
-mkdir -p "${XDG_CONFIG_HOME}"
+export XDG_CACHE_HOME="${REPO_DIR}/cache"
+mkdir -p "${XDG_CONFIG_HOME}" "${XDG_CACHE_HOME}"
 
 # Link nvim config into our sandboxed XDG_CONFIG_HOME if missing
 if [ ! -L "${XDG_CONFIG_HOME}/nvim" ]; then

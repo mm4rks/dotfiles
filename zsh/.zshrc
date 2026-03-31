@@ -38,7 +38,10 @@ if [ -d /usr/share/zsh/vendor-completions ]; then
   fpath=(/usr/share/zsh/vendor-completions $fpath)
 fi
 autoload -Uz compinit       # Autoload the completion initialization utility.
-compinit -d "${XDG_CACHE_HOME:-$HOME/.cache}/zcompdump" # Initialize completions, caching to this file.
+# Use a dynamic cache location
+_zsh_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+mkdir -p "$_zsh_cache_dir"
+compinit -d "$_zsh_cache_dir/zcompdump" 
 zstyle ':completion:*:*:*:*:*' tag-order options arguments files
 zstyle ':completion:*' completer _files _expand _complete _ignored _approximate
 zstyle ':completion:*' matcher-list '' 'm:{[:lower:]}={[:upper:]}' 'r:|[._-]=* r:|=*'
