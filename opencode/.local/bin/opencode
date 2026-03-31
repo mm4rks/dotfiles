@@ -1,20 +1,105 @@
 #!/bin/bash
 set -euo pipefail
 
-# Container name for targeting via side-channels (e.g. callback)
-CONTAINER_NAME="opencode-sandbox-$(id -u)"
+get_workspace_root() {
+    if git -C "$PWD" rev-parse --show-toplevel >/dev/null 2>&1; then
+        git -C "$PWD" rev-parse --show-toplevel
+        return
+    fi
+
+    pwd -P
+}
+
+get_workspace_hash() {
+    local workspace_root="$1"
+
+    printf '%s' "$workspace_root" | sha256sum | cut -c1-12
+}
+
+list_sandbox_containers() {
+    local workspace_hash="${1:-}"
+    local -a docker_args=(
+        --filter "label=opencode.sandbox=true"
+        --filter "label=opencode.uid=$(id -u)"
+    )
+
+    if [[ -n "$workspace_hash" ]]; then
+        docker_args+=(--filter "label=opencode.workspace=${workspace_hash}")
+    fi
+
+    docker ps "${docker_args[@]}" --format '{{.Names}}'
+}
+
+resolve_callback_container() {
+    local explicit_container="${1:-}"
+    local running_state=""
+    local workspace_root=""
+    local workspace_hash=""
+    local container=""
+    local -a all_containers=()
+    local -a workspace_containers=()
+
+    if [[ -n "$explicit_container" ]]; then
+        if running_state=$(docker container inspect --format '{{.State.Running}}' "$explicit_container" 2>/dev/null) && [[ "$running_state" == "true" ]]; then
+            printf '%s\n' "$explicit_container"
+            return 0
+        fi
+
+        echo "Error: sandbox container '$explicit_container' is not running." >&2
+        return 1
+    fi
+
+    mapfile -t all_containers < <(list_sandbox_containers)
+
+    if (( ${#all_containers[@]} == 0 )); then
+        echo "Error: opencode is not currently running." >&2
+        return 1
+    fi
+
+    if (( ${#all_containers[@]} == 1 )); then
+        printf '%s\n' "${all_containers[0]}"
+        return 0
+    fi
+
+    workspace_root=$(get_workspace_root)
+    workspace_hash=$(get_workspace_hash "$workspace_root")
+    mapfile -t workspace_containers < <(list_sandbox_containers "$workspace_hash")
+
+    if (( ${#workspace_containers[@]} == 1 )); then
+        printf '%s\n' "${workspace_containers[0]}"
+        return 0
+    fi
+
+    if (( ${#workspace_containers[@]} > 1 )); then
+        echo "Error: multiple opencode sandboxes are running for this workspace." >&2
+        echo "Pass the target container name explicitly:" >&2
+        for container in "${workspace_containers[@]}"; do
+            echo "  $container" >&2
+        done
+        echo "Usage: opencode callback <url> [container_name]" >&2
+        return 1
+    fi
+
+    echo "Error: multiple opencode sandboxes are running." >&2
+    echo "Pass the target container name explicitly:" >&2
+    for container in "${all_containers[@]}"; do
+        echo "  $container" >&2
+    done
+    echo "Usage: opencode callback <url> [container_name]" >&2
+    return 1
+}
 
 # Callback Helper: Triggers an internal curl to complete OAuth flows
 if [[ "${1:-}" == "callback" ]]; then
     URL="${2:-}"
+    CONTAINER_NAME="${3:-}"
+
     if [[ -z "$URL" ]]; then
-        echo "Usage: opencode callback <url>" >&2
+        echo "Usage: opencode callback <url> [container_name]" >&2
         exit 1
     fi
-    if ! docker ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
-        echo "Error: opencode is not currently running." >&2
-        exit 1
-    fi
+
+    CONTAINER_NAME=$(resolve_callback_container "$CONTAINER_NAME")
     echo "Triggering callback inside sandbox..."
     exec docker exec "$CONTAINER_NAME" curl -sL "$URL"
 fi
@@ -31,6 +116,10 @@ docker volume create opencode-home-cache >/dev/null
 
 # Internal container paths
 INT_HOME="/home/node"
+
+WORKSPACE_ROOT=$(get_workspace_root)
+WORKSPACE_HASH=$(get_workspace_hash "$WORKSPACE_ROOT")
+CONTAINER_NAME="opencode-sandbox-$(id -u)-${WORKSPACE_HASH}-${$}-$(date +%s%N)"
 
 # Ensure plugins are discovered by opencode-ai
 docker run --rm -u "$(id -u):$(id -g)" -v opencode-home-cache:"$INT_HOME" --entrypoint bash opencode-sandbox:latest -c "mkdir -p \"$INT_HOME/node_modules\" && ln -sf /usr/local/lib/node_modules/opencode-*-auth \"$INT_HOME/node_modules/\""
@@ -60,6 +149,9 @@ fi
 exec docker run \
     --rm \
     --name "$CONTAINER_NAME" \
+    --label "opencode.sandbox=true" \
+    --label "opencode.uid=$(id -u)" \
+    --label "opencode.workspace=${WORKSPACE_HASH}" \
     "${DOCKER_FLAGS[@]}" \
     -u "$(id -u):$(id -g)" \
     -e HOME="$INT_HOME" \
