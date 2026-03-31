@@ -26,22 +26,18 @@ echo "[INFO] Starting Dotfiles Setup..."
 echo "[INFO] Profiles selected:${PROFILES:- default}"
 
 # 1. System Base (Elevated)
-if [[ "$PROFILES" != *" guest "* ]]; then
-    echo "[INFO] --- Phase 1: System Base (Elevated) ---"
-    sudo "${REPO_DIR}/scripts/install_base_deps.sh" || { echo "[ERROR] Base dependencies installation failed."; exit 1; }
-    # Note: install_docker.sh is now handled by opencode if missing
-    # but we can still call it here for an initial clean install.
-    sudo "${REPO_DIR}/scripts/install_docker.sh" || { echo "[ERROR] Docker installation failed."; exit 1; }
-    sudo "${REPO_DIR}/scripts/install_mise.sh" || { echo "[ERROR] Mise installation failed."; exit 1; }
-    sudo "${REPO_DIR}/scripts/install_nerd_font.sh" || { echo "[ERROR] Nerd font installation failed."; exit 1; }
-else
-    echo "[INFO] --- Skipping Phase 1 (guest profile) ---"
-fi
+echo "[INFO] --- Phase 1: System Base (Elevated) ---"
+sudo "${REPO_DIR}/scripts/install_base_deps.sh" || { echo "[ERROR] Base dependencies installation failed."; exit 1; }
+# Note: install_docker.sh is now handled by opencode if missing
+# but we can still call it here for an initial clean install.
+sudo "${REPO_DIR}/scripts/install_docker.sh" || { echo "[ERROR] Docker installation failed."; exit 1; }
+sudo "${REPO_DIR}/scripts/install_mise.sh" || { echo "[ERROR] Mise installation failed."; exit 1; }
+sudo "${REPO_DIR}/scripts/install_nerd_font.sh" || { echo "[ERROR] Nerd font installation failed."; exit 1; }
 
 # Fix permissions on ~/.local if it was created by root processes
+sudo chown -R "$(whoami)":"$(whoami)" "$HOME/.local" 2>/dev/null || true
+# Ensure zsh is default shell
 if [[ "$PROFILES" != *" guest "* ]]; then
-    sudo chown -R "$(whoami)":"$(whoami)" "$HOME/.local" 2>/dev/null || true
-    # Ensure zsh is default shell
     sudo chsh -s "$(which zsh)" "$(whoami)" 2>/dev/null || true
 fi
 

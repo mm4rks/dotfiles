@@ -31,6 +31,7 @@ configure_mise() {
     log "Installing tools with mise..."
     mise trust --yes
     mise install -y
+    mise reshim # Ensure newly installed binaries are available
 
     log "Setting python@3.14.0 as the global default..."
     mise use --global python@3.14.0

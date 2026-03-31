@@ -111,18 +111,21 @@ FROM kalilinux/kali-rolling AS kali-guest-test
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y sudo curl gpg wget && rm -rf /var/lib/apt/lists/*
 RUN useradd -m -G sudo -s /bin/bash tester
-# Note: No sudo for guest test to ensure it works without elevation
+RUN echo "tester ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tester
+# Note: We run with sudo in guest test for Phase 1 deps, but ensure no stow
 USER tester
 WORKDIR /home/tester/dotfiles
 COPY --chown=tester:tester . .
 # Run guest setup
 RUN chmod +x ./scripts/*.sh ./setup.sh && ./setup.sh guest
-# Verify no symlinks in $HOME
+# Verify no symlinks in $HOME (isolation check)
 RUN [ ! -L /home/tester/.zshrc ]
 RUN [ ! -L /home/tester/.tmux.conf ]
 # Verify sandbox directories exist
 RUN [ -d /home/tester/dotfiles/config ]
 RUN [ -d /home/tester/dotfiles/zsh ]
+# Verify libatomic1 is installed (dependency check)
+RUN dpkg -l | grep libatomic1
 # Verify activate.sh works (basic check)
 RUN bash -c "source ./activate.sh && [ \"$ZDOTDIR\" = \"/home/tester/dotfiles/zsh\" ]"
 
