@@ -127,5 +127,5 @@ RUN [ -d /home/tester/dotfiles/zsh ]
 # Verify libatomic1 is installed (dependency check)
 RUN dpkg -l | grep libatomic1
 # Verify activate.sh works (basic check)
-RUN bash -c "source ./activate.sh && [ \"$ZDOTDIR\" = \"/home/tester/dotfiles/zsh\" ]"
+RUN bash -c "source ./activate.sh && [ \"\$ZDOTDIR\" = \"/home/tester/dotfiles/zsh\" ]"
 
