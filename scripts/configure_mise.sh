@@ -6,7 +6,10 @@ configure_mise() {
     local PROFILES=("$@")
     # REPO_DIR should be set by the calling script, but we provide a default.
     local REPO_DIR=${REPO_DIR:-"$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")"/.. &>/dev/null && pwd)"}
-    local CONFIG_FILE="$HOME/.config/mise/config.toml"
+    local CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/mise/config.toml"
+
+    # Ensure ~/.local/bin is in PATH for local installations
+    export PATH="${HOME}/.local/bin:${PATH}"
 
     log "Configuring Mise profiles for user $(whoami)..."
     mkdir -p "$(dirname "$CONFIG_FILE")"

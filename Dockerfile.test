@@ -106,28 +106,23 @@ RUN chmod +x ./scripts/install_certipy.sh && ./scripts/install_certipy.sh
 COPY --chown=tester:tester scripts/sync_nvim.sh ./scripts/sync_nvim.sh
 RUN chmod +x ./scripts/sync_nvim.sh && ./scripts/sync_nvim.sh
 
-# --- Ubuntu Test Setup ---
-FROM ubuntu:22.04 AS ubuntu-test-setup
+# --- Kali Linux Guest (Sandbox) Test ---
+FROM kalilinux/kali-rolling AS kali-guest-test
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y sudo curl gpg wget && rm -rf /var/lib/apt/lists/*
 RUN useradd -m -G sudo -s /bin/bash tester
-RUN echo "tester ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tester
+# Note: No sudo for guest test to ensure it works without elevation
+USER tester
 WORKDIR /home/tester/dotfiles
 COPY --chown=tester:tester . .
-USER tester
-RUN chmod +x ./scripts/*.sh ./setup.sh && ./setup.sh pwn ssh
+# Run guest setup
+RUN chmod +x ./scripts/*.sh ./setup.sh && ./setup.sh guest
+# Verify no symlinks in $HOME
+RUN [ ! -L /home/tester/.zshrc ]
+RUN [ ! -L /home/tester/.tmux.conf ]
+# Verify sandbox directories exist
+RUN [ -d /home/tester/dotfiles/config ]
+RUN [ -d /home/tester/dotfiles/zsh ]
+# Verify activate.sh works (basic check)
+RUN bash -c "source ./activate.sh && [ \"$ZDOTDIR\" = \"/home/tester/dotfiles/zsh\" ]"
 
-# --- Kali Linux Test Setup ---
-FROM kalilinux/kali-rolling AS kali-test-setup
-ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y sudo curl gpg wget && rm -rf /var/lib/apt/lists/*
-RUN useradd -m -G sudo -s /bin/bash tester
-RUN echo "tester ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tester
-WORKDIR /home/tester/dotfiles
-COPY --chown=tester:tester . .
-USER tester
-RUN chmod +x ./scripts/*.sh ./setup.sh && ./setup.sh pwn ssh
-
-# --- Parrot OS Test Image ---
-FROM parrotsec/core AS parrot-test
-# ... (contents for parrot would be similar)

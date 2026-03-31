@@ -5,7 +5,7 @@ set -e # Exit immediately if a command exits with a non-zero status.
 
 # --- Configuration ---
 DOCKERFILE="Dockerfile.test"
-DISTROS=("ubuntu-test" "kali-test" "parrot-test" "ubuntu-test-setup" "kali-test-setup")
+DISTROS=("ubuntu-test" "kali-test" "kali-guest-test")
 
 # --- Colors for logging ---
 GREEN='\033[0;32m'
@@ -17,6 +17,11 @@ log_success() { echo -e "${GREEN}✔ $1${NC}"; }
 
 # --- Main Logic ---
 main() {
+    # If arguments are provided, use them as the list of distros to test
+    if [ $# -gt 0 ]; then
+        DISTROS=("$@")
+    fi
+
     # Ensure Docker is running
     if ! docker info >/dev/null 2>&1; then
         echo "Error: Docker does not seem to be running. Please start Docker and try again." >&2

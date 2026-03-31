@@ -3,8 +3,11 @@ set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 
 sync_nvim() {
+    # Ensure local bins are in PATH for discovery
+    export PATH="${HOME}/.local/bin:${PATH}"
+
     # Ensure mise is active if present so we can find nvim
-    if command -v mise &>/dev/null; then
+    if command_exists mise; then
         eval "$(mise activate bash)"
     elif [ -f /usr/bin/mise ]; then
         eval "$(/usr/bin/mise activate bash)"

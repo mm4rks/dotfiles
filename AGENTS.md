@@ -96,17 +96,14 @@ Do not use raw `echo` or `printf` commands for status updates in the main execut
   ```
 
 ### 2.7. Privilege Management
-Respect the deeply intended execution context of the respective setup scripts:
-- `system_setup.sh`: Must strictly run as `root` context. Actively checks for `$EUID -eq 0`.
-- `user_setup.sh`: Must strictly run as a standard, unprivileged user context.
-- When transitioning execution from root to standard user, use `su` to explicitly drop privileges and execute the user-scoped commands:
-  ```bash
-  su - "$REAL_USER" -c "bash ${REPO_DIR}/user_setup.sh ${PROFILES[*]}"
-  ```
+The `setup.sh` script is the primary entry point and handles elevation internally using `sudo` for system-level phases (Phase 1).
+- **Standard Setup:** Executes all phases, including system dependencies and `GNU Stow` for home directory symlinks.
+- **Guest/Sandbox Mode:** If the `guest` profile is passed to `setup.sh`, it skips all `sudo` operations and does NOT use `stow`. Instead, it prepares a sandboxed environment within the repository that can be activated using `source activate.sh`.
 
-### 2.8. Configuration Management (GNU Stow)
-- This repository utilizes `GNU Stow` for managing configuration symlinks to the user's home directory.
-- Ensure that dotfiles are structured appropriately within top-level directories (e.g., `nvim/`, `tmux/`, `zsh/`) that cleanly mimic the target home directory structure (e.g., placing configs inside `.config/nvim`, `.tmux.conf` respectively).
+### 2.8. Configuration Management
+- This repository utilizes `GNU Stow` for managing configuration symlinks to the user's home directory in standard setups.
+- For Guest/Sandbox setups, environment variables like `ZDOTDIR` and `XDG_CONFIG_HOME` are used to redirect tools to the repository's configuration files without modifying the system's home directory.
+- Ensure dotfiles are structured logically (e.g., `nvim/`, `tmux/`, `zsh/`) to support both `stow` and sandboxed redirection.
 
 ### 2.9. Code Formatting
 - **Indentation:** Use exactly 4 spaces for all indentation. Do not use hard tabs under any circumstances.

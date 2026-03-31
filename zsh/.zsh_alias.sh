@@ -89,6 +89,11 @@ alias gcm='git commit -m'
 alias gcam='git commit -a -m'
 alias gcad='git commit -a --amend'
 
+# Sandboxed Tmux
+if [ -n "$ZDOTDIR" ]; then
+    alias tmux="tmux -f ${ZDOTDIR:h}/tmux/.tmux.conf"
+fi
+
 # if command -v nvim &> /dev/null; then
 #     alias vim='nvim' # Conditional alias for Neovim
 # fi

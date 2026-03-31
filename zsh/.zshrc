@@ -19,7 +19,7 @@ setopt pushdignoredups      # Don't push directories that are already on the sta
 WORDCHARS=${WORDCHARS//\/} # Slashes and minus separate words
 
 # --- History Configuration ----------------------------------------------------
-HISTFILE=~/.zsh_history     # Set path for the history file.
+HISTFILE="${ZDOTDIR:-$HOME}/.zsh_history"     # Set path for the history file.
 HISTSIZE=20000              # Max number of commands to keep in memory.
 SAVEHIST=20000              # Max number of commands to save to the file.
 setopt appendhistory        # Append to history, don't overwrite.
@@ -38,7 +38,7 @@ if [ -d /usr/share/zsh/vendor-completions ]; then
   fpath=(/usr/share/zsh/vendor-completions $fpath)
 fi
 autoload -Uz compinit       # Autoload the completion initialization utility.
-compinit -d ~/.cache/zcompdump # Initialize completions, caching to this file.
+compinit -d "${XDG_CACHE_HOME:-$HOME/.cache}/zcompdump" # Initialize completions, caching to this file.
 zstyle ':completion:*:*:*:*:*' tag-order options arguments files
 zstyle ':completion:*' completer _files _expand _complete _ignored _approximate
 zstyle ':completion:*' matcher-list '' 'm:{[:lower:]}={[:upper:]}' 'r:|[._-]=* r:|=*'
@@ -75,7 +75,7 @@ bindkey '^K' kill-line              # Delete from cursor to end of line
 bindkey '^Y' yank                   # Paste (yank)
 bindkey '\ed' kill-word             # Alt-d, delete word forward
 
-source ~/.zsh_env.sh
+source "${ZDOTDIR:-$HOME}/.zsh_env.sh"
 eval "$(mise activate zsh)"
 eval "$(mise completion zsh)"
 
@@ -89,10 +89,10 @@ else
     export VISUAL='vim'
 fi
 
-source ~/.zsh_alias.sh
-source ~/.zsh_docker.sh
-source ~/.zsh_functions.sh
-source ~/.zsh_plugins.sh
+source "${ZDOTDIR:-$HOME}/.zsh_alias.sh"
+source "${ZDOTDIR:-$HOME}/.zsh_docker.sh"
+source "${ZDOTDIR:-$HOME}/.zsh_functions.sh"
+source "${ZDOTDIR:-$HOME}/.zsh_plugins.sh"
 
 # Load additional shell components if they exist
 source_if_exists /etc/zsh_command_not_found
@@ -128,7 +128,8 @@ precmd_functions+=(_fix_cursor)
 _pure_search_dirs=(
     "$HOME/.local/share/mise/installs/npm-pure-prompt/latest/lib/node_modules/pure-prompt"
     "$HOME/.local/share/mise/installs/npm-pure-prompt"
-    "$HOME/.zsh/pure"
+    "$HOME/.local/share/mise/installs/pure/latest/pure.zsh"
+    "${ZDOTDIR:-$HOME}/.zsh/pure"
     "/usr/share/zsh/pure"
     "/usr/lib/node_modules/pure-prompt"
     "/usr/local/lib/node_modules/pure-prompt"
