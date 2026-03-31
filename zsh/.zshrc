@@ -33,7 +33,12 @@ setopt ignore_eof
 
 
 # --- Completion System --------------------------------------------------------
-# Add Docker completions to fpath
+# Add custom completions to fpath
+if [ -d "${ZDOTDIR:-$HOME}/.zsh_completions" ]; then
+  fpath=("${ZDOTDIR:-$HOME}/.zsh_completions" $fpath)
+fi
+
+# Add Docker completions to fpath if they exist in standard locations
 if [ -d /usr/share/zsh/vendor-completions ]; then
   fpath=(/usr/share/zsh/vendor-completions $fpath)
 fi
@@ -53,7 +58,11 @@ zstyle ':completion:*' verbose true
 zstyle ':completion:*' auto-description 'specify: %d'
 zstyle ':completion:*' format 'Completing %d'
 zstyle ':completion:*' group-name ''
-zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
+zstyle ':completion:*:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
+
+# Docker completions
+zstyle ':completion:*:*:docker:*' image-names yes
+zstyle ':completion:*:*:docker-*:*' image-names yes
 
 
 autoload -Uz edit-command-line

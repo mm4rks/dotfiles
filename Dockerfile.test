@@ -124,8 +124,11 @@ RUN [ ! -L /home/tester/.tmux.conf ]
 # Verify sandbox directories exist
 RUN [ -d /home/tester/dotfiles/config ]
 RUN [ -d /home/tester/dotfiles/zsh ]
+RUN [ -d /home/tester/dotfiles/zsh/.zsh_completions ]
 # Verify libatomic1 is installed (dependency check)
 RUN dpkg -l | grep libatomic1
 # Verify activate.sh works (basic check)
 RUN bash -c "source ./activate.sh && [ \"\$ZDOTDIR\" = \"/home/tester/dotfiles/zsh\" ]"
+# Verify fpath includes custom completions in sandbox
+RUN zsh -c "source ./activate.sh && [[ \"\$fpath\" == */home/tester/dotfiles/zsh/.zsh_completions* ]]"
 
