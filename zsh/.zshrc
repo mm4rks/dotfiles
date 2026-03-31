@@ -47,8 +47,7 @@ autoload -Uz compinit       # Autoload the completion initialization utility.
 _zsh_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
 mkdir -p "$_zsh_cache_dir"
 compinit -d "$_zsh_cache_dir/zcompdump" 
-zstyle ':completion:*:*:*:*:*' tag-order options arguments files
-zstyle ':completion:*' completer _files _expand _complete _ignored _approximate
+zstyle ':completion:*' completer _expand _complete _ignored _approximate _files
 zstyle ':completion:*' matcher-list '' 'm:{[:lower:]}={[:upper:]}' 'r:|[._-]=* r:|=*'
 zstyle ':completion:*' max-errors 2 # Allow up to 2 errors for fuzzy matching.
 zstyle ':completion:*' menu select              # Enable a selectable completion menu.
@@ -63,6 +62,8 @@ zstyle ':completion:*:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd
 # Docker completions
 zstyle ':completion:*:*:docker:*' image-names yes
 zstyle ':completion:*:*:docker-*:*' image-names yes
+zstyle ':completion:*:*:docker:*' tag-order 'docker-images docker-repos docker-repos-with-tags docker-containers docker-networks docker-volumes' 'options' 'arguments'
+zstyle ':completion:*:*:docker-*:*' tag-order 'docker-images docker-repos docker-repos-with-tags docker-containers docker-networks docker-volumes' 'options' 'arguments'
 
 
 autoload -Uz edit-command-line
