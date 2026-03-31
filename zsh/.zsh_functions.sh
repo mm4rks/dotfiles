@@ -185,4 +185,56 @@ function tmux_smart_detach() {
   else
     zle delete-char-or-list
   fi
-}
+} # Description: Smartly detach from tmux or exit shell.
+
+function audit_npm() {
+    local SEARCH_ALL="${1:-}"
+    
+    echo -e "\033[1;31m=== [Supply Chain Audit] Recursive NPM Dependencies ===\033[0m"
+    
+    # 1. Global
+    echo -e "\n\033[1;32m[+] Auditing Global NPM Packages:\033[0m"
+    npm list -g --all --depth=20 2>/dev/null || echo "    (No global packages found or npm error)"
+
+    # 2. Mise
+    local MISE_NPM_ROOT="$HOME/.local/share/mise/installs/npm"
+    if [[ -d "$MISE_NPM_ROOT" ]]; then
+        echo -e "\n\033[1;34m[+] Auditing Mise Managed NPM Packages ($MISE_NPM_ROOT):\033[0m"
+        find "$MISE_NPM_ROOT" -maxdepth 2 -type d -name "node_modules" 2>/dev/null | while read -r nm_path; do
+            local pkg_dir=$(dirname "$nm_path")
+            local lock_info=""
+            [[ -f "$pkg_dir/package-lock.json" ]] && lock_info+="\033[0;32m[NPM-Lock]\033[0m "
+            [[ -f "$pkg_dir/yarn.lock" ]] && lock_info+="\033[0;32m[Yarn-Lock]\033[0m "
+            [[ -f "$pkg_dir/pnpm-lock.yaml" ]] && lock_info+="\033[0;32m[PNPM-Lock]\033[0m "
+            
+            echo -e "    Location: $pkg_dir ${lock_info:-\033[1;31m[!] NO LOCK FILE\033[0m}"
+            (cd "$pkg_dir" && npm list --all --depth=10 2>/dev/null | sed 's/^/      /')
+        done
+    fi
+
+    # 3. Deep Search
+    if [[ "$SEARCH_ALL" == "--all" ]]; then
+        echo -e "\n\033[1;33m[!] Deep Scan: Searching for all 'node_modules' in \$HOME...\033[0m"
+        find "$HOME" -name "node_modules" -type d -prune 2>/dev/null | while read -r nm_path; do
+            # Skip paths already covered
+            [[ "$nm_path" == "/usr/local/lib"* ]] && continue
+            [[ "$nm_path" == "$MISE_NPM_ROOT"* ]] && continue
+            
+            local pkg_dir=$(dirname "$nm_path")
+            local lock_info=""
+            [[ -f "$pkg_dir/package-lock.json" ]] && lock_info+="\033[0;32m[NPM-Lock]\033[0m "
+            [[ -f "$pkg_dir/yarn.lock" ]] && lock_info+="\033[0;32m[Yarn-Lock]\033[0m "
+            [[ -f "$pkg_dir/pnpm-lock.yaml" ]] && lock_info+="\033[0;32m[PNPM-Lock]\033[0m "
+
+            echo -e "    Found: $pkg_dir ${lock_info:-\033[1;31m[!] NO LOCK FILE\033[0m}"
+            # Try to list dependencies if it's a valid package directory
+            if [[ -f "$pkg_dir/package.json" ]]; then
+                (cd "$pkg_dir" && npm list --all --depth=5 2>/dev/null | sed 's/^/      /')
+            else
+                echo "      (No package.json found in $pkg_dir)"
+            fi
+        done
+    fi
+    echo -e "\n\033[1;31m=== Audit Complete ===\033[0m"
+} # Description: Audit all recursive NPM dependencies for supply chain incident response. Usage: audit_npm [--all]
+

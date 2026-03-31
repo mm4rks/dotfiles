@@ -4,13 +4,11 @@ set -euo pipefail
 PROFILES=" $* "
 REPO_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
-# Helper log functions if not sourced from lib.sh
-log() { echo -e "\033[0;32m[INFO]\033[0m $1"; }
-warn() { echo -e "\033[0;33m[WARN]\033[0m $1"; }
-error() { echo -e "\033[0;31m[ERROR]\033[0m $1"; exit 1; }
+# Load common library
+source "${REPO_DIR}/scripts/lib.sh"
 
 if [[ "$PROFILES" == *" guest "* ]]; then
-    echo "[INFO] Entering Guest/Sandbox Mode..."
+    log "Entering Guest/Sandbox Mode..."
     export ZDOTDIR="${REPO_DIR}/zsh"
     export XDG_CONFIG_HOME="${REPO_DIR}/config"
     mkdir -p "${XDG_CONFIG_HOME}"
@@ -22,17 +20,17 @@ if [[ "$PROFILES" == *" guest "* ]]; then
     fi
 fi
 
-echo "[INFO] Starting Dotfiles Setup..."
-echo "[INFO] Profiles selected:${PROFILES:- default}"
+log "Starting Dotfiles Setup..."
+log "Profiles selected:${PROFILES:- default}"
 
 # 1. System Base (Elevated)
-echo "[INFO] --- Phase 1: System Base (Elevated) ---"
-sudo "${REPO_DIR}/scripts/install_base_deps.sh" || { echo "[ERROR] Base dependencies installation failed."; exit 1; }
+log "--- Phase 1: System Base (Elevated) ---"
+sudo "${REPO_DIR}/scripts/install_base_deps.sh"
 # Note: install_docker.sh is now handled by opencode if missing
 # but we can still call it here for an initial clean install.
-sudo "${REPO_DIR}/scripts/install_docker.sh" || { echo "[ERROR] Docker installation failed."; exit 1; }
-sudo "${REPO_DIR}/scripts/install_mise.sh" || { echo "[ERROR] Mise installation failed."; exit 1; }
-sudo "${REPO_DIR}/scripts/install_nerd_font.sh" || { echo "[ERROR] Nerd font installation failed."; exit 1; }
+sudo "${REPO_DIR}/scripts/install_docker.sh"
+sudo "${REPO_DIR}/scripts/install_mise.sh"
+sudo "${REPO_DIR}/scripts/install_nerd_font.sh"
 
 # Fix permissions on ~/.local if it was created by root processes
 sudo chown -R "$(whoami)":"$(whoami)" "$HOME/.local" 2>/dev/null || true
@@ -42,14 +40,14 @@ if [[ "$PROFILES" != *" guest "* ]]; then
 fi
 
 # 2. User Environment
-echo "[INFO] --- Phase 2: User Environment ---"
+log "--- Phase 2: User Environment ---"
 if [[ "$PROFILES" == *" guest "* ]]; then
-    "${REPO_DIR}/scripts/install_mise.sh" || { echo "[ERROR] Mise installation failed."; exit 1; }
+    "${REPO_DIR}/scripts/install_mise.sh"
 fi
-"${REPO_DIR}/scripts/configure_mise.sh" "$@" || { echo "[ERROR] Mise configuration failed."; exit 1; }
+"${REPO_DIR}/scripts/configure_mise.sh" "$@"
 
 # Important: Activate mise in the current shell so subsequent scripts (like sync_nvim.sh) can find their tools
-if command -v mise &>/dev/null; then
+if command_exists mise; then
     eval "$(mise activate bash)"
     log "Mise activated for current session."
 elif [ -f "$HOME/.local/bin/mise" ]; then
@@ -58,14 +56,14 @@ elif [ -f "$HOME/.local/bin/mise" ]; then
 fi
 
 if [[ "$PROFILES" != *" guest "* ]]; then
-    "${REPO_DIR}/scripts/install_opencode.sh" || { echo "[ERROR] OpenCode installation failed."; exit 1; }
-    "${REPO_DIR}/scripts/stow_dotfiles.sh" || { echo "[ERROR] Dotfiles stowing failed."; exit 1; }
+    "${REPO_DIR}/scripts/install_opencode.sh"
+    "${REPO_DIR}/scripts/stow_dotfiles.sh"
 fi
-"${REPO_DIR}/scripts/sync_nvim.sh" || { echo "[ERROR] Neovim sync failed."; exit 1; }
+"${REPO_DIR}/scripts/sync_nvim.sh"
 
 # 3. Profile: pwn
 if [[ "$PROFILES" == *" pwn "* ]]; then
-    echo "[INFO] --- Phase 3: Profile 'pwn' ---"
+    log "--- Phase 3: Profile 'pwn' ---"
     sudo "${REPO_DIR}/scripts/install_bloodhound.sh"
     
     # We must ensure pipx is available in the current shell for user scripts
@@ -79,15 +77,15 @@ fi
 
 # 4. Profile: rev
 if [[ "$PROFILES" == *" rev "* ]]; then
-    echo "[INFO] --- Phase 4: Profile 'rev' ---"
+    log "--- Phase 4: Profile 'rev' ---"
     sudo "${REPO_DIR}/scripts/install_joern.sh"
     sudo "${REPO_DIR}/scripts/install_ghidra.sh"
 fi
 
 # 5. Profile: ssh
 if [[ "$PROFILES" == *" ssh "* ]]; then
-    echo "[INFO] --- Phase 5: Profile 'ssh' ---"
+    log "--- Phase 5: Profile 'ssh' ---"
     sudo "${REPO_DIR}/scripts/harden_ssh.sh"
 fi
 
-echo "[INFO] Dotfiles Setup Complete!"
+log "Dotfiles Setup Complete!"

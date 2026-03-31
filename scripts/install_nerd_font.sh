@@ -44,4 +44,11 @@ install_jetbrains_mono_nerd_font() {
     log "JetBrainsMono Nerd Font installed and cache refreshed."
 }
 
-install_jetbrains_mono_nerd_font
+main() {
+    if [[ $EUID -ne 0 ]]; then
+       error "This script must be run as root (use sudo)."
+    fi
+    install_jetbrains_mono_nerd_font
+}
+
+main "$@"

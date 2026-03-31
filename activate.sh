@@ -18,6 +18,7 @@ fi
 export PATH="${HOME}/.local/bin:${PATH}"
 
 # Add tmux alias to use our repo's config
+# shellcheck disable=SC2139
 alias tmux="tmux -f ${REPO_DIR}/tmux/.tmux.conf"
 
 echo "[INFO] Sandboxed Guest Mode Activated."
