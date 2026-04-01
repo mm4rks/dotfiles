@@ -6,12 +6,19 @@ GEMINI.md
 
 # Only keep the curated opencode config files under the stowed package.
 opencode/.config/opencode/*
+!opencode/.config/opencode/AGENTS.md
 !opencode/.config/opencode/commands/
 opencode/.config/opencode/commands/*
 !opencode/.config/opencode/commands/style.md
 !opencode/.config/opencode/opencode.json
 !opencode/.config/opencode/skills/
 opencode/.config/opencode/skills/*
+!opencode/.config/opencode/skills/humanizer/
+opencode/.config/opencode/skills/humanizer/*
+!opencode/.config/opencode/skills/humanizer/SKILL.md
+!opencode/.config/opencode/skills/humanizer/references/
+opencode/.config/opencode/skills/humanizer/references/*
+!opencode/.config/opencode/skills/humanizer/references/patterns.md
 !opencode/.config/opencode/skills/technical-report/
 opencode/.config/opencode/skills/technical-report/*
 !opencode/.config/opencode/skills/technical-report/SKILL.md

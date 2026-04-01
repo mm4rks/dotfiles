@@ -116,6 +116,10 @@ docker volume create opencode-home-cache >/dev/null
 
 # Internal container paths
 INT_HOME="/home/node"
+INT_SHARE_DIR="$INT_HOME/share"
+HOST_SHARE_DIR="$HOME/share"
+
+mkdir -p "$HOST_SHARE_DIR"
 
 WORKSPACE_ROOT=$(get_workspace_root)
 WORKSPACE_HASH=$(get_workspace_hash "$WORKSPACE_ROOT")
@@ -144,6 +148,9 @@ if [ -d "$HOME/.config/opencode" ]; then
     DOCKER_FLAGS+=("-v" "$HOME/.config/opencode:$INT_HOME/.config/opencode:rw")
     DOCKER_FLAGS+=("-v" "$DOTFILES_DIR:$INT_HOME/.dotfiles:ro")
 fi
+
+# Share the host's common exchange directory with the sandbox.
+DOCKER_FLAGS+=("-v" "$HOST_SHARE_DIR:$INT_SHARE_DIR:rw")
 
 # Execute opencode inside docker container
 exec docker run \

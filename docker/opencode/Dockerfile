@@ -4,6 +4,9 @@ FROM node:22-slim
 RUN apt-get update && apt-get install -y \
     apt-transport-https \
     git \
+    gh \
+    git-lfs \
+    openssh-client \
     curl \
     wget \
     ca-certificates \
@@ -11,7 +14,9 @@ RUN apt-get update && apt-get install -y \
     # Diagnostics and utilities
     procps \
     unzip \
+    xz-utils \
     jq \
+    file \
     # Search and linting
     ripgrep \
     fd-find \
