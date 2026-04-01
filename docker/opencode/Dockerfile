@@ -45,6 +45,6 @@ RUN ln -s /usr/bin/python3 /usr/local/bin/python && \
     ln -s /usr/bin/fdfind /usr/local/bin/fd
 
 # Install opencode and auth plugins
-RUN npm install -g opencode-ai opencode-gemini-auth opencode-anthropic-auth
+RUN npm install -g opencode-ai opencode-gemini-auth
 
 ENTRYPOINT ["opencode"]

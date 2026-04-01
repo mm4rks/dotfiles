@@ -8,8 +8,7 @@
         }
     },
     "plugin": [
-        "opencode-gemini-auth",
-        "opencode-anthropic-auth"
+        "opencode-gemini-auth"
     ],
     "provider": {
         "google": {
