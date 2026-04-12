@@ -43,10 +43,7 @@ max_duration_secs = 60
 # Or provide absolute path to a custom .bin model file
 model = "base.en"
 
-# Language for transcription
-# Use "en" for English, "auto" for auto-detection
-# See: https://github.com/openai/whisper#available-models-and-languages
-language = "en"
+# language = ["en", "de"]
 
 # Translate non-English speech to English
 translate = false
