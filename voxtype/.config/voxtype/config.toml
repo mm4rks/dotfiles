@@ -96,7 +96,3 @@ on_transcription = false
 # Custom word replacements (case-insensitive)
 # replacements = { "hyperwhisper" = "hyprwhspr" }
 
-[profiles.lognote]
-# Profile for background logging to a markdown file via SUPER + A
-command = "/home/user/.local/bin/voxtype-lognote"
-

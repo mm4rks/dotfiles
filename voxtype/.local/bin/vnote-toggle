@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# Check if we are currently recording
+if voxtype status | grep -q "recording"; then
+    # 1. Stop the recording
+    voxtype record toggle
+    
+    # 2. Wait for the daemon to finish transcribing
+    while voxtype status | grep -q "transcribing"; do
+        sleep 0.2
+    done
+    
+    # 3. Read /tmp/vnote, format it, and append it to your markdown file
+    if [ -s /tmp/vnote ]; then
+        TEXT=$(cat /tmp/vnote)
+        mkdir -p "$HOME/notes/00-Organization"
+        printf "%s - %s\n" "$(date +%FT%T)" "$TEXT" >> "$HOME/notes/00-Organization/vnotes.md"
+        
+        # Send notification
+        export DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus"
+        notify-send "Voxtype" "Note logged to vnotes.md"
+        
+        # Clear the temp file
+        > /tmp/vnote
+    fi
+else
+    # Start the recording and instruct voxtype to output to /tmp/vnote
+    > /tmp/vnote
+    voxtype record toggle --file=/tmp/vnote
+fi
