@@ -137,6 +137,10 @@ Do not use raw `echo` or `printf` commands for status updates in the main execut
 - **Assume Failure**: Any system-level operation (e.g., `sudo`, `apt`, `stow`, `chown`, `chmod`) is guaranteed to fail in this environment. Do not try these commands, even to check if they work.
 - **System Troubleshooting**: Do not attempt to troubleshoot system-level errors (e.g., missing system libraries, permission denied on root folders, kernel issues). These will always fail due to sandbox restrictions.
 - **Delegate to Host**: If you require a system change (e.g., installing a dependency or fixing permissions), identify the necessary command and provide it to the user to run on their host system. Do not proceed until the user confirms the action has been taken on the host.
+- **CRITICAL: NO SYSTEM TROUBLESHOOTING**:
+    - **Zero Tolerance**: Never attempt to diagnose, verify, or troubleshoot the host system from the sandbox. This includes checking OS versions (`/etc/os-release`), package managers (`pacman`, `apt`), or hardware status (`nvidia-smi`, `lspci`).
+    - **Hard Stop**: If a system-level tool or dependency is missing, STOP IMMEDIATELY. Identify the required change and provide the exact command for the user to run on their host. Do not attempt to "verify" if the command will work.
+    - **Sandbox Isolation**: You are a guest in this environment. Treat the host as an opaque, external entity that only the user can modify.
 
 ## 5. External Agent Rules
 

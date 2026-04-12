@@ -31,6 +31,14 @@ main() {
         log "Added $(whoami) to the docker group. Please re-login for changes to take effect."
     fi
 
+    # Check if we need NVIDIA toolkit for GPU support
+    if ! command_exists nvidia-ctk; then
+        warn "NVIDIA Container Toolkit is not installed. Attempting to install it..."
+        if ! sudo "${REPO_DIR}/scripts/install_docker.sh"; then
+             warn "Failed to install NVIDIA Container Toolkit automatically. GPU support might be unavailable."
+        fi
+    fi
+
     # Determine if we need sudo for docker (useful if user was just added to group and hasn't re-logged)
     local DOCKER_CMD="docker"
     if ! docker info &>/dev/null; then

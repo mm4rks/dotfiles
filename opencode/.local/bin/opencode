@@ -138,6 +138,30 @@ if [ -t 0 ]; then
     DOCKER_FLAGS+=("-t")
 fi
 
+# Enable GPU access for inference
+# DOCKER_FLAGS+=("--gpus" "all")
+DOCKER_FLAGS+=("--device" "nvidia.com/gpu=all")
+
+# Enable direct audio hardware access
+DOCKER_FLAGS+=("--device" "/dev/snd")
+# Find the host's audio group GID dynamically (for Arch vs Debian compatibility)
+if command -v getent >/dev/null 2>&1; then
+    AUDIO_GID=$(getent group audio | cut -d: -f3 || true)
+    if [[ -n "$AUDIO_GID" ]]; then
+        DOCKER_FLAGS+=("--group-add" "$AUDIO_GID")
+    fi
+fi
+DOCKER_FLAGS+=("--group-add" "audio")
+
+# Enable PulseAudio passthrough for smoother audio
+if [[ -S "/run/user/$(id -u)/pulse/native" ]]; then
+    DOCKER_FLAGS+=("-v" "/run/user/$(id -u)/pulse/native:/run/user/node/pulse/native")
+    DOCKER_FLAGS+=("-e" "PULSE_SERVER=unix:/run/user/node/pulse/native")
+fi
+if [[ -f "$HOME/.config/pulse/cookie" ]]; then
+    DOCKER_FLAGS+=("-v" "$HOME/.config/pulse/cookie:$INT_HOME/.pulse-cookie")
+fi
+
 # Map common git configs (Read-Only)
 if [ -f "$HOME/.gitconfig" ]; then
     DOCKER_FLAGS+=("-v" "$HOME/.gitconfig:$INT_HOME/.gitconfig:ro")

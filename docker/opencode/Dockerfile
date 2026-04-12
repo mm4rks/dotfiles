@@ -31,6 +31,10 @@ RUN apt-get update && apt-get install -y \
     g++ \
     make \
     libc6-dev \
+    espeak-ng \
+    libportaudio2 \
+    alsa-utils \
+    pulseaudio-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PowerShell from Microsoft's Debian repository
