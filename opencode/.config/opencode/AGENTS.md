@@ -24,3 +24,9 @@ These rules apply to every OpenCode session launched from this dotfiles setup.
 - Do not run `docker`, `docker compose`, `podman`, or similar sandbox-management commands unless the user explicitly asks.
 - Do not run `git pull`, `git push`, or other remote-sync commands unless the user explicitly asks.
 - Prefer working with the files and tools already available inside the current sandbox instead of trying to change the host environment.
+
+## TTS Notifications
+
+- **Long-Running Tasks**: For tasks that take significant time (e.g., full test suite runs, complex builds, large-scale refactors), use the `tts` skill to notify the user when the task is finished.
+- **Robust Invocation**: Use the following command via the `bash` tool to provide spoken updates: `/home/node/.local/bin/tts "<message>"`
+- **Default Message**: Use a concise, professional message (e.g., "Build complete.", "Tests finished successfully.").

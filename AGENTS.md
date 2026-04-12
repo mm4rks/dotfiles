@@ -145,3 +145,9 @@ Do not use raw `echo` or `printf` commands for status updates in the main execut
 ## 5. External Agent Rules
 
 Adhere strictly to the conventions defined in this `AGENTS.md` file. There are currently no explicit `.cursorrules` or `.github/copilot-instructions.md` configured. If they are added in the future, they should be integrated into this document to maintain a single source of truth for all autonomous agents.
+
+## TTS Notifications
+
+- **Long-Running Tasks**: For tasks that take significant time (e.g., full test suite runs, complex builds, large-scale refactors), use the `tts` skill to notify the user when the task is finished.
+- **Robust Invocation**: Use the following command via the `bash` tool to provide spoken updates: `/home/node/.local/bin/tts "<message>"`
+- **Default Message**: Use a concise, professional message (e.g., "Build complete.", "Tests finished successfully.").
