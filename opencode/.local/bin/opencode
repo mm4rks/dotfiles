@@ -149,6 +149,11 @@ if [ -d "$HOME/.config/opencode" ]; then
     DOCKER_FLAGS+=("-v" "$DOTFILES_DIR:$INT_HOME/.dotfiles:ro")
 fi
 
+# Inject environment variables from ~/.env if it exists
+if [ -f "$HOME/.env" ]; then
+    DOCKER_FLAGS+=("--env-file" "$HOME/.env")
+fi
+
 # Share the host's common exchange directory with the sandbox.
 DOCKER_FLAGS+=("-v" "$HOST_SHARE_DIR:$INT_SHARE_DIR:rw")
 

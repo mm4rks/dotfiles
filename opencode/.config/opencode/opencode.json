@@ -32,5 +32,20 @@
                 "baseURL": "http://host.docker.internal:11434/v1"
             }
         }
+    },
+    "mcp": {
+        "caldav": {
+            "type": "local",
+            "command": [
+                "bash",
+                "-c",
+                "CALDAV_PASSWORD=\"$NEXTCLOUD_APP_PASSWORD\" npx -y caldav-mcp"
+            ],
+            "environment": {
+                "CALDAV_BASE_URL": "https://nx16614.your-storageshare.de/remote.php/dav",
+                "CALDAV_USERNAME": "agent"
+            },
+            "enabled": true
+        }
     }
 }

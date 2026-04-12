@@ -99,3 +99,5 @@ fi
 # fi
 
 alias devdocs="docker run --name devdocs -d -p 9292:9292 ghcr.io/freecodecamp/devdocs:latest"
+alias orga="cd ~/notes/00-Organization/ && opencode"
+alias plan="orga --prompt 'plan my day'"
