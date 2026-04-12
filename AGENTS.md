@@ -132,6 +132,12 @@ Do not use raw `echo` or `printf` commands for status updates in the main execut
 - `ZDOTDIR`: Redirects Zsh configuration to `zsh/` within the repo.
 - `XDG_CONFIG_HOME`: Redirects application configs to `config/` within the repo.
 
-## 4. External Agent Rules
+## 4. Absolute System Constraints (Sandbox Mode)
+
+- **Assume Failure**: Any system-level operation (e.g., `sudo`, `apt`, `stow`, `chown`, `chmod`) is guaranteed to fail in this environment. Do not try these commands, even to check if they work.
+- **System Troubleshooting**: Do not attempt to troubleshoot system-level errors (e.g., missing system libraries, permission denied on root folders, kernel issues). These will always fail due to sandbox restrictions.
+- **Delegate to Host**: If you require a system change (e.g., installing a dependency or fixing permissions), identify the necessary command and provide it to the user to run on their host system. Do not proceed until the user confirms the action has been taken on the host.
+
+## 5. External Agent Rules
 
 Adhere strictly to the conventions defined in this `AGENTS.md` file. There are currently no explicit `.cursorrules` or `.github/copilot-instructions.md` configured. If they are added in the future, they should be integrated into this document to maintain a single source of truth for all autonomous agents.
