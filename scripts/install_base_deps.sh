@@ -13,7 +13,7 @@ install_base_deps() {
         libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev
         libxmlsec1-dev libffi-dev liblzma-dev zsh libkrb5-dev cmake
         zsh-autosuggestions zsh-syntax-highlighting wl-clipboard xclip
-        python3-dev tmux bat libatomic1
+        python3-dev tmux bat libatomic1 poppler-utils qpdf
     )
 
     apt-get install -y -qq "${CORE_PKGS[@]}"

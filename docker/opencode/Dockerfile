@@ -17,6 +17,8 @@ RUN apt-get update && apt-get install -y \
     xz-utils \
     jq \
     file \
+    poppler-utils \
+    qpdf \
     # Search and linting
     ripgrep \
     fd-find \
