@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y \
     ripgrep \
     fd-find \
     shellcheck \
-    # Python development
+# Python development and CalDAV MCP
     python3 \
     python3-pip \
     python3-venv \
@@ -37,7 +37,12 @@ RUN apt-get update && apt-get install -y \
     libportaudio2 \
     alsa-utils \
     pulseaudio-utils \
+    && pip3 install --break-system-packages caldav mcp vobject \
     && rm -rf /var/lib/apt/lists/*
+
+# Copy CalDAV MCP server script
+COPY caldav_server.py /usr/local/bin/caldav-mcp
+RUN chmod +x /usr/local/bin/caldav-mcp
 
 # Install PowerShell from Microsoft's Debian repository
 RUN wget -q https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb && \

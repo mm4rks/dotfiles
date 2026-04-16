@@ -4,7 +4,9 @@
     "permission": {
         "external_directory": {
             "~/share": "allow",
-            "~/share/**": "allow"
+            "~/share/**": "allow",
+            "/home/node": "allow",
+            "/home/node/**": "allow"
         }
     },
     "plugin": [
@@ -39,10 +41,9 @@
             "command": [
                 "bash",
                 "-c",
-                "CALDAV_PASSWORD=\"$NEXTCLOUD_APP_PASSWORD\" npx -y caldav-mcp"
+                "CALDAV_PASSWORD=\"$NEXTCLOUD_APP_PASSWORD\" /home/node/.local/bin/caldav-mcp"
             ],
             "environment": {
-                "CALDAV_BASE_URL": "https://nx16614.your-storageshare.de/remote.php/dav",
                 "CALDAV_USERNAME": "agent"
             },
             "enabled": true
