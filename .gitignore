@@ -11,6 +11,9 @@ opencode/.config/opencode/*
 opencode/.config/opencode/commands/*
 !opencode/.config/opencode/commands/style.md
 !opencode/.config/opencode/opencode.json
+!opencode/.config/opencode/agents/
+opencode/.config/opencode/agents/*
+!opencode/.config/opencode/agents/orga.md
 !opencode/.config/opencode/skills/
 opencode/.config/opencode/skills/*
 !opencode/.config/opencode/skills/humanizer/

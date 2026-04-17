@@ -16,7 +16,7 @@ else
   alias xc='xclip -selection clipboard'
   alias xp='xclip -selection clipboard -o'
 fi
-alias ntlm.pw='function _ntlm(){ curl https://ntlm.pw/$1; }; _ntlm' # Fetches NTLM hashes from ntlm.pw for a given value
+ntlm.pw() { curl "https://ntlm.pw/$1"; } # Fetches NTLM hashes from ntlm.pw for a given value
 
 # Smart bat/cat alias
 BAT_CMD=""
@@ -99,5 +99,5 @@ fi
 # fi
 
 alias devdocs="docker run --name devdocs -d -p 9292:9292 ghcr.io/freecodecamp/devdocs:latest"
-alias orga="cd ~/notes/00-Organization/ && opencode"
+alias orga="cd ~/notes/00-Organization/ && opencode --agent orga"
 alias plan="orga --prompt 'plan my day'"
