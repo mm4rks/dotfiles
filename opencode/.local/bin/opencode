@@ -181,6 +181,11 @@ fi
 # Share the host's common exchange directory with the sandbox.
 DOCKER_FLAGS+=("-v" "$HOST_SHARE_DIR:$INT_SHARE_DIR:rw")
 
+# Add the current working directory to the sandbox if it's not already covered by the share mount
+if [[ "$PWD" != "$HOST_SHARE_DIR"* ]]; then
+    DOCKER_FLAGS+=("-v" "$PWD:$PWD")
+fi
+
 # Execute opencode inside docker container
 exec docker run \
     --rm \
@@ -196,7 +201,6 @@ exec docker run \
     -e GOOGLE_GENERATIVE_AI_API_KEY="${GOOGLE_GENERATIVE_AI_API_KEY:-}" \
     -e ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-}" \
     -v opencode-home-cache:"$INT_HOME" \
-    -v "$PWD":"$PWD" \
     -w "$PWD" \
     --add-host=host.docker.internal:host-gateway \
     --tmpfs /tmp:exec \

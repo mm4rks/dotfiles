@@ -5,8 +5,10 @@
         "external_directory": {
             "~/share": "allow",
             "~/share/**": "allow",
-            "/home/node": "allow",
-            "/home/node/**": "allow"
+            "~": "allow",
+            "~/**": "allow",
+            "/usr/local/bin": "deny",
+            "/usr/local/bin/**": "deny"
         }
     },
     "plugin": [
@@ -41,7 +43,7 @@
             "command": [
                 "bash",
                 "-c",
-                "CALDAV_PASSWORD=\"$NEXTCLOUD_APP_PASSWORD\" /home/node/.local/bin/caldav-mcp"
+                "CALDAV_PASSWORD=\"$NEXTCLOUD_APP_PASSWORD\" ~/.local/bin/caldav-mcp"
             ],
             "environment": {
                 "CALDAV_USERNAME": "agent"
