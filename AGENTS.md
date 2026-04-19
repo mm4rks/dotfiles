@@ -149,5 +149,5 @@ Adhere strictly to the conventions defined in this `AGENTS.md` file. There are c
 ## TTS Notifications
 
 - **Long-Running Tasks**: For tasks that take significant time (e.g., full test suite runs, complex builds, large-scale refactors), use the `tts` skill to notify the user when the task is finished.
-- **Robust Invocation**: Use the following command via the `bash` tool to provide spoken updates: `/home/node/.local/bin/tts "<message>"`
+- **Robust Invocation**: Use the following command via the `bash` tool to provide spoken updates: `~/.local/bin/tts "<message>"`
 - **Default Message**: Use a concise, professional message (e.g., "Build complete.", "Tests finished successfully.").
