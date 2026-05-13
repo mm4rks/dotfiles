@@ -117,37 +117,6 @@ generate_cdi_spec() {
     fi
 }
 
-
-install_nvidia_toolkit() {
-    if command_exists nvidia-ctk; then
-        log "NVIDIA Container Toolkit is already installed."
-        return 0
-    fi
-
-    log "Checking for NVIDIA GPU..."
-    if ! grep -qi "nvidia" /proc/bus/pci/devices 2>/dev/null && ! (command -v lspci >/dev/null && lspci | grep -qi "nvidia"); then
-        warn "No NVIDIA GPU detected. Skipping NVIDIA Container Toolkit installation."
-        return 0
-    fi
-
-    log "Installing NVIDIA Container Toolkit..."
-    
-    # Official NVIDIA instructions for apt-based distros
-    curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
-      && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
-        sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
-        tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
-      && \
-        apt-get update -qq && \
-        apt-get install -y -qq nvidia-container-toolkit
-
-    log "Configuring Docker to use NVIDIA runtime..."
-    nvidia-ctk runtime configure --runtime=docker
-    systemctl restart docker || warn "Failed to restart Docker. You may need to restart it manually."
-    
-    log "NVIDIA Container Toolkit installation and configuration complete."
-}
-
 main() {
     if [[ $EUID -ne 0 ]]; then
        error "This script must be run as root (use sudo)."

@@ -7,7 +7,7 @@ This document outlines the standard operating procedures, architectural patterns
 This repository relies heavily on Docker for robust, cross-distribution testing of the setup scripts. The testing strategy involves building Docker images for different Linux distributions and executing the core setup scripts within those ephemeral, clean containers to verify functionality and cross-platform compatibility.
 
 ### 1.1. Testing All Distributions
-To run the full comprehensive test suite across all supported distributions (currently Ubuntu, Kali, and Parrot), execute the provided test runner script from the repository root:
+To run the full comprehensive test suite across all supported distributions (currently Ubuntu and Kali), execute the provided test runner script from the repository root:
 ```bash
 ./test_runner.sh
 ```
@@ -25,9 +25,6 @@ docker build --target kali-test -t dotfiles-tester-kali-test -f Dockerfile.test 
 
 # Test strictly on Kali Linux (Guest/Sandbox Setup)
 docker build --target kali-guest-test -t dotfiles-tester-kali-guest -f Dockerfile.test .
-
-# Test strictly on Parrot OS
-docker build --target parrot-test -t dotfiles-tester-parrot-test -f Dockerfile.test .
 ```
 This is the preferred way to iteratively test fixes for a single broken environment.
 
@@ -127,6 +124,12 @@ Do not use raw `echo` or `printf` commands for status updates in the main execut
 ### 3.1. Profiles
 - **Standard:** Full installation with sudo privileges and home directory symlinking via Stow.
 - **Guest:** Sandbox mode for restricted environments. Skips sudo and Stow. Activated via `source activate.sh`.
+
+Setup profiles passed as arguments to `setup.sh` (e.g. `./setup.sh pwn rev`):
+- **dev:** Go, Rust (via mise).
+- **pwn:** BloodHound, NetExec, PowerView, Certipy.
+- **rev:** Joern, Ghidra, jadx, apktool, apkleaks, semgrep, flare-capa.
+- **ssh:** SSH hardening via `scripts/harden_ssh.sh`.
 
 ### 3.2. Critical Variables
 - `ZDOTDIR`: Redirects Zsh configuration to `zsh/` within the repo.

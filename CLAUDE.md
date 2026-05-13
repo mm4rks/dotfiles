@@ -17,7 +17,6 @@ Automated development environment setup for Debian and Arch-based Linux distribu
 docker build --target ubuntu-test       -t dotfiles-tester-ubuntu-test  -f Dockerfile.test .
 docker build --target kali-test         -t dotfiles-tester-kali-test    -f Dockerfile.test .
 docker build --target kali-guest-test   -t dotfiles-tester-kali-guest   -f Dockerfile.test .
-docker build --target parrot-test       -t dotfiles-tester-parrot-test  -f Dockerfile.test .
 ```
 
 ### Linting

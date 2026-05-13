@@ -136,37 +136,6 @@ ZLE_CURSOR_BLINK=0
 
 precmd_functions+=(_fix_cursor)
 
-# --- Prompt Loading (Pure) ---
-# We prioritize locations where the prompt is already set up (symlinks created by install script)
-_pure_search_dirs=(
-    "$HOME/.local/share/mise/installs/npm-pure-prompt/latest/lib/node_modules/pure-prompt"
-    "$HOME/.local/share/mise/installs/npm-pure-prompt"
-    "$HOME/.local/share/mise/installs/pure/latest/pure.zsh"
-    "${ZDOTDIR:-$HOME}/.zsh/pure"
-    "/usr/share/zsh/pure"
-    "/usr/lib/node_modules/pure-prompt"
-    "/usr/local/lib/node_modules/pure-prompt"
-)
-
-_pure_prompt_found=false
-for _dir in "${_pure_search_dirs[@]}"; do
-    if [ -d "$_dir" ] && [ -f "$_dir/prompt_pure_setup" ]; then
-        fpath+=("$_dir")
-        _pure_prompt_found=true
-        break
-    elif [ -f "$_dir" ] && [[ "$_dir" == *".zsh" ]]; then
-        # Handle single-file pure.zsh if promptinit isn't needed or if path is mise-specific
-        fpath+=("$(dirname "$_dir")")
-        _pure_prompt_found=true
-        break
-    fi
-done
-
-if [ "$_pure_prompt_found" = true ]; then
-    autoload -U promptinit; promptinit
-    prompt pure
-else
-    local NEWLINE=$'\n'
-    PROMPT="${NEWLINE}%F{blue}%~%f${NEWLINE}%(?.%F{white}.%F{red})%(#.#.$)%f "
+if command -v starship &> /dev/null; then
+    eval "$(starship init zsh)"
 fi
-unset _pure_search_dirs _dir _pure_prompt_found

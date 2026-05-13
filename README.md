@@ -26,7 +26,16 @@ source activate.sh
 
 - **dev**: Go, Rust.
 - **pwn**: BloodHound, NetExec, PowerView, Certipy.
-- **rev**: Joern, Ghidra.
+- **rev**: Joern, Ghidra, jadx, apktool, apkleaks, semgrep, flare-capa.
+- **ssh**: SSH hardening.
+
+## Opencode Sandbox
+
+The opencode Docker image is built once and skipped on subsequent runs of `setup.sh`. To force a rebuild:
+
+```bash
+./scripts/install_opencode.sh --update
+```
 
 ## Testing
 

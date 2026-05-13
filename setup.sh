@@ -80,6 +80,8 @@ if [[ "$PROFILES" == *" rev "* ]]; then
     log "--- Phase 4: Profile 'rev' ---"
     sudo "${REPO_DIR}/scripts/install_joern.sh"
     sudo "${REPO_DIR}/scripts/install_ghidra.sh"
+    "${REPO_DIR}/scripts/install_apktool.sh"
+    "${REPO_DIR}/scripts/install_jadx.sh"
 fi
 
 # 5. Profile: ssh

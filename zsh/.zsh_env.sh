@@ -24,4 +24,8 @@ elif [ -f "$VIVID_CACHE" ]; then
     export LS_COLORS="$(cat "$VIVID_CACHE")"
 fi
 
-export JAVA_HOME="/usr/lib/jvm/java-21-openjdk-amd64"
+if command -v mise &>/dev/null; then
+    _java_home="$(mise where java 2>/dev/null || true)"
+    [ -n "$_java_home" ] && export JAVA_HOME="$_java_home"
+    unset _java_home
+fi

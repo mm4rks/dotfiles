@@ -50,6 +50,11 @@ main() {
         fi
     fi
 
+    if $DOCKER_CMD image inspect opencode-sandbox:latest &>/dev/null && [[ -z "$CACHE_FLAG" ]]; then
+        log "opencode-sandbox:latest already exists, skipping build. Use --update to rebuild."
+        return 0
+    fi
+
     log "Building opencode-sandbox Docker image..."
     if $DOCKER_CMD build $CACHE_FLAG -t opencode-sandbox:latest -f "${REPO_DIR}/docker/opencode/Dockerfile" "${REPO_DIR}/docker/opencode"; then
         log "Successfully built opencode-sandbox:latest"
