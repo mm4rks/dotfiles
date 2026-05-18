@@ -139,3 +139,8 @@ precmd_functions+=(_fix_cursor)
 if command -v starship &> /dev/null; then
     eval "$(starship init zsh)"
 fi
+
+# Android SDK
+export ANDROID_SDK_ROOT="$HOME/android-sdk"
+export ANDROID_HOME="$HOME/android-sdk"
+export PATH="$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools"

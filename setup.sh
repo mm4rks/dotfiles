@@ -82,6 +82,8 @@ if [[ "$PROFILES" == *" rev "* ]]; then
     sudo "${REPO_DIR}/scripts/install_ghidra.sh"
     "${REPO_DIR}/scripts/install_apktool.sh"
     "${REPO_DIR}/scripts/install_jadx.sh"
+    "${REPO_DIR}/scripts/install_trivy.sh"
+    "${REPO_DIR}/scripts/install_dependency_check.sh"
 fi
 
 # 5. Profile: ssh
