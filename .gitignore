@@ -25,3 +25,11 @@ opencode/.config/opencode/skills/humanizer/references/*
 !opencode/.config/opencode/skills/technical-report/
 opencode/.config/opencode/skills/technical-report/*
 !opencode/.config/opencode/skills/technical-report/SKILL.md
+!opencode/.config/opencode/skills/grill-me/
+!opencode/.config/opencode/skills/grill-me/SKILL.md
+!opencode/.config/opencode/skills/write-a-skill/
+!opencode/.config/opencode/skills/write-a-skill/SKILL.md
+!opencode/.config/opencode/skills/write-a-skill/scripts/
+!opencode/.config/opencode/skills/write-a-skill/scripts/scaffold_skill.sh
+!opencode/.config/opencode/skills/tts/
+!opencode/.config/opencode/skills/tts/SKILL.md

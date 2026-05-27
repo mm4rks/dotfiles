@@ -145,9 +145,11 @@ Setup profiles passed as arguments to `setup.sh` (e.g. `./setup.sh pwn rev`):
     - **Hard Stop**: If a system-level tool or dependency is missing, STOP IMMEDIATELY. Identify the required change and provide the exact command for the user to run on their host. Do not attempt to "verify" if the command will work.
     - **Sandbox Isolation**: You are a guest in this environment. Treat the host as an opaque, external entity that only the user can modify.
 
-## 5. External Agent Rules
+## 6. Development Workflow (Repository First)
 
-Adhere strictly to the conventions defined in this `AGENTS.md` file. There are currently no explicit `.cursorrules` or `.github/copilot-instructions.md` configured. If they are added in the future, they should be integrated into this document to maintain a single source of truth for all autonomous agents.
+- **Always prioritize the repository**: When making changes to configurations (e.g., opencode, nvim, zsh), always modify the files within the repository (`/home/user/.dotfiles`) rather than their target locations in the system (e.g., `~/.config/`). 
+- **Stow-awareness**: This repository is designed to be stowed. Ensure any new configuration files are placed in the correct package directory (e.g., `opencode/`, `nvim/`) following the internal directory structure that mirrors the intended target location.
+- **Persistence**: Changes made to the repository are permanent and will be reflected in future sessions after being stowed. System-level changes may be lost or inconsistent with the repository state.
 
 ## TTS Notifications
 

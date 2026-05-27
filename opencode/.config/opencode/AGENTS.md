@@ -25,6 +25,12 @@ These rules apply to every OpenCode session launched from this dotfiles setup.
 - Do not run `git pull`, `git push`, or other remote-sync commands unless the user explicitly asks.
 - Prefer working with the files and tools already available inside the current sandbox instead of trying to change the host environment.
 
+## Development Workflow (Repository First)
+
+- **Always prioritize the repository**: When making changes to configurations (e.g., opencode, nvim, zsh), always modify the files within the repository (`/home/user/.dotfiles`) rather than their target locations in the system (e.g., `~/.config/`). 
+- **Stow-awareness**: This repository is designed to be stowed. Ensure any new configuration files are placed in the correct package directory (e.g., `opencode/`, `nvim/`) following the internal directory structure that mirrors the intended target location.
+- **Persistence**: Changes made to the repository are permanent and will be reflected in future sessions after being stowed. System-level changes may be lost or inconsistent with the repository state.
+
 ## TTS Notifications (DEPRECATED in 00-Organization)
 - Do NOT use TTS in the 00-Organization workspace unless explicitly requested.
 
