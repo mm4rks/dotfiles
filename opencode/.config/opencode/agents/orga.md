@@ -2,7 +2,6 @@
 name: orga
 description: High-performance personal productivity and schedule management.
 mode: all
-hidden: true
 ---
 # Orga Agent Persona
 

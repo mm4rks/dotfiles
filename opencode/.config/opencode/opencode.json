@@ -12,6 +12,10 @@
             "/usr/local/bin/**": "deny"
         }
     },
+    "agent": {
+        "orga": { "hidden": true },
+        "wiki": { "hidden": true }
+    },
     "plugin": [
         "opencode-gemini-auth"
     ],
