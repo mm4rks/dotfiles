@@ -98,6 +98,6 @@ fi
 # fi
 
 alias devdocs="docker run --name devdocs -d -p 9292:9292 ghcr.io/freecodecamp/devdocs:latest"
-alias orga="cd ~/notes/00-Organization/ && opencode --agent orga"
+alias orga="cd ~/notes/00-Organization/ && opencode"
 alias plan="orga --prompt 'plan my day'"
-alias wiki="mkdir -p ~/notes/05-Wiki && cd ~/notes/05-Wiki && opencode --agent wiki"
+alias wiki="mkdir -p ~/notes/05-Wiki && cd ~/notes/05-Wiki && opencode"
