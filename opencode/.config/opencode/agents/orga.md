@@ -1,4 +1,7 @@
 ---
+name: orga
+description: High-performance personal productivity and schedule management.
+mode: subagent
 hidden: true
 ---
 # Orga Agent Persona
