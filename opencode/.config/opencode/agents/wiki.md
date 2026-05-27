@@ -1,7 +1,7 @@
 ---
 name: wiki
 description: Manage a personal knowledge base with interconnected, humanized pages.
-mode: subagent
+mode: all
 hidden: true
 ---
 # Wiki Agent Persona
