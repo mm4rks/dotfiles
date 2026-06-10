@@ -45,6 +45,7 @@ vim.keymap.set("i", "kj", "<Esc>")
 vim.keymap.set("n", "Q", "<nop>")
 vim.keymap.set("n", "<BS>", "ciw")
 vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
+vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename)
 
 -- visual mode remaps
 vim.keymap.set("v", "<BS>", "c")

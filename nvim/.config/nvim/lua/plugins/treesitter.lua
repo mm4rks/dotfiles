@@ -6,7 +6,7 @@ return {
         build = ":TSUpdate",
         config = function()
             require'nvim-treesitter'.setup {
-                ensure_installed = { "vimdoc", "c", "lua", "python", "bash" },
+                ensure_installed = { "vimdoc", "c", "lua", "python", "bash", "javascript", "typescript", "tsx" },
                 sync_install = false,
 
                 -- Automatically install missing parsers when entering buffer

@@ -5,7 +5,6 @@ local function on_attach(client, bufnr)
 
     vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
     vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-    vim.keymap.set("n", "<leader>vrn", vim.lsp.buf.rename, opts)
     vim.keymap.set("i", "<C-s>", vim.lsp.buf.signature_help, opts)
 
     -- Suggestion 2: Integrate 'trouble.nvim' for a better UI
@@ -65,7 +64,7 @@ return {
             local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
             require('mason-lspconfig').setup({
-                ensure_installed = { "basedpyright", "ruff", "lua_ls" },
+                ensure_installed = { "basedpyright", "ruff", "lua_ls", "vtsls" },
                 -- The 'handlers' table is the correct place for this logic
                 handlers = {
                     -- 1. This is the default handler for all servers
@@ -74,6 +73,13 @@ return {
                         lspconfig[server_name].setup({
                             on_attach = on_attach,
                             capabilities = capabilities
+                        })
+                    end,
+                    ["vtsls"] = function()
+                        lspconfig.vtsls.setup({
+                            on_attach = on_attach,
+                            capabilities = capabilities,
+                            filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
                         })
                     end,
                     ["lua_ls"] = function()

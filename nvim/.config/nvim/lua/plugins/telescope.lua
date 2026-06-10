@@ -64,11 +64,11 @@ return {
                         end
                         local pieces = vim.split(prompt, "  ")
                         local args = { "rg" }
-                        if pieces[1] then
+                        if pieces[1] and pieces[1] ~= "" then
                             table.insert(args, "-e")
                             table.insert(args, pieces[1])
                         end
-                        if pieces[2] then
+                        if pieces[2] and pieces[2] ~= "" then
                             table.insert(args, "-g")
                             table.insert(args, pieces[2])
                         end
@@ -98,12 +98,61 @@ return {
             vim.keymap.set('n', '<leader>gb', builtin.git_branches, {})
             vim.keymap.set('n', '<leader>dg', builtin.diagnostics, {})
 
+            local rg_base = { "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case", "--hidden" }
+
+            local live_cascadegrep = function(opts)
+                opts = opts or {}
+                opts.cwd = opts.cwd or vim.uv.cwd()
+
+                local finder = finders.new_async_job {
+                    command_generator = function(prompt)
+                        if not prompt or prompt == "" then return nil end
+                        local pieces = vim.split(prompt, "  ")
+                        local p1 = pieces[1] ~= "" and pieces[1] or nil
+                        local p2 = pieces[2] and pieces[2] ~= "" and pieces[2] or nil
+
+                        if p1 and p2 then
+                            -- files containing p1, then search those for p2
+                            local flags = table.concat(rg_base, " ")
+                            return { "bash", "-c",
+                                "rg -l --smart-case --hidden -e " .. vim.fn.shellescape(p1) ..
+                                " | xargs -r rg " .. flags .. " -e " .. vim.fn.shellescape(p2)
+                            }
+                        elseif p1 then
+                            local cmd = { "rg", "-e", p1 }
+                            for _, v in ipairs(rg_base) do table.insert(cmd, v) end
+                            return cmd
+                        end
+                        return nil
+                    end,
+                    entry_maker = make_entry.gen_from_vimgrep(opts),
+                    cwd = opts.cwd,
+                }
+
+                pickers.new(opts, {
+                    debounce = 100,
+                    prompt_title = "Cascade Grep",
+                    finder = finder,
+                    previewer = conf.grep_previewer(opts),
+                    sorter = require("telescope.sorters").empty(),
+                    default_text = opts.default_text or "",
+                }):find()
+            end
+
             vim.keymap.set('n', '<leader>rg', function()
                 live_multigrep({})
             end)
             vim.keymap.set('v', '<leader>rg', function()
                 local text = get_visual_selection()
                 live_multigrep({ default_text = text })
+            end)
+
+            vim.keymap.set('n', '<leader>RG', function()
+                live_cascadegrep({})
+            end)
+            vim.keymap.set('v', '<leader>RG', function()
+                local text = get_visual_selection()
+                live_cascadegrep({ default_text = text })
             end)
         end,
     }
