@@ -112,12 +112,15 @@ return {
                         local p2 = pieces[2] and pieces[2] ~= "" and pieces[2] or nil
 
                         if p1 and p2 then
-                            -- files containing p1, then search those for p2
-                            local flags = table.concat(rg_base, " ")
-                            return { "bash", "-c",
-                                "rg -l --smart-case --hidden -e " .. vim.fn.shellescape(p1) ..
-                                " | xargs -r rg " .. flags .. " -e " .. vim.fn.shellescape(p2)
-                            }
+                            -- synchronously get files containing p1, then search those for p2
+                            local files = vim.fn.systemlist(
+                                "rg -l --smart-case --hidden -e " .. vim.fn.shellescape(p1)
+                            )
+                            if not files or #files == 0 then return nil end
+                            local cmd = { "rg", "-e", p2 }
+                            for _, v in ipairs(rg_base) do table.insert(cmd, v) end
+                            for _, f in ipairs(files) do table.insert(cmd, f) end
+                            return cmd
                         elseif p1 then
                             local cmd = { "rg", "-e", p1 }
                             for _, v in ipairs(rg_base) do table.insert(cmd, v) end
