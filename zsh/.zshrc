@@ -144,3 +144,7 @@ fi
 export ANDROID_SDK_ROOT="$HOME/android-sdk"
 export ANDROID_HOME="$HOME/android-sdk"
 export PATH="$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools"
+
+
+# Added by Antigravity CLI installer
+export PATH="/home/user/.local/bin:$PATH"
