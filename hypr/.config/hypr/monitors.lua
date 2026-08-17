@@ -48,5 +48,17 @@ end)
 
 -- DisplayPort link negotiation on cold boot/reboot while docked takes 1-2s:
 hl.on("hyprland.start", function()
-  hl.exec_cmd("(sleep 1; hyprctl reload; sleep 2; hyprctl reload) >/dev/null 2>&1 &")
+  hl.exec_cmd([[
+    bash -c '
+      for i in {1..15}; do
+        if omarchy-hw-external-monitors; then
+          sleep 1
+          hyprctl reload
+          exit 0
+        fi
+        sleep 1
+      done
+    ' >/dev/null 2>&1 &
+  ]])
 end)
+
