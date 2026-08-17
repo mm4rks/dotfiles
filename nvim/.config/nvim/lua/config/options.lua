@@ -1,3 +1,4 @@
+require("config.remote_clipboard").setup()
 vim.opt.guicursor = "n-v-c:block,i:ver25,r:hor20"
 
 vim.opt.nu = true
