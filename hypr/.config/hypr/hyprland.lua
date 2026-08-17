@@ -25,9 +25,9 @@ o.window("^(anki)$", { workspace = "3", size = "60% 60%" })
 o.window("^(spotify)$", { workspace = "5 silent" })
 o.window("^(discord)$", { workspace = "5 silent" })
 o.window("(?i)virtualbox", { float = true })
-o.window("^(steam_app_.*)$", { render_unfocused = true })
-o.window("(?i)wine", { render_unfocused = true })
-o.window("(?i)exefile.exe", { render_unfocused = true })
+o.window("^(steam_app_.*)$", { render_unfocused = true, immediate = true })
+o.window("(?i)wine", { render_unfocused = true, immediate = true })
+o.window("(?i)exefile.exe", { render_unfocused = true, immediate = true })
 
 -- --- Performance & Rendering Tweaks ---
 hl.config({

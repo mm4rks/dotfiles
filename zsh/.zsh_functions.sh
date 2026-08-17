@@ -243,6 +243,8 @@ function prime-run() {
     __GLX_VENDOR_LIBRARY_NAME=nvidia \
     __VK_LAYER_NV_optimus=NVIDIA_only \
     __GL_SYNC_TO_VBLANK=0 \
+    __GL_THREADED_OPTIMIZATIONS=1 \
+    __GL_SHADER_DISK_CACHE_SKIP_CLEANUP=1 \
     vblank_mode=0 \
     DXVK_ENABLE_NVAPI=1 \
     PROTON_ENABLE_NVAPI=1 \
