@@ -4,7 +4,7 @@
 local omarchy_gdk_scale = 2
 hl.env("GDK_SCALE", tostring(omarchy_gdk_scale))
 
-local function update_monitors()
+_G.update_monitors = function()
   local has_external = false
   local p = io.popen("omarchy-hw-external-monitors && echo yes || echo no")
   if p then
@@ -53,7 +53,7 @@ hl.on("hyprland.start", function()
       for i in {1..15}; do
         if omarchy-hw-external-monitors; then
           sleep 1
-          hyprctl reload
+          hyprctl eval "_G.update_monitors()"
           exit 0
         fi
         sleep 1

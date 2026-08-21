@@ -6,7 +6,7 @@ hl.config({
     kb_layout = "eu",
     kb_options = "",
     kb_variant = "",
-    follow_mouse = 0,
+    follow_mouse = 1,
 
     repeat_rate = 40,
     repeat_delay = 600,
@@ -19,7 +19,7 @@ hl.config({
   },
 
   cursor = {
-    no_warps = true,
+    no_warps = false,
   },
 })
 
