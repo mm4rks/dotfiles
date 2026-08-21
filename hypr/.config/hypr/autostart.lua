@@ -17,3 +17,9 @@ o.launch_on_start([[
     done
   ' >/dev/null 2>&1
 ]])
+
+-- Automatically disable internal monitor when any external monitor is added,
+-- mimicking kanshi's behavior but using Omarchy's native toggles so it doesn't fight clamshell.
+hl.on("monitor.added", function()
+  hl.exec_cmd("omarchy hyprland monitor internal off")
+end)
