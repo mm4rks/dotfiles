@@ -48,7 +48,7 @@ end)
 
 -- DisplayPort link negotiation on cold boot/reboot while docked takes 1-2s:
 hl.on("hyprland.start", function()
-  hl.exec_cmd([[
+  hl.exec_cmd([=[
     bash -c '
       for i in {1..150}; do
         for status in /sys/class/drm/card*-*/status; do
@@ -66,5 +66,5 @@ hl.on("hyprland.start", function()
         sleep 0.1
       done
     ' >/dev/null 2>&1 &
-  ]])
+  ]=])
 end)
