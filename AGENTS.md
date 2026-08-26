@@ -126,10 +126,11 @@ Do not use raw `echo` or `printf` commands for status updates in the main execut
 - **Guest:** Sandbox mode for restricted environments. Skips sudo and Stow. Activated via `source activate.sh`.
 
 Setup profiles passed as arguments to `setup.sh` (e.g. `./setup.sh pwn rev`):
-- **dev:** Go, Rust (via mise).
 - **pwn:** BloodHound, NetExec, PowerView, Certipy.
-- **rev:** Joern, Ghidra, jadx, apktool, apkleaks, semgrep, flare-capa.
+- **rev:** Joern, Ghidra, jadx, apktool, trivy, dependency-check, semgrep, flare-capa, apkleaks, cdxgen.
 - **ssh:** SSH hardening via `scripts/harden_ssh.sh`.
+
+Terminal tools (neovim, starship, zoxide, fzf, ripgrep, bat, eza, delta, fd, shellcheck, choose, node) are installed by `scripts/install_terminal_tools.sh` as pinned-version binaries — no `mise` on this branch.
 
 ### 3.2. Critical Variables
 - `ZDOTDIR`: Redirects Zsh configuration to `zsh/` within the repo.
@@ -147,8 +148,8 @@ Setup profiles passed as arguments to `setup.sh` (e.g. `./setup.sh pwn rev`):
 
 ## 6. Development Workflow (Repository First)
 
-- **Always prioritize the repository**: When making changes to configurations (e.g., opencode, nvim, zsh), always modify the files within the repository (`/home/user/.dotfiles`) rather than their target locations in the system (e.g., `~/.config/`). 
-- **Stow-awareness**: This repository is designed to be stowed. Ensure any new configuration files are placed in the correct package directory (e.g., `opencode/`, `nvim/`) following the internal directory structure that mirrors the intended target location.
+- **Always prioritize the repository**: When making changes to configurations (e.g., nvim, zsh), always modify the files within the repository (`/home/user/.dotfiles`) rather than their target locations in the system (e.g., `~/.config/`). 
+- **Stow-awareness**: This repository is designed to be stowed. Ensure any new configuration files are placed in the correct package directory (e.g., `nvim/`, `zsh/`) following the internal directory structure that mirrors the intended target location.
 - **Persistence**: Changes made to the repository are permanent and will be reflected in future sessions after being stowed. System-level changes may be lost or inconsistent with the repository state.
 
 ## TTS Notifications

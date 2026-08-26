@@ -22,12 +22,13 @@ ensure_dependencies() {
 }
 
 install_ghidra() {
+    ensure_dependencies
+
     if command_exists ghidra; then
         log "Ghidra is already installed. Skipping."
         return 0
     fi
-    
-    ensure_dependencies
+
     log "Installing Ghidra ${GHIDRA_VERSION}..."
 
     local TEMP_DIR

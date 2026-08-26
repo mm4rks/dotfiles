@@ -6,13 +6,6 @@ sync_nvim() {
     # Ensure local bins are in PATH for discovery
     export PATH="${HOME}/.local/bin:${PATH}"
 
-    # Ensure mise is active if present so we can find nvim
-    if command_exists mise; then
-        eval "$(mise activate bash)"
-    elif [ -f /usr/bin/mise ]; then
-        eval "$(/usr/bin/mise activate bash)"
-    fi
-
     if ! command_exists nvim; then
         warn "nvim command not found, skipping plugin sync."
         return 0

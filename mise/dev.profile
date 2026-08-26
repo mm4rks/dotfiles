@@ -1,2 +1,0 @@
-go = "latest"
-rust = "latest"

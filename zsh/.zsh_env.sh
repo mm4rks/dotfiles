@@ -24,8 +24,8 @@ elif [ -f "$VIVID_CACHE" ]; then
     export LS_COLORS="$(cat "$VIVID_CACHE")"
 fi
 
-if command -v mise &>/dev/null; then
-    _java_home="$(mise where java 2>/dev/null || true)"
+if [ -z "${JAVA_HOME:-}" ] && [ -d /usr/lib/jvm ]; then
+    _java_home="$(find /usr/lib/jvm -maxdepth 1 -type d -name 'java-*' 2>/dev/null | sort -V | tail -n1)"
     [ -n "$_java_home" ] && export JAVA_HOME="$_java_home"
     unset _java_home
 fi

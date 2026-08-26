@@ -13,12 +13,13 @@ ensure_dependencies() {
 }
 
 install_joern() {
+    ensure_dependencies
+
     if command_exists joern; then
         log "Joern is already installed. Skipping."
         return 0
     fi
-    
-    ensure_dependencies
+
     log "Installing Joern ${JOERN_VERSION}..."
 
     local TEMP_DIR

@@ -1,6 +1,8 @@
-# Dotfiles
+# Dotfiles (work branch)
 
 Automated development environment setup for Debian and Arch-based distributions.
+
+Lightweight variant of the `main` branch for work boxes: terminal tools (shell, tmux, nvim, starship, etc.) with no Wayland/Hyprland desktop and no `mise` — see `CLAUDE.md` for details.
 
 ## Quick Start
 
@@ -24,18 +26,9 @@ source activate.sh
 
 ## Profiles (./setup.sh [profiles])
 
-- **dev**: Go, Rust.
 - **pwn**: BloodHound, NetExec, PowerView, Certipy.
-- **rev**: Joern, Ghidra, jadx, apktool, apkleaks, semgrep, flare-capa.
+- **rev**: Joern, Ghidra, jadx, apktool, trivy, dependency-check, semgrep, flare-capa, apkleaks, cdxgen.
 - **ssh**: SSH hardening.
-
-## Opencode Sandbox
-
-The opencode Docker image is built once and skipped on subsequent runs of `setup.sh`. To force a rebuild:
-
-```bash
-./scripts/install_opencode.sh --update
-```
 
 ## Testing
 

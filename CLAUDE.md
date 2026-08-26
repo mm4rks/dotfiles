@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Automated development environment setup for Debian and Arch-based Linux distributions. Uses GNU Stow for symlink management, Mise for tool version pinning, and Docker for cross-distribution CI testing. Two modes: **standard** (full install, sudo required) and **guest** (sandboxed, no sudo, no home directory modification).
+Automated development environment setup for Debian and Arch-based Linux distributions. Uses GNU Stow for symlink management and Docker for cross-distribution CI testing. Two modes: **standard** (full install, sudo required) and **guest** (sandboxed, no sudo, no home directory modification).
+
+This is the **`work`** branch: a lightweight variant of the ricing-focused `main` branch intended for work boxes. It has no Wayland/Hyprland desktop packages and no `mise` — terminal tools are installed as pinned binaries by `scripts/install_terminal_tools.sh` instead. Everything else (shell, tmux, nvim, starship, and the `pwn`/`rev`/`ssh` security-tooling profiles) is unchanged from `main`.
 
 ## Commands
 
@@ -32,7 +34,7 @@ Use `# shellcheck disable=SCXXXX` only for confirmed false positives.
 `setup.sh` orchestrates four phases in order:
 1. `scripts/install_base_deps.sh` — system packages (apt/pacman)
 2. `scripts/install_docker.sh` — Docker + optional NVIDIA toolkit
-3. `scripts/configure_mise.sh` — merges `mise/base.toml` + profile TOMLs, installs all tools
+3. `scripts/install_terminal_tools.sh` — downloads pinned-version binaries (neovim, starship, zoxide, fzf, ripgrep, bat, eza, delta, fd, shellcheck, choose, node) into `~/.local/bin` / `~/.local/opt`, no root required
 4. `scripts/stow_dotfiles.sh` — symlinks config packages to `$HOME`
 
 `bootstrap.sh` is a convenience wrapper that calls `setup.sh` with `pwn ssh` profiles.
@@ -40,10 +42,10 @@ Use `# shellcheck disable=SCXXXX` only for confirmed false positives.
 `activate.sh` is sourced (not executed) for guest mode — sets `ZDOTDIR` and `XDG_CONFIG_HOME` to point into the repo instead of using Stow.
 
 ### Stow Packages
-The following directories are stowed to `$HOME`: `zsh`, `tmux`, `eza`, `git`, `vivid`, `nvim`, `opencode`, `voxtype`. Wayland-specific (`alacritty`, `hypr`, `kanshi`, `waybar`) are stowed separately.
+The following directories are stowed to `$HOME`: `zsh`, `tmux`, `eza`, `git`, `vivid`, `nvim`, `voxtype`, `starship`.
 
-### Mise Tool Management
-`mise/base.toml` pins core tools (Neovim, Node, Python, fzf, ripgrep, bat, delta, zoxide, etc.). Profile-specific tools are in `mise/dev.profile` (Go, Rust), `mise/rev.profile` (Java, semgrep, flare-capa). `scripts/configure_mise.sh` merges these into a single config before installing.
+### Terminal Tools
+`scripts/install_terminal_tools.sh` pins exact versions (hardcoded at the top of the script) and verifies each download against a sha256 checksum before installing, following the same `download_and_verify` convention as `scripts/install_ghidra.sh` etc. Bump a version by updating its `_VERSION`/`_SHA256` pair.
 
 ### Shared Script Library (`scripts/lib.sh`)
 All scripts must source this. Key utilities:

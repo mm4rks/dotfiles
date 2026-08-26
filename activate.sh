@@ -14,7 +14,7 @@ if [ ! -L "${XDG_CONFIG_HOME}/nvim" ]; then
     ln -sf "${REPO_DIR}/nvim/.config/nvim" "${XDG_CONFIG_HOME}/nvim"
 fi
 
-# Prepend our local bins and mise bins to PATH
+# Prepend our local bins to PATH
 export PATH="${HOME}/.local/bin:${PATH}"
 
 # Add tmux alias to use our repo's config

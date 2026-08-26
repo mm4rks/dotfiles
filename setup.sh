@@ -26,10 +26,7 @@ log "Profiles selected:${PROFILES:- default}"
 # 1. System Base (Elevated)
 log "--- Phase 1: System Base (Elevated) ---"
 sudo "${REPO_DIR}/scripts/install_base_deps.sh"
-# Note: install_docker.sh is now handled by opencode if missing
-# but we can still call it here for an initial clean install.
 sudo "${REPO_DIR}/scripts/install_docker.sh"
-sudo "${REPO_DIR}/scripts/install_mise.sh"
 sudo "${REPO_DIR}/scripts/install_nerd_font.sh"
 
 # Fix permissions on ~/.local if it was created by root processes
@@ -41,22 +38,11 @@ fi
 
 # 2. User Environment
 log "--- Phase 2: User Environment ---"
-if [[ "$PROFILES" == *" guest "* ]]; then
-    "${REPO_DIR}/scripts/install_mise.sh"
-fi
-"${REPO_DIR}/scripts/configure_mise.sh" "$@"
-
-# Important: Activate mise in the current shell so subsequent scripts (like sync_nvim.sh) can find their tools
-if command_exists mise; then
-    eval "$(mise activate bash)"
-    log "Mise activated for current session."
-elif [ -f "$HOME/.local/bin/mise" ]; then
-    eval "$("$HOME/.local/bin/mise" activate bash)"
-    log "Mise (local) activated for current session."
-fi
+"${REPO_DIR}/scripts/install_terminal_tools.sh"
+# Ensure ~/.local/bin is on PATH for subsequent scripts (like sync_nvim.sh)
+export PATH="${HOME}/.local/bin:${PATH}"
 
 if [[ "$PROFILES" != *" guest "* ]]; then
-    "${REPO_DIR}/scripts/install_opencode.sh"
     "${REPO_DIR}/scripts/stow_dotfiles.sh"
 fi
 "${REPO_DIR}/scripts/sync_nvim.sh"
@@ -65,11 +51,9 @@ fi
 if [[ "$PROFILES" == *" pwn "* ]]; then
     log "--- Phase 3: Profile 'pwn' ---"
     sudo "${REPO_DIR}/scripts/install_bloodhound.sh"
-    
-    # We must ensure pipx is available in the current shell for user scripts
-    eval "$(mise activate bash)"
+
     pipx ensurepath
-    
+
     "${REPO_DIR}/scripts/install_netexec.sh"
     "${REPO_DIR}/scripts/install_powerview.sh"
     "${REPO_DIR}/scripts/install_certipy.sh"
@@ -84,6 +68,9 @@ if [[ "$PROFILES" == *" rev "* ]]; then
     "${REPO_DIR}/scripts/install_jadx.sh"
     "${REPO_DIR}/scripts/install_trivy.sh"
     "${REPO_DIR}/scripts/install_dependency_check.sh"
+
+    pipx ensurepath
+    "${REPO_DIR}/scripts/install_rev_pipx_tools.sh"
 fi
 
 # 5. Profile: ssh
