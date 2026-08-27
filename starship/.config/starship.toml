@@ -2,12 +2,18 @@ add_newline = true
 command_timeout = 200
 palette = "catppuccin_mocha"
 format = """
-$directory$git_branch$git_status$python
+$hostname$directory$git_branch$git_status$python
 $character"""
 
 [character]
 error_symbol = "[✗](bold red)"
 success_symbol = "[❯](bold sky)"
+
+[hostname]
+ssh_only = false
+format = "[$hostname]($style) "
+style = "bold peach"
+disabled = false
 
 [directory]
 truncation_length = 2
