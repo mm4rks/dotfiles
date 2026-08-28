@@ -22,11 +22,11 @@ _G.update_monitors = function()
     hl.monitor({ output = "DP-5", mode = "3440x1440@60", position = "0x0", scale = 1 })
     hl.monitor({ output = "HDMI-A-1", mode = "preferred", position = "0x0", scale = 1 })
     hl.monitor({ output = "", mode = "preferred", position = "0x0", scale = 1 })
-    hl.dsp.dpms({ action = "enable" })
+    hl.dsp.dpms("on")
   else
     -- Standalone laptop: enable internal 4K retina display at origin 0x0 and unblank
     hl.monitor({ output = "eDP-1", mode = "3840x2160@60", position = "0x0", scale = 2 })
-    hl.dsp.dpms({ action = "enable" })
+    hl.dsp.dpms("on")
     hl.dsp.focus({ monitor = "eDP-1" })
   end
 end
@@ -42,7 +42,7 @@ end)
 hl.on("monitor.removed", function()
   update_monitors()
   hl.monitor({ output = "eDP-1", mode = "3840x2160@60", position = "0x0", scale = 2 })
-  hl.dsp.dpms({ action = "enable" })
+  hl.dsp.dpms("on")
   hl.dsp.focus({ monitor = "eDP-1" })
 end)
 
