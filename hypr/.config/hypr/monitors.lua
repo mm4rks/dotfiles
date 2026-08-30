@@ -4,82 +4,25 @@
 local omarchy_gdk_scale = 2
 hl.env("GDK_SCALE", tostring(omarchy_gdk_scale))
 
-_G.update_monitors = function()
-  local has_external = false
-  local p = io.popen("omarchy-hw-external-monitors && echo yes || echo no")
-  if p then
-    local res = p:read("*l")
-    p:close()
-    if res == "yes" then
-      has_external = true
-    end
-  end
+-- Laptop internal display (safe default)
+hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto", scale = 2 })
 
-  if has_external then
-    -- External display connected: disable laptop screen to dedicate GPU bandwidth to external ultrawide
-    hl.monitor({ output = "eDP-1", disabled = true })
-    hl.monitor({ output = "DP-3", mode = "3440x1440@60", position = "0x0", scale = 1 })
-    hl.monitor({ output = "DP-5", mode = "3440x1440@60", position = "0x0", scale = 1 })
-    hl.monitor({ output = "HDMI-A-1", mode = "preferred", position = "0x0", scale = 1 })
-    hl.monitor({ output = "", mode = "preferred", position = "0x0", scale = 1 })
-        hl.timer(function()
-      hl.dispatch(hl.dsp.dpms("off"))
-      hl.timer(function()
-        hl.dispatch(hl.dsp.dpms("on"))
-      end, { timeout = 1000, type = "oneshot" })
-    end, { timeout = 500, type = "oneshot" })
-  else
-    -- Standalone laptop: enable internal 4K retina display at origin 0x0 and unblank
-    hl.monitor({ output = "eDP-1", mode = "3840x2160@60", position = "0x0", scale = 2 })
-    hl.timer(function()
-      hl.dispatch(hl.dsp.dpms("off"))
-      hl.timer(function()
-        hl.dispatch(hl.dsp.dpms("on"))
-        hl.dispatch(hl.dsp.focus({ monitor = "eDP-1" }))
-      end, { timeout = 1000, type = "oneshot" })
-    end, { timeout = 500, type = "oneshot" })
-  end
-end
+-- External ultrawide displays (Docked profiles)
+-- Using 'preferred' allows Omarchy's native 'modeless' recovery daemon to detect
+-- missing EDIDs on cold boot (width=0). Hardcoding the resolution blinds the daemon.
+hl.monitor({ output = "DP-3", mode = "preferred", position = "auto", scale = 1 })
+hl.monitor({ output = "DP-5", mode = "preferred", position = "auto", scale = 1 })
+hl.monitor({ output = "HDMI-A-1", mode = "preferred", position = "auto", scale = 1 })
 
--- Run immediately on load / boot
-update_monitors()
+-- Fallback rule for any other hotplugged external display
+hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
 
--- Native Hyprland Lua event listeners
+-- Automatically disable internal monitor when any external monitor is added,
+-- mimicking kanshi's behavior but using Omarchy's native toggles so it doesn't fight clamshell.
 hl.on("monitor.added", function()
-  update_monitors()
+  hl.exec_cmd("omarchy-hyprland-monitor-internal off")
 end)
 
 hl.on("monitor.removed", function()
-  update_monitors()
-  hl.monitor({ output = "eDP-1", mode = "3840x2160@60", position = "0x0", scale = 2 })
-      hl.timer(function()
-      hl.dispatch(hl.dsp.dpms("off"))
-      hl.timer(function()
-        hl.dispatch(hl.dsp.dpms("on"))
-      end, { timeout = 1000, type = "oneshot" })
-    end, { timeout = 500, type = "oneshot" })
-  hl.dispatch(hl.dsp.focus({ monitor = "eDP-1" }))
-end)
-
--- DisplayPort link negotiation on cold boot/reboot while docked takes 1-2s:
-hl.on("hyprland.start", function()
-  hl.exec_cmd([=[
-    bash -c '
-      for i in {1..150}; do
-        for status in /sys/class/drm/card*-*/status; do
-          [[ -e $status ]] || continue
-          [[ $status =~ -(eDP|LVDS|DSI)-[^/]+/status$ ]] && continue
-          if [[ $(< $status) == "connected" ]]; then
-            edid="${status%/*}/edid"
-            if read -r -n 1 < "$edid" 2>/dev/null; then
-              sleep 0.5
-              hyprctl reload
-              exit 0
-            fi
-          fi
-        done
-        sleep 0.1
-      done
-    ' >/dev/null 2>&1 &
-  ]=])
+  -- Let the clamshell watcher re-enable the screen dynamically
 end)
