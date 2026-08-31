@@ -238,16 +238,3 @@ function audit_npm() {
     echo -e "\n\033[1;31m=== Audit Complete ===\033[0m"
 } # Description: Audit all recursive NPM dependencies for supply chain incident response. Usage: audit_npm [--all]
 
-function prime-run() {
-    __NV_PRIME_RENDER_OFFLOAD=1 \
-    __GLX_VENDOR_LIBRARY_NAME=nvidia \
-    __VK_LAYER_NV_optimus=NVIDIA_only \
-    __GL_SYNC_TO_VBLANK=0 \
-    __GL_THREADED_OPTIMIZATIONS=1 \
-    __GL_SHADER_DISK_CACHE_SKIP_CLEANUP=1 \
-    vblank_mode=0 \
-    DXVK_ENABLE_NVAPI=1 \
-    PROTON_ENABLE_NVAPI=1 \
-    "$@"
-} # Description: Run command on dedicated NVIDIA GPU (e.g. prime-run steam)
-
