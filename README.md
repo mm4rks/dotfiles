@@ -24,10 +24,13 @@ cd ~/.dotfiles
 source activate.sh
 ```
 
+## Default Tools
+
+Installed by `./setup.sh` regardless of profile: Ghidra, Joern, jadx, apktool, trivy, dependency-check, semgrep, flare-capa, apkleaks, cdxgen.
+
 ## Profiles (./setup.sh [profiles])
 
 - **pwn**: BloodHound, NetExec, PowerView, Certipy.
-- **rev**: Joern, Ghidra, jadx, apktool, trivy, dependency-check, semgrep, flare-capa, apkleaks, cdxgen.
 - **ssh**: SSH hardening.
 
 ## Testing

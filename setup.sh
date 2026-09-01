@@ -47,9 +47,21 @@ if [[ "$PROFILES" != *" guest "* ]]; then
 fi
 "${REPO_DIR}/scripts/sync_nvim.sh"
 
-# 3. Profile: pwn
+# 3. Default Tools
+log "--- Phase 3: Default Tools ---"
+sudo "${REPO_DIR}/scripts/install_ghidra.sh"
+sudo "${REPO_DIR}/scripts/install_joern.sh"
+"${REPO_DIR}/scripts/install_jadx.sh"
+"${REPO_DIR}/scripts/install_apktool.sh"
+"${REPO_DIR}/scripts/install_trivy.sh"
+"${REPO_DIR}/scripts/install_dependency_check.sh"
+
+pipx ensurepath
+"${REPO_DIR}/scripts/install_rev_pipx_tools.sh"
+
+# 4. Profile: pwn
 if [[ "$PROFILES" == *" pwn "* ]]; then
-    log "--- Phase 3: Profile 'pwn' ---"
+    log "--- Phase 4: Profile 'pwn' ---"
     sudo "${REPO_DIR}/scripts/install_bloodhound.sh"
 
     pipx ensurepath
@@ -57,20 +69,6 @@ if [[ "$PROFILES" == *" pwn "* ]]; then
     "${REPO_DIR}/scripts/install_netexec.sh"
     "${REPO_DIR}/scripts/install_powerview.sh"
     "${REPO_DIR}/scripts/install_certipy.sh"
-fi
-
-# 4. Profile: rev
-if [[ "$PROFILES" == *" rev "* ]]; then
-    log "--- Phase 4: Profile 'rev' ---"
-    sudo "${REPO_DIR}/scripts/install_joern.sh"
-    sudo "${REPO_DIR}/scripts/install_ghidra.sh"
-    "${REPO_DIR}/scripts/install_apktool.sh"
-    "${REPO_DIR}/scripts/install_jadx.sh"
-    "${REPO_DIR}/scripts/install_trivy.sh"
-    "${REPO_DIR}/scripts/install_dependency_check.sh"
-
-    pipx ensurepath
-    "${REPO_DIR}/scripts/install_rev_pipx_tools.sh"
 fi
 
 # 5. Profile: ssh
