@@ -11,10 +11,23 @@ FLARE_CAPA_VERSION="9.4.0"
 
 install_pipx_tool() {
     local name="$1" spec="$2"
-    if pipx list --short 2>/dev/null | grep -q "^${name} "; then
-        log "${name} is already installed via pipx."
+    local installed_version
+    installed_version="$(pipx list --short 2>/dev/null | awk -v n="$name" '$1 == n {print $2}')"
+
+    if [ -n "$installed_version" ]; then
+        # Pull the pinned version (if any) out of specs like
+        # "flare-capa[ghidra]==9.4.0"; specs with no "==" (e.g. "apkleaks")
+        # are left unpinned and any installed version is accepted.
+        local desired_version="${spec##*==}"
+        if [ "$desired_version" = "$spec" ] || [ "$installed_version" = "$desired_version" ]; then
+            log "${name} is already installed via pipx (${installed_version})."
+            return 0
+        fi
+        log "${name} ${installed_version} installed via pipx, but ${spec} is pinned. Reinstalling..."
+        pipx install --force "$spec"
         return 0
     fi
+
     log "Installing ${spec} via pipx..."
     pipx install "$spec"
 }
