@@ -5,20 +5,18 @@ source "$(dirname "$0")/lib.sh"
 # Installs the pipx/npm-based tools that used to come from mise/rev.profile.
 
 SEMGREP_VERSION="1.76.0"
-FLARE_CAPA_VERSION="8.0.1"
+# 9.4.0 is the pinned floor for the "ghidra" extra (needs flare-capa's
+# PyGhidra backend, added after 8.0.1 -- see mandiant/capa#2600).
+FLARE_CAPA_VERSION="9.4.0"
 
 install_pipx_tool() {
-    local name="$1" version="$2"
+    local name="$1" spec="$2"
     if pipx list --short 2>/dev/null | grep -q "^${name} "; then
         log "${name} is already installed via pipx."
         return 0
     fi
-    log "Installing ${name}==${version} via pipx..."
-    if [ -n "$version" ]; then
-        pipx install "${name}==${version}"
-    else
-        pipx install "$name"
-    fi
+    log "Installing ${spec} via pipx..."
+    pipx install "$spec"
 }
 
 install_cdxgen() {
@@ -39,9 +37,11 @@ install_rev_pipx_tools() {
         error "pipx not found. Ensure scripts/install_base_deps.sh ran first."
     fi
 
-    install_pipx_tool "semgrep" "$SEMGREP_VERSION"
-    install_pipx_tool "flare-capa" "$FLARE_CAPA_VERSION"
-    install_pipx_tool "apkleaks" ""
+    install_pipx_tool "semgrep" "semgrep==${SEMGREP_VERSION}"
+    # [ghidra] extra pulls in pyghidra, capa's Ghidra analysis backend;
+    # GHIDRA_INSTALL_DIR is set up by install_ghidra.sh.
+    install_pipx_tool "flare-capa" "flare-capa[ghidra]==${FLARE_CAPA_VERSION}"
+    install_pipx_tool "apkleaks" "apkleaks"
     install_cdxgen
 }
 

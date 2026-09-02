@@ -30,8 +30,9 @@ install_joern() {
     download_and_verify "$JOERN_URL" "$installer_path" "$JOERN_SHA256"
 
     chmod +x "$installer_path"
-    # Joern's script uses sudo internally if not run as root, so this is safe.
-    "$installer_path" --non-interactive
+    # The script is non-interactive by default; --version pins the release
+    # (otherwise it silently falls back to downloading the latest release).
+    "$installer_path" --version="${JOERN_VERSION}"
     log "Joern installed successfully."
 }
 
