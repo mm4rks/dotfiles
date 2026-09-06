@@ -20,7 +20,7 @@ require("default.hypr.toggles")
 
 -- --- Workspace & Window Rules ---
 o.window("^(main-terminal)$", { workspace = "1" })
-o.window("^(org\\.mozilla\\.Thunderbird)$", { workspace = "2 silent" })
+o.window("^(org\\.mozilla\\.Thunderbird)$", { workspace = "3 silent" })
 o.window("^(anki)$", { workspace = "3", size = "60% 60%" })
 o.window("^(spotify)$", { workspace = "5 silent" })
 o.window("^(discord)$", { workspace = "5 silent" })

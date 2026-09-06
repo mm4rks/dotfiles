@@ -62,7 +62,7 @@ o.bind("SUPER + SHIFT + Y", "YouTube", 'omarchy-launch-webapp "https://youtube.c
 
 -- Overwrite existing bindings
 hl.unbind("SUPER + O")
-o.bind("SUPER + O", "Obsidian", 'omarchy-launch-or-focus "^obsidian$" "uwsm-app -- obsidian"')
+o.bind("SUPER + O", "Obsidian", 'omarchy-launch-or-focus "obsidian" "uwsm-app -- obsidian"')
 
 hl.unbind("SUPER + E")
 o.bind("SUPER + E", "Apps menu", "omarchy-menu toggle apps")

@@ -238,3 +238,57 @@ function audit_npm() {
     echo -e "\n\033[1;31m=== Audit Complete ===\033[0m"
 } # Description: Audit all recursive NPM dependencies for supply chain incident response. Usage: audit_npm [--all]
 
+
+function compress() {
+    if [[ -z "$1" ]]; then
+        echo "Usage: compress <file/dir>"
+        return 1
+    fi
+    local target="$1"
+    target="${target%/}"
+    tar -czvf "${target}.tar.gz" "$target"
+} # Description: Create a .tar.gz archive from a file or directory.
+
+function decompress() {
+    if [[ -z "$1" ]]; then
+        echo "Usage: decompress <file.tar.gz>"
+        return 1
+    fi
+    tar -xzvf "$1"
+} # Description: Expand a .tar.gz archive.
+
+function tdl() {
+    local ai_agent="${1:-c}"
+    
+    # Check if we are inside a tmux session
+    if [[ -n "$TMUX" ]]; then
+        echo "[-] You are already inside a Tmux session."
+        return 1
+    fi
+    
+    # Start a new tmux session named 'dev_layout' in detached mode
+    tmux new-session -d -s dev_layout 2>/dev/null || true
+    
+    # Send editor command to first pane
+    tmux send-keys -t dev_layout:0.0 "${EDITOR:-nvim} ." C-m
+    
+    # Split horizontally (right pane)
+    tmux split-window -h -t dev_layout:0
+    
+    # Run the AI agent in the right pane
+    if [[ "$ai_agent" == "c" ]]; then
+        tmux send-keys -t dev_layout:0.1 "opencode" C-m
+    elif [[ "$ai_agent" == "cx" ]]; then
+        tmux send-keys -t dev_layout:0.1 "claude" C-m
+    elif [[ "$ai_agent" == "agy" ]]; then
+        tmux send-keys -t dev_layout:0.1 "agy" C-m
+    else
+        tmux send-keys -t dev_layout:0.1 "$ai_agent" C-m
+    fi
+    
+    # Split the right pane vertically for a standard terminal
+    tmux split-window -v -t dev_layout:0.1
+    
+    # Attach to the session
+    tmux attach-session -t dev_layout
+} # Description: Tmux Dev Layout with editor, AI agent, and terminal.
