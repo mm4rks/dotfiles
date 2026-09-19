@@ -270,24 +270,24 @@ function tdl() {
     tmux new-session -d -s dev_layout 2>/dev/null || true
     
     # Send editor command to first pane
-    tmux send-keys -t dev_layout:0.0 "${EDITOR:-nvim} ." C-m
+    tmux send-keys -t dev_layout "${EDITOR:-nvim} ." C-m
     
     # Split horizontally (right pane)
-    tmux split-window -h -t dev_layout:0
+    local ai_pane=$(tmux split-window -h -t dev_layout -P -F '#{pane_id}')
     
     # Run the AI agent in the right pane
     if [[ "$ai_agent" == "c" ]]; then
-        tmux send-keys -t dev_layout:0.1 "opencode" C-m
+        tmux send-keys -t "$ai_pane" "opencode" C-m
     elif [[ "$ai_agent" == "cx" ]]; then
-        tmux send-keys -t dev_layout:0.1 "claude" C-m
+        tmux send-keys -t "$ai_pane" "claude" C-m
     elif [[ "$ai_agent" == "agy" ]]; then
-        tmux send-keys -t dev_layout:0.1 "agy" C-m
+        tmux send-keys -t "$ai_pane" "agy" C-m
     else
-        tmux send-keys -t dev_layout:0.1 "$ai_agent" C-m
+        tmux send-keys -t "$ai_pane" "$ai_agent" C-m
     fi
     
     # Split the right pane vertically for a standard terminal
-    tmux split-window -v -t dev_layout:0.1
+    tmux split-window -v -t "$ai_pane"
     
     # Attach to the session
     tmux attach-session -t dev_layout

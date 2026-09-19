@@ -11,7 +11,7 @@ o.bind("SUPER + RETURN", "Terminal", 'uwsm-app -- xdg-terminal-exec --dir="$(oma
 hl.unbind("SUPER + SHIFT + RETURN")
 o.bind("SUPER + SHIFT + RETURN", "Browser", "omarchy-launch-browser")
 
-o.bind("SUPER + Q", "Main Terminal", "omarchy-launch-or-focus 'main-terminal' \"alacritty --class 'main-terminal' -e tmux new-session -A -s main\"")
+o.bind("SUPER + Q", "Main Terminal", "omarchy-launch-or-focus 'main-terminal' \"foot --app-id 'main-terminal' tmux new-session -A -s main\"")
 
 hl.unbind("SUPER + SHIFT + F")
 o.bind("SUPER + SHIFT + F", "File manager", "uwsm-app -- nautilus --new-window")
@@ -63,6 +63,9 @@ o.bind("SUPER + SHIFT + Y", "YouTube", 'omarchy-launch-webapp "https://youtube.c
 -- Overwrite existing bindings
 hl.unbind("SUPER + O")
 o.bind("SUPER + O", "Obsidian", 'omarchy-launch-or-focus "obsidian" "uwsm-app -- obsidian"')
+
+hl.unbind("SUPER + SHIFT + O")
+o.bind("SUPER + SHIFT + O", "Pop window out", "omarchy-hyprland-window-pop")
 
 hl.unbind("SUPER + E")
 o.bind("SUPER + E", "Apps menu", "omarchy-menu toggle apps")
