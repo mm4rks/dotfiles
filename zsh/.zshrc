@@ -46,7 +46,12 @@ autoload -Uz compinit       # Autoload the completion initialization utility.
 # Use a dynamic cache location
 _zsh_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
 mkdir -p "$_zsh_cache_dir"
-compinit -d "$_zsh_cache_dir/zcompdump" 
+# Only regenerate zcompdump once a day
+if [[ -n $(find "$_zsh_cache_dir/zcompdump" -mtime +1 2>/dev/null) || ! -f "$_zsh_cache_dir/zcompdump" ]]; then
+    compinit -d "$_zsh_cache_dir/zcompdump"
+else
+    compinit -C -d "$_zsh_cache_dir/zcompdump"
+fi 
 zstyle ':completion:*' completer _expand _complete _ignored _approximate _files
 zstyle ':completion:*' matcher-list '' 'm:{[:lower:]}={[:upper:]}' 'r:|[._-]=* r:|=*'
 zstyle ':completion:*' max-errors 2 # Allow up to 2 errors for fuzzy matching.
@@ -108,11 +113,20 @@ source "${ZDOTDIR:-$HOME}/.zsh_plugins.sh"
 source_if_exists /etc/zsh_command_not_found
 
 if command -v fzf &> /dev/null; then
-    source <(fzf --zsh)
+    _fzf_cache="$_zsh_cache_dir/fzf_init.zsh"
+    if [[ ! -f "$_fzf_cache" ]]; then
+        fzf --zsh > "$_fzf_cache"
+    fi
+    source "$_fzf_cache"
 fi
 
+# Cache zoxide init
 if command -v zoxide &> /dev/null; then
-    eval "$(zoxide init zsh)"
+    _zoxide_cache="$_zsh_cache_dir/zoxide_init.zsh"
+    if [[ ! -f "$_zoxide_cache" ]]; then
+        zoxide init zsh > "$_zoxide_cache"
+    fi
+    source "$_zoxide_cache"
 fi
 
 # Register widgets from .zsh_functions.sh
@@ -134,7 +148,11 @@ ZLE_CURSOR_BLINK=0
 precmd_functions+=(_fix_cursor)
 
 if command -v starship &> /dev/null; then
-    eval "$(starship init zsh)"
+    _starship_cache="$_zsh_cache_dir/starship_init.zsh"
+    if [[ ! -f "$_starship_cache" ]]; then
+        starship init zsh > "$_starship_cache"
+    fi
+    source "$_starship_cache"
 fi
 
 # Android SDK

@@ -21,18 +21,20 @@ main() {
     fi
 
     log "Pulling Trivy image ${TRIVY_IMAGE}..."
-    docker pull "$TRIVY_IMAGE"
+    sudo docker pull "$TRIVY_IMAGE"
 
     log "Warming Trivy vulnerability databases..."
     mkdir -p "$CACHE_DIR"
-    docker run --rm \
+    sudo docker run --rm \
         -v "${CACHE_DIR}:/root/.cache/trivy" \
         "$TRIVY_IMAGE" \
         image --download-db-only
-    docker run --rm \
+    sudo docker run --rm \
         -v "${CACHE_DIR}:/root/.cache/trivy" \
         "$TRIVY_IMAGE" \
         image --download-java-db-only
+
+    sudo chown -R "$(id -u):$(id -g)" "$CACHE_DIR"
 
     log "Installing Trivy wrapper to ${WRAPPER}..."
     mkdir -p "$(dirname "$WRAPPER")"

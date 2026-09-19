@@ -27,7 +27,9 @@ log "Profiles selected:${PROFILES:- default}"
 log "--- Phase 1: System Base (Elevated) ---"
 sudo "${REPO_DIR}/scripts/install_base_deps.sh"
 sudo "${REPO_DIR}/scripts/install_docker.sh"
-sudo "${REPO_DIR}/scripts/install_nerd_font.sh"
+if [[ "$PROFILES" != *" headless "* ]]; then
+    sudo "${REPO_DIR}/scripts/install_nerd_font.sh"
+fi
 
 # Fix permissions on ~/.local if it was created by root processes
 sudo chown -R "$(whoami)":"$(whoami)" "$HOME/.local" 2>/dev/null || true
