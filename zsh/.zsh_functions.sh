@@ -196,13 +196,30 @@ function audit_npm() {
     echo -e "\n\033[1;32m[+] Auditing Global NPM Packages:\033[0m"
     npm list -g --all --depth=20 2>/dev/null || echo "    (No global packages found or npm error)"
 
-    # 2. Deep Search
+    # 2. Mise
+    local MISE_NPM_ROOT="$HOME/.local/share/mise/installs/npm"
+    if [[ -d "$MISE_NPM_ROOT" ]]; then
+        echo -e "\n\033[1;34m[+] Auditing Mise Managed NPM Packages ($MISE_NPM_ROOT):\033[0m"
+        find "$MISE_NPM_ROOT" -maxdepth 2 -type d -name "node_modules" 2>/dev/null | while read -r nm_path; do
+            local pkg_dir=$(dirname "$nm_path")
+            local lock_info=""
+            [[ -f "$pkg_dir/package-lock.json" ]] && lock_info+="\033[0;32m[NPM-Lock]\033[0m "
+            [[ -f "$pkg_dir/yarn.lock" ]] && lock_info+="\033[0;32m[Yarn-Lock]\033[0m "
+            [[ -f "$pkg_dir/pnpm-lock.yaml" ]] && lock_info+="\033[0;32m[PNPM-Lock]\033[0m "
+            
+            echo -e "    Location: $pkg_dir ${lock_info:-\033[1;31m[!] NO LOCK FILE\033[0m}"
+            (cd "$pkg_dir" && npm list --all --depth=10 2>/dev/null | sed 's/^/      /')
+        done
+    fi
+
+    # 3. Deep Search
     if [[ "$SEARCH_ALL" == "--all" ]]; then
         echo -e "\n\033[1;33m[!] Deep Scan: Searching for all 'node_modules' in \$HOME...\033[0m"
         find "$HOME" -name "node_modules" -type d -prune 2>/dev/null | while read -r nm_path; do
             # Skip paths already covered
             [[ "$nm_path" == "/usr/local/lib"* ]] && continue
-
+            [[ "$nm_path" == "$MISE_NPM_ROOT"* ]] && continue
+            
             local pkg_dir=$(dirname "$nm_path")
             local lock_info=""
             [[ -f "$pkg_dir/package-lock.json" ]] && lock_info+="\033[0;32m[NPM-Lock]\033[0m "
@@ -221,3 +238,57 @@ function audit_npm() {
     echo -e "\n\033[1;31m=== Audit Complete ===\033[0m"
 } # Description: Audit all recursive NPM dependencies for supply chain incident response. Usage: audit_npm [--all]
 
+
+function compress() {
+    if [[ -z "$1" ]]; then
+        echo "Usage: compress <file/dir>"
+        return 1
+    fi
+    local target="$1"
+    target="${target%/}"
+    tar -czvf "${target}.tar.gz" "$target"
+} # Description: Create a .tar.gz archive from a file or directory.
+
+function decompress() {
+    if [[ -z "$1" ]]; then
+        echo "Usage: decompress <file.tar.gz>"
+        return 1
+    fi
+    tar -xzvf "$1"
+} # Description: Expand a .tar.gz archive.
+
+function tdl() {
+    local ai_agent="${1:-c}"
+    
+    # Check if we are inside a tmux session
+    if [[ -n "$TMUX" ]]; then
+        echo "[-] You are already inside a Tmux session."
+        return 1
+    fi
+    
+    # Start a new tmux session named 'dev_layout' in detached mode
+    tmux new-session -d -s dev_layout 2>/dev/null || true
+    
+    # Send editor command to first pane
+    tmux send-keys -t dev_layout "${EDITOR:-nvim} ." C-m
+    
+    # Split horizontally (right pane)
+    local ai_pane=$(tmux split-window -h -t dev_layout -P -F '#{pane_id}')
+    
+    # Run the AI agent in the right pane
+    if [[ "$ai_agent" == "c" ]]; then
+        tmux send-keys -t "$ai_pane" "opencode" C-m
+    elif [[ "$ai_agent" == "cx" ]]; then
+        tmux send-keys -t "$ai_pane" "claude" C-m
+    elif [[ "$ai_agent" == "agy" ]]; then
+        tmux send-keys -t "$ai_pane" "agy" C-m
+    else
+        tmux send-keys -t "$ai_pane" "$ai_agent" C-m
+    fi
+    
+    # Split the right pane vertically for a standard terminal
+    tmux split-window -v -t "$ai_pane"
+    
+    # Attach to the session
+    tmux attach-session -t dev_layout
+} # Description: Tmux Dev Layout with editor, AI agent, and terminal.
