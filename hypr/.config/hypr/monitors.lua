@@ -8,21 +8,24 @@ hl.env("GDK_SCALE", tostring(omarchy_gdk_scale))
 hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto", scale = 2 })
 
 -- External ultrawide displays (Docked profiles)
--- Using 'preferred' allows Omarchy's native 'modeless' recovery daemon to detect
--- missing EDIDs on cold boot (width=0). Hardcoding the resolution blinds the daemon.
-hl.monitor({ output = "DP-3", mode = "preferred", position = "auto", scale = 1 })
-hl.monitor({ output = "DP-5", mode = "preferred", position = "auto", scale = 1 })
-hl.monitor({ output = "HDMI-A-1", mode = "preferred", position = "auto", scale = 1 })
+-- Using 'highres' allows a lower resolution fallback to pass initial GPU bandwidth
+-- checks alongside the 4K internal screen, preventing a permanent DRM modeset crash.
+hl.monitor({ output = "DP-3", mode = "highres", position = "auto", scale = 1 })
+hl.monitor({ output = "DP-5", mode = "highres", position = "auto", scale = 1 })
+hl.monitor({ output = "HDMI-A-1", mode = "highres", position = "auto", scale = 1 })
 
 -- Fallback rule for any other hotplugged external display
-hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
+hl.monitor({ output = "", mode = "highres", position = "auto", scale = 1 })
 
 -- Automatically disable internal monitor when any external monitor is added,
 -- mimicking kanshi's behavior but using Omarchy's native toggles so it doesn't fight clamshell.
 hl.on("monitor.added", function()
   hl.exec_cmd("omarchy-hyprland-monitor-internal off")
+  -- The initial modeset likely failed due to Intel GPU bandwidth limits (trying to drive 4K + Ultrawide).
+  -- Now that eDP-1 is off, force a modeset retry for the external monitors.
+  hl.exec_cmd("sleep 1 && wlr-randr --output DP-3 --mode 3440x1440 && wlr-randr --output DP-5 --mode 3440x1440 && wlr-randr --output HDMI-A-1 --mode 3440x1440")
 end)
 
 hl.on("monitor.removed", function()
-  -- Let the clamshell watcher re-enable the screen dynamically
+  hl.exec_cmd("omarchy-hyprland-monitor-internal recover")
 end)
