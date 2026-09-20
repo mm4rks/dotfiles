@@ -27,5 +27,8 @@ hl.on("monitor.added", function()
 end)
 
 hl.on("monitor.removed", function()
+  -- NOTE: If the laptop screen stays black upon unplugging, Omarchy's system script
+  -- might have been overwritten during an update. The script must ignore 'FALLBACK':
+  -- sudo sed -i 's/\^(eDP|LVDS|DSI)-/\^(eDP|LVDS|DSI)-|^FALLBACK/' /usr/bin/omarchy-hyprland-monitor-external-active
   hl.exec_cmd("omarchy-hyprland-monitor-internal recover")
 end)
