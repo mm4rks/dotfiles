@@ -6,7 +6,7 @@ hl.env("GDK_SCALE", tostring(omarchy_gdk_scale))
 
 -- Laptop internal display
 -- If booting with lid closed, disable immediately to prevent initial bandwidth crash with external displays
-if os.execute("omarchy-hw-clamshell") == 0 then
+if os.execute("omarchy-hw-clamshell >/dev/null 2>&1") then
   hl.monitor({ output = "eDP-1", disabled = true })
 else
   hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto", scale = 2 })
