@@ -6,7 +6,8 @@ hl.env("GDK_SCALE", tostring(omarchy_gdk_scale))
 
 -- Laptop internal display
 -- If booting with lid closed, disable immediately to prevent initial bandwidth crash with external displays
-if os.execute("omarchy-hw-clamshell >/dev/null 2>&1") then
+local clamshell_status = os.execute("/usr/bin/omarchy-hw-clamshell >/dev/null 2>&1")
+if clamshell_status == 0 or clamshell_status == true then
   hl.monitor({ output = "eDP-1", disabled = true })
 else
   hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto", scale = 2 })
@@ -28,7 +29,7 @@ hl.on("monitor.added", function()
   hl.exec_cmd("omarchy-hyprland-monitor-internal off")
   -- The initial modeset likely failed due to Intel GPU bandwidth limits (trying to drive 4K + Ultrawide).
   -- Now that eDP-1 is off, force a modeset retry for the external monitors.
-  hl.exec_cmd("sleep 1 && wlr-randr --output DP-3 --mode 3440x1440 && wlr-randr --output DP-5 --mode 3440x1440 && wlr-randr --output HDMI-A-1 --mode 3440x1440")
+  hl.exec_cmd("sleep 1 && ( wlr-randr --output DP-3 --mode 3440x1440 || true; wlr-randr --output DP-5 --mode 3440x1440 || true; wlr-randr --output HDMI-A-1 --mode 3440x1440 || true )")
 end)
 
 hl.on("monitor.removed", function()
