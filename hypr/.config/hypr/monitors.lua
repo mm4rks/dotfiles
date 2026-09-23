@@ -4,20 +4,23 @@
 local omarchy_gdk_scale = 2
 hl.env("GDK_SCALE", tostring(omarchy_gdk_scale))
 
--- Laptop internal display (safe default)
--- We explicitly want eDP-1 enabled at boot so that the initial DRM modeset
--- forces external monitors to fallback to a lower resolution, avoiding a GPU crash.
-hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto", scale = 2 })
+-- Laptop internal display
+-- If booting with lid closed, disable immediately to prevent initial bandwidth crash with external displays
+local clamshell_status = os.execute("/usr/bin/omarchy-hw-clamshell >/dev/null 2>&1")
+if clamshell_status == 0 or clamshell_status == true then
+  hl.monitor({ output = "eDP-1", disabled = true })
+else
+  hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto", scale = 2 })
+end
 
 -- External ultrawide displays (Docked profiles)
--- Using 'highres' allows a lower resolution fallback to pass initial GPU bandwidth
--- checks alongside the 4K internal screen, preventing a permanent DRM modeset crash.
-hl.monitor({ output = "DP-3", mode = "highres", position = "auto", scale = 1 })
-hl.monitor({ output = "DP-5", mode = "highres", position = "auto", scale = 1 })
-hl.monitor({ output = "HDMI-A-1", mode = "highres", position = "auto", scale = 1 })
+-- Using 'preferred' instead of 'highres' to avoid 100Hz modeset failures that cause a black screen on boot.
+hl.monitor({ output = "DP-3", mode = "preferred", position = "auto", scale = 1 })
+hl.monitor({ output = "DP-5", mode = "preferred", position = "auto", scale = 1 })
+hl.monitor({ output = "HDMI-A-1", mode = "preferred", position = "auto", scale = 1 })
 
 -- Fallback rule for any other hotplugged external display
-hl.monitor({ output = "", mode = "highres", position = "auto", scale = 1 })
+hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
 
 -- Automatically disable internal monitor when any external monitor is added,
 -- mimicking kanshi's behavior but using Omarchy's native toggles so it doesn't fight clamshell.
