@@ -8,10 +8,13 @@ stow_dotfiles() {
     
     log "Stowing dotfiles..."
     
-    if [ -f "$HOME/.zshrc" ] && [ ! -L "$HOME/.zshrc" ]; then
-        warn "Backing up existing .zshrc to .zshrc.bak..."
-        mv "$HOME/.zshrc" "$HOME/.zshrc.bak"
-    fi
+    local rc
+    for rc in .zshrc .zshenv; do
+        if [ -f "$HOME/$rc" ] && [ ! -L "$HOME/$rc" ]; then
+            warn "Backing up existing $rc to $rc.bak..."
+            mv "$HOME/$rc" "$HOME/$rc.bak"
+        fi
+    done
 
     local CORE_PACKAGES=(zsh tmux eza git vivid nvim voxtype starship)
     for pkg in "${CORE_PACKAGES[@]}"; do

@@ -2,7 +2,7 @@ add_newline = true
 command_timeout = 200
 palette = "catppuccin_mocha"
 format = """
-$hostname$directory$git_branch$git_status$python
+$hostname$directory$git_branch$git_status
 $character"""
 
 [character]

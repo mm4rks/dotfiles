@@ -16,16 +16,16 @@ elif command -v batcat &> /dev/null; then
     export MANROFFOPT="-c"
 fi
 
+# vivid output only depends on the theme; generate once and reuse.
 VIVID_CACHE="$HOME/.config/vivid_colors"
-
-if command -v vivid >/dev/null 2>&1; then
-    export LS_COLORS="$(vivid generate catppuccin-mocha)"
-elif [ -f "$VIVID_CACHE" ]; then
-    export LS_COLORS="$(cat "$VIVID_CACHE")"
+if [[ ! -s $VIVID_CACHE ]] && (( $+commands[vivid] )); then
+    vivid generate catppuccin-mocha >| "$VIVID_CACHE"
 fi
+[[ -s $VIVID_CACHE ]] && export LS_COLORS="$(<"$VIVID_CACHE")"
 
-if [ -z "${JAVA_HOME:-}" ] && [ -d /usr/lib/jvm ]; then
-    _java_home="$(find /usr/lib/jvm -maxdepth 1 -type d -name 'java-*' 2>/dev/null | sort -V | tail -n1)"
-    [ -n "$_java_home" ] && export JAVA_HOME="$_java_home"
+# Newest /usr/lib/jvm/java-* directory (numeric sort, symlinks excluded).
+if [[ -z ${JAVA_HOME:-} ]]; then
+    _java_home=(/usr/lib/jvm/java-*(N/n[-1]))
+    (( $#_java_home )) && export JAVA_HOME="$_java_home[1]"
     unset _java_home
 fi

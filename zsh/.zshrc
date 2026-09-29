@@ -1,5 +1,6 @@
 
 # --- General Shell Options ----------------------------------------------------
+typeset -U path fpath       # Deduplicate PATH/fpath (nested shells re-prepend entries).
 setopt interactivecomments  # Allow comments in the interactive shell.
 setopt promptsubst          # Enable command substitution in the prompt.
 setopt magicequalsubst      # Enable filename expansion for args like 'anything=expression'.
@@ -45,13 +46,17 @@ fi
 autoload -Uz compinit       # Autoload the completion initialization utility.
 # Use a dynamic cache location
 _zsh_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
-mkdir -p "$_zsh_cache_dir"
-# Only regenerate zcompdump once a day
-if [[ -n $(find "$_zsh_cache_dir/zcompdump" -mtime +1 2>/dev/null) || ! -f "$_zsh_cache_dir/zcompdump" ]]; then
-    compinit -d "$_zsh_cache_dir/zcompdump"
+[[ -d $_zsh_cache_dir ]] || mkdir -p "$_zsh_cache_dir"
+# Only regenerate zcompdump once a day. compinit leaves an unchanged dump
+# untouched, so touch it explicitly or the full check would run every time.
+_zcompdump="$_zsh_cache_dir/zcompdump"
+if [[ ! -f $_zcompdump || -n $_zcompdump(#qN.mh+24) ]]; then
+    compinit -d "$_zcompdump"
+    touch "$_zcompdump"
 else
-    compinit -C -d "$_zsh_cache_dir/zcompdump"
-fi 
+    compinit -C -d "$_zcompdump"
+fi
+unset _zcompdump
 zstyle ':completion:*' completer _expand _complete _ignored _approximate _files
 zstyle ':completion:*' matcher-list '' 'm:{[:lower:]}={[:upper:]}' 'r:|[._-]=* r:|=*'
 zstyle ':completion:*' max-errors 2 # Allow up to 2 errors for fuzzy matching.
@@ -112,22 +117,22 @@ source "${ZDOTDIR:-$HOME}/.zsh_plugins.sh"
 # Load additional shell components if they exist
 source_if_exists /etc/zsh_command_not_found
 
-if command -v fzf &> /dev/null; then
-    _fzf_cache="$_zsh_cache_dir/fzf_init.zsh"
-    if [[ ! -f "$_fzf_cache" ]]; then
-        fzf --zsh > "$_fzf_cache"
+# Generate a tool's shell init into a cache file and set REPLY to its path.
+# Regenerated when the binary is newer than the cache (e.g. after a version
+# bump), since the output is version-specific and embeds the binary's path.
+# Sourcing is left to the caller so the script runs at top-level scope.
+# Usage: _cached_init <tool> <init args...> && source "$REPLY"
+_cached_init() {
+    local tool="$1"; shift
+    (( $+commands[$tool] )) || return 1
+    REPLY="$_zsh_cache_dir/${tool}_init.zsh"
+    if [[ ! -s $REPLY || $commands[$tool] -nt $REPLY ]]; then
+        "$tool" "$@" >| "$REPLY"
     fi
-    source "$_fzf_cache"
-fi
+}
 
-# Cache zoxide init
-if command -v zoxide &> /dev/null; then
-    _zoxide_cache="$_zsh_cache_dir/zoxide_init.zsh"
-    if [[ ! -f "$_zoxide_cache" ]]; then
-        zoxide init zsh > "$_zoxide_cache"
-    fi
-    source "$_zoxide_cache"
-fi
+_cached_init fzf --zsh && source "$REPLY"
+_cached_init zoxide init zsh && source "$REPLY"
 
 # Register widgets from .zsh_functions.sh
 zle -N tmux_smart_detach
@@ -147,13 +152,9 @@ ZLE_CURSOR_BLINK=0
 
 precmd_functions+=(_fix_cursor)
 
-if command -v starship &> /dev/null; then
-    _starship_cache="$_zsh_cache_dir/starship_init.zsh"
-    if [[ ! -f "$_starship_cache" ]]; then
-        starship init zsh > "$_starship_cache"
-    fi
-    source "$_starship_cache"
-fi
+# starship init sets RPROMPT too, spawning a second starship on every prompt.
+# There is no right_format in starship.toml, so drop it.
+_cached_init starship init zsh && source "$REPLY" && unset RPROMPT
 
 # Android SDK
 export ANDROID_SDK_ROOT="$HOME/android-sdk"
@@ -163,3 +164,6 @@ export PATH="$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/
 
 # Added by Antigravity CLI installer
 export PATH="/home/user/.local/bin:$PATH"
+
+# Re-apply typeset -U (assignments via `export PATH=` bypass it)
+path=($path)
