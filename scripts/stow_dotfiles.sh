@@ -16,7 +16,7 @@ stow_dotfiles() {
         fi
     done
 
-    local CORE_PACKAGES=(zsh tmux eza git vivid nvim voxtype starship)
+    local CORE_PACKAGES=(zsh tmux eza git vivid nvim voxtype)
     for pkg in "${CORE_PACKAGES[@]}"; do
         if [ -d "${REPO_DIR}/${pkg}" ]; then
             log "Stowing '${pkg}'..."

@@ -152,9 +152,21 @@ ZLE_CURSOR_BLINK=0
 
 precmd_functions+=(_fix_cursor)
 
-# starship init sets RPROMPT too, spawning a second starship on every prompt.
-# There is no right_format in starship.toml, so drop it.
-_cached_init starship init zsh && source "$REPLY" && unset RPROMPT
+# Native prompt (catppuccin mocha), replacing starship.
+# Built only from prompt escapes and parameter expansion, so drawing it never
+# forks: process startup is expensive on work boxes.
+_prompt_segments() {
+    _prompt_venv=''
+    [[ -n ${VIRTUAL_ENV:-} ]] && _prompt_venv="%F{#f9e2af}(${${VIRTUAL_ENV:t}//\%/%%})%f "
+    _prompt_ro=''
+    [[ -w $PWD ]] || _prompt_ro='%F{red}🔒%f'
+}
+precmd_functions+=(_prompt_segments)
+
+# hostname, venv, last two path components (…/ when truncated), then the
+# status character on its own line.
+PROMPT=$'\n''%B%F{#fab387}%m%f%b ${_prompt_venv}%B%F{cyan}%(3~|…/%2~|%~)%f%b${_prompt_ro} '$'\n''%(?.%B%F{#89dceb}❯.%B%F{#f38ba8}✗)%f%b '
+PROMPT2='%F{8}∙%f '
 
 # Android SDK
 export ANDROID_SDK_ROOT="$HOME/android-sdk"

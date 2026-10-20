@@ -30,5 +30,5 @@ if [[ -z ${JAVA_HOME:-} ]]; then
     unset _java_home
 fi
 
-# Starship renders the active venv; stop activate from prefixing PS1 too.
+# The prompt renders the active venv; stop activate from prefixing PS1 too.
 export VIRTUAL_ENV_DISABLE_PROMPT=1

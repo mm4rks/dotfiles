@@ -130,7 +130,7 @@ Setup profiles passed as arguments to `setup.sh` (e.g. `./setup.sh pwn rev`):
 - **rev:** Joern, Ghidra, jadx, apktool, trivy, dependency-check, semgrep, flare-capa, apkleaks, cdxgen.
 - **ssh:** SSH hardening via `scripts/harden_ssh.sh`.
 
-Terminal tools (neovim, starship, zoxide, fzf, ripgrep, bat, eza, delta, fd, shellcheck, choose, node) are installed by `scripts/install_terminal_tools.sh` as pinned-version binaries — no `mise` on this branch.
+Terminal tools (neovim, zoxide, fzf, ripgrep, bat, eza, delta, fd, shellcheck, choose, node) are installed by `scripts/install_terminal_tools.sh` as pinned-version binaries — no `mise` on this branch.
 
 ### 3.2. Critical Variables
 - `ZDOTDIR`: Redirects Zsh configuration to `zsh/` within the repo.

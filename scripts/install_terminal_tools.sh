@@ -13,10 +13,6 @@ NEOVIM_VERSION="0.12.5"
 NEOVIM_URL="https://github.com/neovim/neovim/releases/download/v${NEOVIM_VERSION}/nvim-linux-x86_64.tar.gz"
 NEOVIM_SHA256="bce0f56eda1f1b1db6eee8f4133d7a38813ea07933837dd1777411ca384c6875"
 
-STARSHIP_VERSION="1.26.0"
-STARSHIP_URL="https://github.com/starship/starship/releases/download/v${STARSHIP_VERSION}/starship-x86_64-unknown-linux-gnu.tar.gz"
-STARSHIP_SHA256="321f0dd7af8340a5f2e6a8fec6538a04f617486f9ec70d878f91c09cd8deef22"
-
 ZOXIDE_VERSION="0.10.0"
 ZOXIDE_URL="https://github.com/ajeetdsouza/zoxide/releases/download/v${ZOXIDE_VERSION}/zoxide-${ZOXIDE_VERSION}-x86_64-unknown-linux-musl.tar.gz"
 ZOXIDE_SHA256="2d93385b99f3e82cf2701609a1bffcad863fbeb75aa3fe7eb6be4d29be68b1ae"
@@ -112,18 +108,6 @@ install_neovim() {
     local archive; archive="$(mktemp)"
     download_and_verify "$NEOVIM_URL" "$archive" "$NEOVIM_SHA256"
     install_tree_from_tar "$archive" "nvim"
-    rm -f "$archive"
-}
-
-install_starship() {
-    if command_exists starship; then
-        log "Starship is already installed."
-        return 0
-    fi
-    log "Installing Starship ${STARSHIP_VERSION}..."
-    local archive; archive="$(mktemp)"
-    download_and_verify "$STARSHIP_URL" "$archive" "$STARSHIP_SHA256"
-    install_binary_from_tar "$archive" "starship"
     rm -f "$archive"
 }
 
@@ -250,7 +234,6 @@ install_terminal_tools() {
     mkdir -p "$INSTALL_DIR"
 
     install_neovim
-    install_starship
     install_zoxide
     install_fzf
     install_ripgrep

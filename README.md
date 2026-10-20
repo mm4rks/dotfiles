@@ -2,7 +2,7 @@
 
 Automated development environment setup for Debian and Arch-based distributions.
 
-Lightweight variant of the `main` branch for work boxes: terminal tools (shell, tmux, nvim, starship, etc.) with no Wayland/Hyprland desktop and no `mise` — see `CLAUDE.md` for details.
+Lightweight variant of the `main` branch for work boxes: terminal tools (shell, tmux, nvim, etc.) with no Wayland/Hyprland desktop and no `mise` — see `CLAUDE.md` for details.
 
 ## Quick Start
 
