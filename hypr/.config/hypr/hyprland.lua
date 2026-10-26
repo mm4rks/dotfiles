@@ -35,8 +35,3 @@ hl.config({
     render_unfocused_fps = 60,
   },
 })
-
--- --- GPU & DRM Environment Variables ---
-hl.env("NVD_BACKEND", "direct")
-hl.env("LIBVA_DRIVER_NAME", "nvidia")
-hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
