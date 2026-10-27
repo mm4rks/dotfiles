@@ -1,11 +1,15 @@
 return {
     {
         "nvim-treesitter/nvim-treesitter",
+        -- master is frozen upstream (the rewrite lives on 'main' with a
+        -- different API); the commit is pinned in lazy-lock.json.
         branch = 'master',
         lazy = false, -- Explicitly set to false
         build = ":TSUpdate",
         config = function()
-            require'nvim-treesitter'.setup {
+            -- master's options live in nvim-treesitter.configs; nvim-treesitter.setup()
+            -- takes no arguments and silently ignored this table.
+            require'nvim-treesitter.configs'.setup {
                 ensure_installed = { "vimdoc", "c", "lua", "python", "bash", "javascript", "typescript", "tsx" },
                 sync_install = false,
 

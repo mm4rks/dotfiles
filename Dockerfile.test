@@ -1,6 +1,12 @@
-# Dockerfile for testing the dotfiles setup script across different distributions.
+# Dockerfile for testing the dotfiles setup scripts across distributions.
+#
+# The standard stages run the setup.sh 'persistent' steps one script per layer
+# (for build caching), in the same order as setup.sh. Not covered here:
+#   - install_ghidra.sh / install_joern.sh: multi-GB downloads, run manually.
+#   - install_trivy.sh: needs a running Docker daemon, unavailable during build.
+#   - install_docker.sh service start / harden_ssh.sh restart: no systemd.
 
-# --- Ubuntu Test Modular ---
+# --- Ubuntu ---
 FROM ubuntu:22.04 AS ubuntu-test
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y sudo curl gpg wget && rm -rf /var/lib/apt/lists/*
@@ -8,48 +14,55 @@ RUN useradd -m -G sudo -s /bin/bash tester
 RUN echo "tester ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tester
 WORKDIR /home/tester/dotfiles
 COPY scripts/lib.sh ./scripts/lib.sh
-RUN chmod +x ./scripts/lib.sh
 
-# System-level scripts run as root
-COPY scripts/install_base_deps.sh ./scripts/install_base_deps.sh
-RUN chmod +x ./scripts/install_base_deps.sh && ./scripts/install_base_deps.sh
+# Phase 1: system-level scripts run as root
+COPY scripts/install_base_deps.sh ./scripts/
+RUN ./scripts/install_base_deps.sh
+COPY scripts/install_docker.sh ./scripts/
+RUN ./scripts/install_docker.sh && usermod -aG docker tester
+COPY scripts/install_nerd_font.sh ./scripts/
+RUN ./scripts/install_nerd_font.sh
 
-COPY scripts/install_docker.sh ./scripts/install_docker.sh
-RUN chmod +x ./scripts/install_docker.sh && ./scripts/install_docker.sh && usermod -aG docker tester
-
-COPY scripts/install_nerd_font.sh ./scripts/install_nerd_font.sh
-RUN chmod +x ./scripts/install_nerd_font.sh && ./scripts/install_nerd_font.sh
-
-COPY scripts/install_bloodhound.sh ./scripts/install_bloodhound.sh
-RUN chmod +x ./scripts/install_bloodhound.sh && ./scripts/install_bloodhound.sh
-
-COPY scripts/install_joern.sh ./scripts/install_joern.sh
-# RUN chmod +x ./scripts/install_joern.sh && ./scripts/install_joern.sh
-
-COPY scripts/install_ghidra.sh ./scripts/install_ghidra.sh
-# RUN chmod +x ./scripts/install_ghidra.sh && ./scripts/install_ghidra.sh
-
+# Phase 2: user environment
 USER tester
-# User-level scripts run as tester
-COPY --chown=tester:tester scripts/stow_dotfiles.sh ./scripts/stow_dotfiles.sh
-RUN chmod +x ./scripts/stow_dotfiles.sh && ./scripts/stow_dotfiles.sh
+ENV PATH="/home/tester/.local/bin:${PATH}"
+COPY --chown=tester:tester scripts/install_terminal_tools.sh ./scripts/
+RUN ./scripts/install_terminal_tools.sh
+COPY --chown=tester:tester zsh ./zsh
+COPY --chown=tester:tester tmux ./tmux
+COPY --chown=tester:tester eza ./eza
+COPY --chown=tester:tester git ./git
+COPY --chown=tester:tester vivid ./vivid
+COPY --chown=tester:tester nvim ./nvim
+COPY --chown=tester:tester scripts/stow_dotfiles.sh ./scripts/
+RUN ./scripts/stow_dotfiles.sh && [ -L /home/tester/.zshrc ] && [ -L /home/tester/.gitconfig ]
+COPY --chown=tester:tester scripts/sync_nvim.sh ./scripts/
+RUN ./scripts/sync_nvim.sh
 
-COPY --chown=tester:tester scripts/install_terminal_tools.sh ./scripts/install_terminal_tools.sh
-RUN chmod +x ./scripts/install_terminal_tools.sh && ./scripts/install_terminal_tools.sh
+# Phase 3: default tools (minus Ghidra/Joern/Trivy, see header)
+COPY --chown=tester:tester scripts/install_jadx.sh scripts/install_apktool.sh scripts/install_dependency_check.sh ./scripts/
+RUN ./scripts/install_jadx.sh && ./scripts/install_apktool.sh && ./scripts/install_dependency_check.sh
+COPY --chown=tester:tester scripts/install_rev_pipx_tools.sh ./scripts/
+RUN ./scripts/install_rev_pipx_tools.sh
 
-COPY --chown=tester:tester scripts/install_netexec.sh ./scripts/install_netexec.sh
-RUN chmod +x ./scripts/install_netexec.sh && ./scripts/install_netexec.sh
+# Phase 4: pwn profile
+COPY --chown=tester:tester scripts/install_bloodhound.sh ./scripts/
+RUN sudo ./scripts/install_bloodhound.sh
+COPY --chown=tester:tester scripts/install_netexec.sh scripts/install_powerview.sh scripts/install_certipy.sh ./scripts/
+RUN ./scripts/install_netexec.sh && ./scripts/install_powerview.sh && ./scripts/install_certipy.sh
 
-COPY --chown=tester:tester scripts/install_powerview.sh ./scripts/install_powerview.sh
-RUN chmod +x ./scripts/install_powerview.sh && ./scripts/install_powerview.sh
+# Phase 5: ssh profile (refuses to run without an authorized_keys file)
+COPY --chown=tester:tester scripts/harden_ssh.sh ./scripts/
+RUN mkdir -p -m 700 /home/tester/.ssh && echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDummyKeyForTestsOnly tester" > /home/tester/.ssh/authorized_keys
+RUN sudo ./scripts/harden_ssh.sh && grep -qx "PasswordAuthentication no" /etc/ssh/sshd_config
 
-COPY --chown=tester:tester scripts/install_certipy.sh ./scripts/install_certipy.sh
-RUN chmod +x ./scripts/install_certipy.sh && ./scripts/install_certipy.sh
+# Idempotency: a second run must not reinstall or fail
+RUN ./scripts/install_terminal_tools.sh | grep "nvim .* is already installed" \
+    && ./scripts/install_jadx.sh | grep "already installed" \
+    && ./scripts/install_certipy.sh | grep "already installed" \
+    && sudo ./scripts/harden_ssh.sh
 
-COPY --chown=tester:tester scripts/sync_nvim.sh ./scripts/sync_nvim.sh
-RUN chmod +x ./scripts/sync_nvim.sh && ./scripts/sync_nvim.sh
-
-# --- Kali Linux Test Modular ---
+# --- Kali Linux ---
 FROM kalilinux/kali-rolling AS kali-test
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y sudo curl gpg wget && rm -rf /var/lib/apt/lists/*
@@ -57,70 +70,75 @@ RUN useradd -m -G sudo -s /bin/bash tester
 RUN echo "tester ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tester
 WORKDIR /home/tester/dotfiles
 COPY scripts/lib.sh ./scripts/lib.sh
-RUN chmod +x ./scripts/lib.sh
 
-# System-level scripts run as root
-COPY scripts/install_base_deps.sh ./scripts/install_base_deps.sh
-RUN chmod +x ./scripts/install_base_deps.sh && ./scripts/install_base_deps.sh
+# Phase 1: system-level scripts run as root
+COPY scripts/install_base_deps.sh ./scripts/
+RUN ./scripts/install_base_deps.sh
+COPY scripts/install_docker.sh ./scripts/
+RUN ./scripts/install_docker.sh && usermod -aG docker tester
+COPY scripts/install_nerd_font.sh ./scripts/
+RUN ./scripts/install_nerd_font.sh
 
-COPY scripts/install_docker.sh ./scripts/install_docker.sh
-RUN chmod +x ./scripts/install_docker.sh && ./scripts/install_docker.sh && usermod -aG docker tester
-
-COPY scripts/install_nerd_font.sh ./scripts/install_nerd_font.sh
-RUN chmod +x ./scripts/install_nerd_font.sh && ./scripts/install_nerd_font.sh
-
-COPY scripts/install_bloodhound.sh ./scripts/install_bloodhound.sh
-RUN chmod +x ./scripts/install_bloodhound.sh && ./scripts/install_bloodhound.sh
-
-COPY scripts/install_joern.sh ./scripts/install_joern.sh
-# RUN chmod +x ./scripts/install_joern.sh && ./scripts/install_joern.sh
-
-COPY scripts/install_ghidra.sh ./scripts/install_ghidra.sh
-# RUN chmod +x ./scripts/install_ghidra.sh && ./scripts/install_ghidra.sh
-
+# Phase 2: user environment
 USER tester
-# User-level scripts run as tester
-COPY --chown=tester:tester scripts/stow_dotfiles.sh ./scripts/stow_dotfiles.sh
-RUN chmod +x ./scripts/stow_dotfiles.sh && ./scripts/stow_dotfiles.sh
+ENV PATH="/home/tester/.local/bin:${PATH}"
+COPY --chown=tester:tester scripts/install_terminal_tools.sh ./scripts/
+RUN ./scripts/install_terminal_tools.sh
+COPY --chown=tester:tester zsh ./zsh
+COPY --chown=tester:tester tmux ./tmux
+COPY --chown=tester:tester eza ./eza
+COPY --chown=tester:tester git ./git
+COPY --chown=tester:tester vivid ./vivid
+COPY --chown=tester:tester nvim ./nvim
+COPY --chown=tester:tester scripts/stow_dotfiles.sh ./scripts/
+RUN ./scripts/stow_dotfiles.sh && [ -L /home/tester/.zshrc ] && [ -L /home/tester/.gitconfig ]
+COPY --chown=tester:tester scripts/sync_nvim.sh ./scripts/
+RUN ./scripts/sync_nvim.sh
 
-COPY --chown=tester:tester scripts/install_terminal_tools.sh ./scripts/install_terminal_tools.sh
-RUN chmod +x ./scripts/install_terminal_tools.sh && ./scripts/install_terminal_tools.sh
+# Phase 3: default tools (minus Ghidra/Joern/Trivy, see header)
+COPY --chown=tester:tester scripts/install_jadx.sh scripts/install_apktool.sh scripts/install_dependency_check.sh ./scripts/
+RUN ./scripts/install_jadx.sh && ./scripts/install_apktool.sh && ./scripts/install_dependency_check.sh
+COPY --chown=tester:tester scripts/install_rev_pipx_tools.sh ./scripts/
+RUN ./scripts/install_rev_pipx_tools.sh
 
-COPY --chown=tester:tester scripts/install_netexec.sh ./scripts/install_netexec.sh
-RUN chmod +x ./scripts/install_netexec.sh && ./scripts/install_netexec.sh
+# Phase 4: pwn profile
+COPY --chown=tester:tester scripts/install_bloodhound.sh ./scripts/
+RUN sudo ./scripts/install_bloodhound.sh
+COPY --chown=tester:tester scripts/install_netexec.sh scripts/install_powerview.sh scripts/install_certipy.sh ./scripts/
+RUN ./scripts/install_netexec.sh && ./scripts/install_powerview.sh && ./scripts/install_certipy.sh
 
-COPY --chown=tester:tester scripts/install_powerview.sh ./scripts/install_powerview.sh
-RUN chmod +x ./scripts/install_powerview.sh && ./scripts/install_powerview.sh
+# Phase 5: ssh profile (refuses to run without an authorized_keys file)
+COPY --chown=tester:tester scripts/harden_ssh.sh ./scripts/
+RUN mkdir -p -m 700 /home/tester/.ssh && echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDummyKeyForTestsOnly tester" > /home/tester/.ssh/authorized_keys
+RUN sudo ./scripts/harden_ssh.sh && grep -qx "PasswordAuthentication no" /etc/ssh/sshd_config
 
-COPY --chown=tester:tester scripts/install_certipy.sh ./scripts/install_certipy.sh
-RUN chmod +x ./scripts/install_certipy.sh && ./scripts/install_certipy.sh
-
-COPY --chown=tester:tester scripts/sync_nvim.sh ./scripts/sync_nvim.sh
-RUN chmod +x ./scripts/sync_nvim.sh && ./scripts/sync_nvim.sh
+# Idempotency: a second run must not reinstall or fail
+RUN ./scripts/install_terminal_tools.sh | grep "nvim .* is already installed" \
+    && ./scripts/install_jadx.sh | grep "already installed" \
+    && ./scripts/install_certipy.sh | grep "already installed" \
+    && sudo ./scripts/harden_ssh.sh
 
 # --- Kali Linux Guest (Sandbox) Test ---
+# The tester user has no sudo at all: guest mode must work without it.
 FROM kalilinux/kali-rolling AS kali-guest-test
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y sudo curl gpg wget && rm -rf /var/lib/apt/lists/*
-RUN useradd -m -G sudo -s /bin/bash tester
-RUN echo "tester ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/tester
-# Note: We run with sudo in guest test for Phase 1 deps, but ensure no stow
+# Host prerequisites that guest mode expects the host admin to provide.
+RUN apt-get update && apt-get install -y \
+        ca-certificates curl tar xz-utils unzip git zsh tmux build-essential cmake \
+    && rm -rf /var/lib/apt/lists/*
+RUN useradd -m -s /bin/bash tester
 USER tester
 WORKDIR /home/tester/dotfiles
 COPY --chown=tester:tester . .
-# Run guest setup
-RUN chmod +x ./scripts/*.sh ./setup.sh && ./setup.sh guest
-# Verify no symlinks in $HOME (isolation check)
-RUN [ ! -L /home/tester/.zshrc ]
-RUN [ ! -L /home/tester/.tmux.conf ]
-# Verify sandbox directories exist
-RUN [ -d /home/tester/dotfiles/config ]
-RUN [ -d /home/tester/dotfiles/zsh ]
-RUN [ -d /home/tester/dotfiles/zsh/.zsh_completions ]
-# Verify libatomic1 is installed (dependency check)
-RUN dpkg -l | grep libatomic1
-# Verify activate.sh works (basic check)
-RUN bash -c "source ./activate.sh && [ \"\$ZDOTDIR\" = \"/home/tester/dotfiles/zsh\" ]"
-# Verify fpath includes custom completions in sandbox
-RUN zsh -c "source ./activate.sh && [[ \"\$fpath\" == */home/tester/dotfiles/zsh/.zsh_completions* ]]"
-
+RUN ./setup.sh guest
+# Isolation: nothing written to $HOME outside the repo
+RUN [ ! -e /home/tester/.zshrc ] && [ ! -e /home/tester/.tmux.conf ] \
+    && [ ! -e /home/tester/.local ] && [ ! -e /home/tester/.config ]
+# Everything lives in the gitignored sandbox
+RUN [ -x /home/tester/dotfiles/.guest/local/bin/nvim ] \
+    && [ -d /home/tester/dotfiles/.guest/data/nvim/lazy/lazy.nvim ]
+# activate.sh works from bash and zsh, independent of the current directory
+RUN cd /tmp && bash -c "source /home/tester/dotfiles/activate.sh && [ \"\$ZDOTDIR\" = /home/tester/dotfiles/zsh ]"
+RUN cd /tmp && zsh -c "source /home/tester/dotfiles/activate.sh && [[ \$ZDOTDIR == /home/tester/dotfiles/zsh ]]"
+# The interactive shell picks up the repo's completions and keeps history in the sandbox
+RUN bash -c "source ./activate.sh && zsh -ic '[[ \$fpath == */home/tester/dotfiles/zsh/.zsh_completions* && \$HISTFILE == /home/tester/dotfiles/.guest/* ]]'"

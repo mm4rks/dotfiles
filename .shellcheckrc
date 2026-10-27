@@ -1,0 +1,7 @@
+# Resolve `source "$(dirname "$0")/lib.sh"` relative to the script.
+source-path=SCRIPTDIR
+external-sources=true
+
+# Repo convention: `trap "rm -rf '$TEMP_DIR'" RETURN` expands the local path
+# at trap-set time on purpose, since the local is gone when the trap fires.
+disable=SC2064

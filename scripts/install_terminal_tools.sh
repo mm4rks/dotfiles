@@ -5,9 +5,13 @@ source "$(dirname "$0")/lib.sh"
 # Installs pinned versions of the terminal tools that used to be managed by
 # mise. Each tool is a single self-contained binary (or small tarball)
 # downloaded from its GitHub releases page and verified against a pinned
-# sha256 checksum, then linked into ~/.local/bin.
+# sha256 checksum, then linked into $LOCAL_PREFIX/bin (~/.local/bin, or the
+# guest sandbox). A tool is (re)installed unless the copy in $LOCAL_PREFIX/bin
+# already reports the pinned version, so a version bump upgrades in place and
+# an unrelated distro binary elsewhere on PATH never masks the pin.
 
-INSTALL_DIR="${HOME}/.local/bin"
+INSTALL_DIR="${LOCAL_PREFIX}/bin"
+OPT_DIR="${LOCAL_PREFIX}/opt"
 
 NEOVIM_VERSION="0.12.5"
 NEOVIM_URL="https://github.com/neovim/neovim/releases/download/v${NEOVIM_VERSION}/nvim-linux-x86_64.tar.gz"
@@ -72,12 +76,11 @@ install_binary_from_tar() {
     install -m 0755 "$found" "${INSTALL_DIR}/${install_name}"
 }
 
-# Installs a whole extracted tree (e.g. neovim, node) under
-# ~/.local/opt/<name> (no root required) and symlinks its bin/* entries into
-# INSTALL_DIR.
+# Installs a whole extracted tree (e.g. neovim, node) under OPT_DIR/<name>
+# (no root required) and symlinks its bin/* entries into INSTALL_DIR.
 install_tree_from_tar() {
     local archive="$1" opt_name="$2"
-    local opt_dir="${HOME}/.local/opt/${opt_name}"
+    local opt_dir="${OPT_DIR}/${opt_name}"
     local extract_dir
     extract_dir="$(mktemp -d)"
     trap "rm -rf '$extract_dir'" RETURN
@@ -90,162 +93,77 @@ install_tree_from_tar() {
         error "Could not find extracted directory for ${opt_name} in ${archive}."
     fi
 
-    mkdir -p "${HOME}/.local/opt"
+    mkdir -p "$OPT_DIR"
     rm -rf "$opt_dir"
     mv "$extracted_dir" "$opt_dir"
 
+    local bin
     for bin in "${opt_dir}"/bin/*; do
-        [ -f "$bin" ] && ln -sf "$bin" "${INSTALL_DIR}/$(basename "$bin")"
+        if [ -f "$bin" ]; then
+            ln -sf "$bin" "${INSTALL_DIR}/$(basename "$bin")"
+        fi
     done
 }
 
-install_neovim() {
-    if command_exists nvim; then
-        log "Neovim is already installed."
-        return 0
-    fi
-    log "Installing Neovim ${NEOVIM_VERSION}..."
-    local archive; archive="$(mktemp)"
-    download_and_verify "$NEOVIM_URL" "$archive" "$NEOVIM_SHA256"
-    install_tree_from_tar "$archive" "nvim"
-    rm -f "$archive"
+# True if INSTALL_DIR/<bin> exists and its --version output mentions <version>.
+is_pinned_version() {
+    local bin="$1" version="$2" output
+    [ -x "${INSTALL_DIR}/${bin}" ] || return 1
+    # Captured rather than piped into `grep -q`, which can SIGPIPE the binary
+    # and fail the check under pipefail.
+    output="$("${INSTALL_DIR}/${bin}" --version 2>/dev/null)" || return 1
+    [[ "$output" == *"$version"* ]]
 }
 
-install_zoxide() {
-    if command_exists zoxide; then
-        log "zoxide is already installed."
-        return 0
-    fi
-    log "Installing zoxide ${ZOXIDE_VERSION}..."
-    local archive; archive="$(mktemp)"
-    download_and_verify "$ZOXIDE_URL" "$archive" "$ZOXIDE_SHA256"
-    install_binary_from_tar "$archive" "zoxide"
-    rm -f "$archive"
-}
+# Usage: install_tool <bin> <version> <url> <sha256> <kind> [opt_name]
+#   kind: tar  - single binary inside a tarball
+#         tree - whole tarball under OPT_DIR/<opt_name>, bin/* linked
+#         raw  - the download is the binary itself
+install_tool() {
+    local bin="$1" version="$2" url="$3" sha256="$4" kind="$5" opt_name="${6:-$1}"
 
-install_fzf() {
-    if command_exists fzf; then
-        log "fzf is already installed."
+    if is_pinned_version "$bin" "$version"; then
+        log "${bin} ${version} is already installed."
         return 0
     fi
-    log "Installing fzf ${FZF_VERSION}..."
-    local archive; archive="$(mktemp)"
-    download_and_verify "$FZF_URL" "$archive" "$FZF_SHA256"
-    install_binary_from_tar "$archive" "fzf"
-    rm -f "$archive"
-}
 
-install_ripgrep() {
-    if command_exists rg; then
-        log "ripgrep is already installed."
-        return 0
-    fi
-    log "Installing ripgrep ${RIPGREP_VERSION}..."
-    local archive; archive="$(mktemp)"
-    download_and_verify "$RIPGREP_URL" "$archive" "$RIPGREP_SHA256"
-    install_binary_from_tar "$archive" "rg"
-    rm -f "$archive"
-}
-
-install_bat() {
-    if command_exists bat; then
-        log "bat is already installed."
-        return 0
-    fi
-    log "Installing bat ${BAT_VERSION}..."
-    local archive; archive="$(mktemp)"
-    download_and_verify "$BAT_URL" "$archive" "$BAT_SHA256"
-    install_binary_from_tar "$archive" "bat"
-    rm -f "$archive"
-}
-
-install_eza() {
-    if command_exists eza; then
-        log "eza is already installed."
-        return 0
-    fi
-    log "Installing eza ${EZA_VERSION}..."
-    local archive; archive="$(mktemp)"
-    download_and_verify "$EZA_URL" "$archive" "$EZA_SHA256"
-    install_binary_from_tar "$archive" "eza"
-    rm -f "$archive"
-}
-
-install_delta() {
-    if command_exists delta; then
-        log "delta is already installed."
-        return 0
-    fi
-    log "Installing delta ${DELTA_VERSION}..."
-    local archive; archive="$(mktemp)"
-    download_and_verify "$DELTA_URL" "$archive" "$DELTA_SHA256"
-    install_binary_from_tar "$archive" "delta"
-    rm -f "$archive"
-}
-
-install_fd() {
-    if command_exists fd; then
-        log "fd is already installed."
-        return 0
-    fi
-    log "Installing fd ${FD_VERSION}..."
-    local archive; archive="$(mktemp)"
-    download_and_verify "$FD_URL" "$archive" "$FD_SHA256"
-    install_binary_from_tar "$archive" "fd"
-    rm -f "$archive"
-}
-
-install_shellcheck() {
-    if command_exists shellcheck; then
-        log "shellcheck is already installed."
-        return 0
-    fi
-    log "Installing shellcheck ${SHELLCHECK_VERSION}..."
-    local archive; archive="$(mktemp)"
-    download_and_verify "$SHELLCHECK_URL" "$archive" "$SHELLCHECK_SHA256"
-    install_binary_from_tar "$archive" "shellcheck"
-    rm -f "$archive"
-}
-
-install_choose() {
-    if command_exists choose; then
-        log "choose is already installed."
-        return 0
-    fi
-    log "Installing choose ${CHOOSE_VERSION}..."
-    local bin_path="${INSTALL_DIR}/choose"
-    download_and_verify "$CHOOSE_URL" "$bin_path" "$CHOOSE_SHA256"
-    chmod +x "$bin_path"
-}
-
-install_node() {
-    if command_exists node; then
-        log "node is already installed."
-        return 0
-    fi
-    log "Installing node ${NODE_VERSION}..."
-    local archive; archive="$(mktemp)"
-    download_and_verify "$NODE_URL" "$archive" "$NODE_SHA256"
-    install_tree_from_tar "$archive" "node"
+    log "Installing ${bin} ${version}..."
+    local archive
+    archive="$(mktemp)"
+    download_and_verify "$url" "$archive" "$sha256"
+    case "$kind" in
+        tar) install_binary_from_tar "$archive" "$bin" ;;
+        tree) install_tree_from_tar "$archive" "$opt_name" ;;
+        raw) install -m 0755 "$archive" "${INSTALL_DIR}/${bin}" ;;
+        *) error "Unknown install kind: ${kind}" ;;
+    esac
     rm -f "$archive"
 }
 
 install_terminal_tools() {
+    if [ "$(uname -m)" != "x86_64" ]; then
+        error "Pinned terminal tool binaries are x86_64 only (this machine: $(uname -m))."
+    fi
+
     mkdir -p "$INSTALL_DIR"
 
-    install_neovim
-    install_zoxide
-    install_fzf
-    install_ripgrep
-    install_bat
-    install_eza
-    install_delta
-    install_fd
-    install_shellcheck
-    install_choose
-    install_node
+    install_tool nvim       "$NEOVIM_VERSION"     "$NEOVIM_URL"     "$NEOVIM_SHA256"     tree nvim
+    install_tool zoxide     "$ZOXIDE_VERSION"     "$ZOXIDE_URL"     "$ZOXIDE_SHA256"     tar
+    install_tool fzf        "$FZF_VERSION"        "$FZF_URL"        "$FZF_SHA256"        tar
+    install_tool rg         "$RIPGREP_VERSION"    "$RIPGREP_URL"    "$RIPGREP_SHA256"    tar
+    install_tool bat        "$BAT_VERSION"        "$BAT_URL"        "$BAT_SHA256"        tar
+    install_tool eza        "$EZA_VERSION"        "$EZA_URL"        "$EZA_SHA256"        tar
+    install_tool delta      "$DELTA_VERSION"      "$DELTA_URL"      "$DELTA_SHA256"      tar
+    install_tool fd         "$FD_VERSION"         "$FD_URL"         "$FD_SHA256"         tar
+    install_tool shellcheck "$SHELLCHECK_VERSION" "$SHELLCHECK_URL" "$SHELLCHECK_SHA256" tar
+    install_tool choose     "$CHOOSE_VERSION"     "$CHOOSE_URL"     "$CHOOSE_SHA256"     raw
+    install_tool node       "$NODE_VERSION"       "$NODE_URL"       "$NODE_SHA256"       tree node
 
-    log "Terminal tools installed to ${INSTALL_DIR} (and ${HOME}/.local/opt for neovim/node)."
+    log "Terminal tools installed to ${INSTALL_DIR} (and ${OPT_DIR} for neovim/node)."
 }
 
-install_terminal_tools
+main() {
+    install_terminal_tools
+}
+
+main "$@"

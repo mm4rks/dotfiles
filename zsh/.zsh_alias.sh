@@ -97,4 +97,3 @@ fi
 #     alias vim='nvim' # Conditional alias for Neovim
 # fi
 
-alias devdocs="docker run --name devdocs -d -p 9292:9292 ghcr.io/freecodecamp/devdocs:latest"

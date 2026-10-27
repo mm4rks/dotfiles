@@ -18,12 +18,12 @@ install_bloodhound() {
     TEMP_DIR="$(mktemp -d)"
     trap "rm -rf '$TEMP_DIR'" RETURN
 
-        local archive_path="${TEMP_DIR}/bloodhound-cli.tar.gz"
-        download_and_verify "$BLOODHOUND_URL" "$archive_path" "$BLOODHOUND_SHA256"
-    
-        tar -xzf "$archive_path" -C "${TEMP_DIR}"
-        mv "${TEMP_DIR}/bloodhound-cli" /usr/local/bin/
-        chmod +x /usr/local/bin/bloodhound-cli
+    local archive_path="${TEMP_DIR}/bloodhound-cli.tar.gz"
+    download_and_verify "$BLOODHOUND_URL" "$archive_path" "$BLOODHOUND_SHA256"
+
+    tar -xzf "$archive_path" -C "${TEMP_DIR}"
+    mv "${TEMP_DIR}/bloodhound-cli" /usr/local/bin/
+    chmod +x /usr/local/bin/bloodhound-cli
 
     # Verification check
     log "Verifying BloodHound CLI by running the help command..."
@@ -33,4 +33,8 @@ install_bloodhound() {
     log "BloodHound CLI verified."
 }
 
-install_bloodhound
+main() {
+    install_bloodhound
+}
+
+main "$@"

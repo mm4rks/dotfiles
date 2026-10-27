@@ -3,3 +3,8 @@ gef/
 GEMINI.md
 *.bak.*
 .zcompdump*
+
+# Guest mode sandbox (configs, caches, history, tool binaries)
+.guest/
+# Shell history must never be committed, whatever ZDOTDIR points at
+.zsh_history

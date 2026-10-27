@@ -4,7 +4,7 @@ source "$(dirname "$0")/lib.sh"
 
 sync_nvim() {
     # Ensure local bins are in PATH for discovery
-    export PATH="${HOME}/.local/bin:${PATH}"
+    export PATH="${LOCAL_PREFIX}/bin:${PATH}"
 
     if ! command_exists nvim; then
         warn "nvim command not found, skipping plugin sync."
@@ -12,8 +12,13 @@ sync_nvim() {
     fi
 
     log "Synchronizing Neovim Lazy plugins..."
-    nvim --headless "+Lazy! sync" +qa
+    # restore, not sync: install exactly the commits in lazy-lock.json
+    nvim --headless "+Lazy! restore" +qa
     log "Neovim sync complete."
 }
 
-sync_nvim
+main() {
+    sync_nvim
+}
+
+main "$@"

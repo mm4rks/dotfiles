@@ -107,7 +107,7 @@ Do not use raw `echo` or `printf` commands for status updates in the main execut
 
 ### 2.8. Package and Dependency Management
 - **Apt:** Use for core system dependencies (libatomic1, sudo, curl, etc.).
-- **Mise:** Use for tool-specific versions (Neovim, Java, etc.) to maintain environment consistency.
+- **Pinned downloads:** No `mise` on this branch. Tool binaries are pinned and sha256-verified via `download_and_verify` (see `scripts/install_terminal_tools.sh`); pipx/npm tools are pinned with `==`/`@`, Docker images by digest, nvim plugins by `lazy-lock.json`.
 - **Custom Scripts:** Add specialized tool installations under `scripts/install_<tool_name>.sh`.
 
 ### 2.9. Configuration Management
@@ -122,19 +122,22 @@ Do not use raw `echo` or `printf` commands for status updates in the main execut
 ## 3. Environment Specifics
 
 ### 3.1. Profiles
-- **Standard:** Full installation with sudo privileges and home directory symlinking via Stow.
-- **Guest:** Sandbox mode for restricted environments. Skips sudo and Stow. Activated via `source activate.sh`.
+`./setup.sh` prompts for the mode unless `persistent` or `guest` is passed:
+- **Persistent:** Full installation with sudo privileges and home directory symlinking via Stow. Always installs the default tools (Joern, Ghidra, jadx, apktool, trivy, dependency-check, semgrep, flare-capa, apkleaks, cdxgen).
+- **Guest:** Sandbox mode for restricted environments. No sudo, no Stow, nothing written to `$HOME`: terminal tools and nvim plugins go into the gitignored `.guest/` dir. Entered via `source activate.sh`.
 
-Setup profiles passed as arguments to `setup.sh` (e.g. `./setup.sh pwn rev`):
+Profiles (persistent mode only, e.g. `./setup.sh persistent pwn ssh`):
+- **headless:** Skip the Nerd Font.
 - **pwn:** BloodHound, NetExec, PowerView, Certipy.
-- **rev:** Joern, Ghidra, jadx, apktool, trivy, dependency-check, semgrep, flare-capa, apkleaks, cdxgen.
-- **ssh:** SSH hardening via `scripts/harden_ssh.sh`.
+- **ssh:** SSH hardening via `scripts/harden_ssh.sh` (requires `~/.ssh/authorized_keys`).
 
 Terminal tools (neovim, zoxide, fzf, ripgrep, bat, eza, delta, fd, shellcheck, choose, node) are installed by `scripts/install_terminal_tools.sh` as pinned-version binaries — no `mise` on this branch.
 
 ### 3.2. Critical Variables
 - `ZDOTDIR`: Redirects Zsh configuration to `zsh/` within the repo.
-- `XDG_CONFIG_HOME`: Redirects application configs to `config/` within the repo.
+- `XDG_CONFIG_HOME` / `XDG_CACHE_HOME` / `XDG_DATA_HOME` / `XDG_STATE_HOME`: Redirected into `.guest/` within the repo.
+- `DOTFILES_PREFIX`: Install prefix for user-level tools (`.guest/local`); `scripts/lib.sh` exposes it as `LOCAL_PREFIX`.
+- `DOTFILES_GUEST_DIR`: Sandbox root; zsh keeps its history here instead of inside `zsh/`.
 
 ## 4. Absolute System Constraints (Sandbox Mode)
 
@@ -148,7 +151,7 @@ Terminal tools (neovim, zoxide, fzf, ripgrep, bat, eza, delta, fd, shellcheck, c
 
 ## 6. Development Workflow (Repository First)
 
-- **Always prioritize the repository**: When making changes to configurations (e.g., nvim, zsh), always modify the files within the repository (`/home/user/.dotfiles`) rather than their target locations in the system (e.g., `~/.config/`). 
+- **Always prioritize the repository**: When making changes to configurations (e.g., nvim, zsh), always modify the files within the repository rather than their target locations in the system (e.g., `~/.config/`). 
 - **Stow-awareness**: This repository is designed to be stowed. Ensure any new configuration files are placed in the correct package directory (e.g., `nvim/`, `zsh/`) following the internal directory structure that mirrors the intended target location.
 - **Persistence**: Changes made to the repository are permanent and will be reflected in future sessions after being stowed. System-level changes may be lost or inconsistent with the repository state.
 

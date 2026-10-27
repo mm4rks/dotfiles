@@ -12,6 +12,14 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
         vim.fn.getchar()
         os.exit(1)
     end
+    -- Check out the lazy.nvim commit from lazy-lock.json; otherwise a fresh
+    -- clone floats on 'stable' and `Lazy restore` rewrites the lockfile.
+    local ok, lock = pcall(function()
+        return vim.json.decode(table.concat(vim.fn.readfile(vim.fn.stdpath("config") .. "/lazy-lock.json"), "\n"))
+    end)
+    if ok and lock["lazy.nvim"] then
+        vim.fn.system({ "git", "-C", lazypath, "checkout", "--quiet", lock["lazy.nvim"].commit })
+    end
 end
 vim.opt.rtp:prepend(lazypath)
 

@@ -5,36 +5,22 @@ source "$(dirname "$0")/lib.sh"
 CERTIPY_COMMIT="890dbf80afb47ba45c4bfda959dced58f9cdae06"
 CERTIPY_REPO="https://github.com/ly4k/Certipy.git"
 
-# Certipy is incompatible with newer Python, so we fetch a standalone
-# Python 3.12 build (the same portable builds mise uses under the hood)
-# purely to hand its interpreter to pipx.
-PYTHON312_DIR="${HOME}/.local/opt/python3.12"
-PYTHON312_URL="https://github.com/astral-sh/python-build-standalone/releases/download/20260825/cpython-3.12.14%2B20260825-x86_64-unknown-linux-gnu-install_only.tar.gz"
-PYTHON312_SHA256="cbdd2f0cf02f941bc5c81e546f377275e322733abffe805ac29d2b7e8a58f7e3"
+# Certipy is incompatible with newer Python; it runs on the standalone
+# Python 3.12 from pipx_install_py312 (scripts/lib.sh).
 
-ensure_python312() {
-    if [ -x "${PYTHON312_DIR}/bin/python3" ]; then
+install_certipy() {
+    # pipx records the install spec (git+<repo>@<commit>) in its metadata.
+    local pipx_state
+    pipx_state="$(pipx list --json 2>/dev/null || true)"
+    if [[ "$pipx_state" == *"$CERTIPY_COMMIT"* ]]; then
+        log "Certipy commit ${CERTIPY_COMMIT:0:7} is already installed via pipx. Skipping."
         return 0
     fi
 
-    log "Fetching standalone Python 3.12 for Certipy..."
-    local archive
-    archive="$(mktemp)"
-    download_and_verify "$PYTHON312_URL" "$archive" "$PYTHON312_SHA256"
-
-    local extract_dir
-    extract_dir="$(mktemp -d)"
-    trap "rm -rf '$extract_dir' '$archive'" RETURN
-
-    tar -xzf "$archive" -C "$extract_dir"
-    mkdir -p "$(dirname "$PYTHON312_DIR")"
-    rm -rf "$PYTHON312_DIR"
-    mv "${extract_dir}/python" "$PYTHON312_DIR"
-}
-
-install_certipy() {
     log "Ensuring no system-packaged version of Certipy exists..."
-    if dpkg -s certipy-ad 2>/dev/null | grep -q 'Status: install ok installed' || dpkg -s certipy 2>/dev/null | grep -q 'Status: install ok installed'; then
+    local dpkg_status
+    dpkg_status="$(dpkg -s certipy-ad certipy 2>/dev/null || true)"
+    if [[ "$dpkg_status" == *"Status: install ok installed"* ]]; then
         log "System-packaged certipy found. Purging it..."
         sudo apt-get remove -y --purge certipy-ad certipy || warn "Failed to remove system-packaged certipy. This may cause conflicts."
     fi
@@ -45,8 +31,7 @@ install_certipy() {
     pipx uninstall certipy-ad > /dev/null 2>&1 || true
 
     # Install the specific commit using --force, against our standalone Python 3.12.
-    ensure_python312
-    pipx install --python "${PYTHON312_DIR}/bin/python3" --force "git+${CERTIPY_REPO}@${CERTIPY_COMMIT}"
+    pipx_install_py312 --force "git+${CERTIPY_REPO}@${CERTIPY_COMMIT}"
     log "Certipy installation complete."
 
     # Verification
@@ -64,4 +49,8 @@ install_certipy() {
     log "Certipy verified."
 }
 
-install_certipy
+main() {
+    install_certipy
+}
+
+main "$@"

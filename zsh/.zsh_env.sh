@@ -1,5 +1,7 @@
 # Ensure ~/.local/bin is in PATH but preserve existing paths
 export PATH="$HOME/.local/bin:$PATH"
+# Guest mode installs tools into the sandbox prefix (see activate.sh).
+[[ -n ${DOTFILES_PREFIX:-} ]] && export PATH="$DOTFILES_PREFIX/bin:$PATH"
 export GOPATH="$HOME/go"
 export PATH="$GOPATH/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
@@ -17,7 +19,7 @@ elif command -v batcat &> /dev/null; then
 fi
 
 # vivid output only depends on the theme; generate once and reuse.
-VIVID_CACHE="$HOME/.config/vivid_colors"
+VIVID_CACHE="$XDG_CONFIG_HOME/vivid_colors"
 if [[ ! -s $VIVID_CACHE ]] && (( $+commands[vivid] )); then
     vivid generate catppuccin-mocha >| "$VIVID_CACHE"
 fi
@@ -28,6 +30,11 @@ if [[ -z ${JAVA_HOME:-} ]]; then
     _java_home=(/usr/lib/jvm/java-*(N/n[-1]))
     (( $#_java_home )) && export JAVA_HOME="$_java_home[1]"
     unset _java_home
+fi
+
+# install_ghidra.sh only exports this in ~/.bashrc; capa's Ghidra backend needs it.
+if [[ -z ${GHIDRA_INSTALL_DIR:-} && -d /opt/ghidra ]]; then
+    export GHIDRA_INSTALL_DIR=/opt/ghidra
 fi
 
 # The prompt renders the active venv; stop activate from prefixing PS1 too.

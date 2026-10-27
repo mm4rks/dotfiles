@@ -3,7 +3,7 @@ function ts() {
 } # Description: Send a command and its arguments to the tmux pane to the right
 
 function swapctrl() {
-    local arg="${1,,}"
+    local arg="${1:l}"
 
     if [[ "$arg" == "off" ]]; then
         gsettings set org.gnome.desktop.input-sources xkb-options "[]"
@@ -64,7 +64,7 @@ EOF
 
 function genhosts() {
     if [[ -z "$1" ]]; then
-        echo "[i] Usage: ${FUNCNAME[0]} <IP_ADDRESS>"
+        echo "[i] Usage: genhosts <IP_ADDRESS>"
         return 1
     fi
 
@@ -72,28 +72,27 @@ function genhosts() {
     local tmp_file
     tmp_file=$(mktemp /tmp/genhosts.XXXXXX)
 
-    # Use a trap to ensure the temp file is cleaned up on script exit,
-    # interrupt (Ctrl+C), or termination.
-    trap 'rm -f "$tmp_file"' EXIT INT TERM
+    # zsh `always` block: cleans up on return or Ctrl+C without installing
+    # a trap that would outlive this function in the interactive shell.
+    {
+        echo "[i] Generating hosts file for: $ip_address"
+        if ! netexec smb "$ip_address" --generate-hosts-file "$tmp_file"; then
+            echo "[!] Failed to generate hosts file. Check netexec command."
+            return 1
+        fi
 
-    echo "[i] Generating hosts file for: $ip_address"
-    netexec smb "$ip_address" --generate-hosts-file "$tmp_file"
-
-    if [[ $? -ne 0 ]]; then
-        echo "[!] Failed to generate hosts file. Check netexec command."
-        return 1
-    fi
-
-    echo "[i] Appending generated entries to /etc/hosts..."
-    # Use sudo with tee to append to a root-owned file.
-    sudo tee -a /etc/hosts < "$tmp_file" > /dev/null
-
-    if [[ $? -eq 0 ]]; then
-        echo "[✓] /etc/hosts successfully updated. New entries:"
-        cat "$tmp_file"
-    else
-        echo "[!] Failed to update /etc/hosts. Check sudo permissions."
-    fi
+        echo "[i] Appending generated entries to /etc/hosts..."
+        # Use sudo with tee to append to a root-owned file.
+        if sudo tee -a /etc/hosts < "$tmp_file" > /dev/null; then
+            echo "[✓] /etc/hosts successfully updated. New entries:"
+            cat "$tmp_file"
+        else
+            echo "[!] Failed to update /etc/hosts. Check sudo permissions."
+            return 1
+        fi
+    } always {
+        rm -f "$tmp_file"
+    }
 } # Description: Generate and append to /etc/hosts using netexec.
 
 edit-command-line-tmux-float() {
@@ -112,58 +111,6 @@ edit-command-line-tmux-float() {
   zle redisplay
 } # Description: Edit the current command in a floating tmux popup or external editor.
 
-
-updatepwnbox() {
-    # Configuration
-    local TOKEN_FILE="$HOME/htb_token"
-    local SSH_CONFIG="$HOME/.ssh/config"
-    local BOOTSTRAP_URL="https://raw.githubusercontent.com/mm4rks/dotfiles/main/bootstrap.sh"
-    
-    if [[ ! -f "$TOKEN_FILE" ]]; then
-        echo "[-] Error: $TOKEN_FILE not found."
-        return 1
-    fi
-
-    # 1. Fetch credentials from the verified endpoint
-    local TOKEN=$(tr -d '\n\r ' < "$TOKEN_FILE")
-    local RESPONSE=$(curl -s -H "Authorization: Bearer $TOKEN" -H "Accept: application/json" \
-        "https://labs.hackthebox.com/api/v4/pwnbox/status")
-
-    # 2. Extract credentials
-    local HOSTNAME=$(echo "$RESPONSE" | jq -r '.data.hostname // empty')
-    local USER_NAME=$(echo "$RESPONSE" | jq -r '.data.username // empty')
-    local PASSWORD=$(echo "$RESPONSE" | jq -r '.data.vnc_password // empty')
-
-    if [[ -z "$HOSTNAME" || "$HOSTNAME" == "null" ]]; then
-        echo "[-] Error: Could not retrieve active Pwnbox data."
-        echo "[-] Response: $RESPONSE"
-        return 1
-    fi
-
-    # 3. Update ~/.ssh/config for the 'htb' alias
-    touch "$SSH_CONFIG"
-    # Remove existing 'htb' block
-    sed -i '/Host htb/,+6d' "$SSH_CONFIG"
-    
-    cat >> "$SSH_CONFIG" <<EOF
-Host htb
-    HostName $HOSTNAME
-    User $USER_NAME
-    ForwardX11 yes
-    ForwardX11Trusted yes
-    StrictHostKeyChecking no
-    UserKnownHostsFile /dev/null
-EOF
-
-    echo "[+] SSH alias 'htb' updated ($HOSTNAME)."
-    echo "[+] Password: $PASSWORD (Copied to clipboard)"
-    echo -n "$PASSWORD" | xc 2>/dev/null
-
-    # 4. Remote Bootstrap: Curl script from GitHub and execute
-    echo "[*] Executing remote bootstrap on 'htb'..."
-    sshpass -p "$PASSWORD" ssh htb "nohup bash -c 'curl -sL $BOOTSTRAP_URL | bash' > /tmp/bootstrap.log 2>&1 &"
-    echo "[+] Bootstrap process started in the background on 'htb'. You can disconnect."
-} # Description: Fetches Pwnbox credentials, updates SSH config, and triggers remote bootstrap on Hack The Box Pwnbox.
 
 function tmux_smart_detach() {
   if [[ -z "$BUFFER" ]]; then
@@ -196,29 +143,14 @@ function audit_npm() {
     echo -e "\n\033[1;32m[+] Auditing Global NPM Packages:\033[0m"
     npm list -g --all --depth=20 2>/dev/null || echo "    (No global packages found or npm error)"
 
-    # 2. Mise
-    local MISE_NPM_ROOT="$HOME/.local/share/mise/installs/npm"
-    if [[ -d "$MISE_NPM_ROOT" ]]; then
-        echo -e "\n\033[1;34m[+] Auditing Mise Managed NPM Packages ($MISE_NPM_ROOT):\033[0m"
-        find "$MISE_NPM_ROOT" -maxdepth 2 -type d -name "node_modules" 2>/dev/null | while read -r nm_path; do
-            local pkg_dir=$(dirname "$nm_path")
-            local lock_info=""
-            [[ -f "$pkg_dir/package-lock.json" ]] && lock_info+="\033[0;32m[NPM-Lock]\033[0m "
-            [[ -f "$pkg_dir/yarn.lock" ]] && lock_info+="\033[0;32m[Yarn-Lock]\033[0m "
-            [[ -f "$pkg_dir/pnpm-lock.yaml" ]] && lock_info+="\033[0;32m[PNPM-Lock]\033[0m "
-            
-            echo -e "    Location: $pkg_dir ${lock_info:-\033[1;31m[!] NO LOCK FILE\033[0m}"
-            (cd "$pkg_dir" && npm list --all --depth=10 2>/dev/null | sed 's/^/      /')
-        done
-    fi
-
-    # 3. Deep Search
+    # 2. Deep Search
     if [[ "$SEARCH_ALL" == "--all" ]]; then
+        local global_root
+        global_root="$(npm root -g 2>/dev/null)"
         echo -e "\n\033[1;33m[!] Deep Scan: Searching for all 'node_modules' in \$HOME...\033[0m"
         find "$HOME" -name "node_modules" -type d -prune 2>/dev/null | while read -r nm_path; do
-            # Skip paths already covered
-            [[ "$nm_path" == "/usr/local/lib"* ]] && continue
-            [[ "$nm_path" == "$MISE_NPM_ROOT"* ]] && continue
+            # Skip the global root, already listed above
+            [[ -n "$global_root" && "$nm_path" == "$global_root"* ]] && continue
             
             local pkg_dir=$(dirname "$nm_path")
             local lock_info=""

@@ -1,37 +1,39 @@
 # Dotfiles (work branch)
 
-Automated development environment setup for Debian and Arch-based distributions.
+Automated development environment setup for Debian-based distributions (Ubuntu, Kali).
 
 Lightweight variant of the `main` branch for work boxes: terminal tools (shell, tmux, nvim, etc.) with no Wayland/Hyprland desktop and no `mise` — see `CLAUDE.md` for details.
 
 ## Quick Start
 
-### Standard Setup
-Requires sudo privileges. Performs full system configuration and stows dotfiles.
-
 ```bash
-git clone https://github.com/mm4rks/dotfiles.git ~/.dotfiles
+git clone -b work https://github.com/mm4rks/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
-./setup.sh
+./setup.sh            # asks: persistent or guest
 ```
 
-### Guest Mode
-Sandboxed environment. No sudo required. Does not modify the host home directory.
+The mode can also be passed directly: `./setup.sh persistent [profiles]` or `./setup.sh guest`.
+
+### Persistent
+Requires sudo. Installs system packages and tools, sets zsh as login shell, and stows the dotfiles into `$HOME`.
+
+### Guest
+Sandboxed. No sudo, nothing written to `$HOME`. Installs the terminal tools and nvim plugins into the gitignored `.guest/` directory of the repo; shell history, caches and configs live there too. Requires `curl tar xz git zsh` on the host.
 
 ```bash
-git clone https://github.com/mm4rks/dotfiles.git ~/.dotfiles
-cd ~/.dotfiles
-source activate.sh
+./setup.sh guest
+source activate.sh && exec zsh
 ```
 
-## Default Tools
+## Default Tools (persistent mode)
 
-Installed by `./setup.sh` regardless of profile: Ghidra, Joern, jadx, apktool, trivy, dependency-check, semgrep, flare-capa, apkleaks, cdxgen.
+Ghidra, Joern, jadx, apktool, trivy (Docker wrapper), dependency-check, semgrep, flare-capa, apkleaks, cdxgen. All versions are pinned and downloads are checksum-verified.
 
-## Profiles (./setup.sh [profiles])
+## Profiles (persistent mode: `./setup.sh persistent [profiles]`)
 
+- **headless**: skip the Nerd Font.
 - **pwn**: BloodHound, NetExec, PowerView, Certipy.
-- **ssh**: SSH hardening.
+- **ssh**: install openssh-server and disable password/root login. Refuses to run unless `~/.ssh/authorized_keys` exists.
 
 ## Testing
 

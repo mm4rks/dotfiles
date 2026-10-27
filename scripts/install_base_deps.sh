@@ -35,4 +35,8 @@ install_base_deps() {
     fi
 }
 
-install_base_deps
+main() {
+    install_base_deps
+}
+
+main "$@"

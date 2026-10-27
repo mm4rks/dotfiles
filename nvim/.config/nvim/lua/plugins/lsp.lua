@@ -1,22 +1,23 @@
+-- Buffer-local LSP keymaps. Registered via LspAttach rather than a per-server
+-- on_attach, since nvim-lspconfig's own configs (e.g. basedpyright) define
+-- on_attach and would replace ours.
 local function on_attach(client, bufnr)
     print("LSP client attached: " .. client.name .. " to buffer: " .. bufnr)
-    vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
     local opts = { noremap = true, silent = true, buffer = bufnr }
 
     vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
     vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
     vim.keymap.set("i", "<C-s>", vim.lsp.buf.signature_help, opts)
 
-    -- Suggestion 2: Integrate 'trouble.nvim' for a better UI
-    -- for diagnostics, references, and code actions.
-    vim.keymap.set("n", "<leader>vws", function() require("trouble").open("workspace_diagnostics") end, opts)
-    vim.keymap.set("n", "<leader>vd", function() require("trouble").open("document_diagnostics") end, opts)
-    vim.keymap.set("n", "<leader>vca", function() require("trouble").open("lsp_code_actions") end, opts)
-    vim.keymap.set("n", "<leader>vrr", function() require("trouble").open("lsp_references") end, opts)
+    -- Diagnostics and references in trouble.nvim (v3 modes).
+    vim.keymap.set("n", "<leader>vws", "<cmd>Trouble diagnostics toggle<cr>", opts)
+    vim.keymap.set("n", "<leader>vd", "<cmd>Trouble diagnostics toggle filter.buf=0<cr>", opts)
+    vim.keymap.set("n", "<leader>vrr", "<cmd>Trouble lsp_references toggle<cr>", opts)
+    -- trouble v3 has no code-action mode.
+    vim.keymap.set("n", "<leader>vca", vim.lsp.buf.code_action, opts)
 
-    -- These diagnostic maps are still useful
-    vim.keymap.set("n", "<leader>gn", vim.diagnostic.goto_next, opts)
-    vim.keymap.set("n", "<leader>gp", vim.diagnostic.goto_prev, opts)
+    vim.keymap.set("n", "<leader>gn", function() vim.diagnostic.jump({ count = 1, float = true }) end, opts)
+    vim.keymap.set("n", "<leader>gp", function() vim.diagnostic.jump({ count = -1, float = true }) end, opts)
 
     if client.name == 'ruff' then
         vim.keymap.set("n", "<leader>fm", function()
@@ -28,18 +29,43 @@ end
 return {
     {
         'neovim/nvim-lspconfig',
-        -- This plugin is now primarily a dependency.
-        -- We still configure diagnostics here.
+        -- Provides the per-server defaults under lsp/; servers are configured
+        -- with vim.lsp.config() and enabled by mason-lspconfig below.
         event = { "BufReadPre", "BufNewFile" },
         dependencies = {
             'williamboman/mason.nvim',
             'hrsh7th/cmp-nvim-lsp', -- For capabilities
-            'folke/trouble.nvim',   -- Used in on_attach
+            'folke/trouble.nvim',   -- Used by the LSP keymaps
         },
         config = function()
-            -- Configure diagnostics
             vim.diagnostic.config({
                 virtual_text = true,
+            })
+
+            vim.api.nvim_create_autocmd("LspAttach", {
+                group = vim.api.nvim_create_augroup("user_lsp_attach", { clear = true }),
+                callback = function(args)
+                    local client = vim.lsp.get_client_by_id(args.data.client_id)
+                    if client then
+                        on_attach(client, args.buf)
+                    end
+                end,
+            })
+
+            vim.lsp.config('*', {
+                capabilities = require('cmp_nvim_lsp').default_capabilities(),
+            })
+            vim.lsp.config('vtsls', {
+                filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
+            })
+            vim.lsp.config('lua_ls', {
+                settings = {
+                    Lua = {
+                        diagnostics = {
+                            globals = { "vim" }
+                        }
+                    }
+                },
             })
         end
     },
@@ -54,50 +80,22 @@ return {
 
     {
         'williamboman/mason-lspconfig.nvim',
-        -- This plugin now contains all the setup logic
-        event = "VeryLazy",
+        -- v2: installs the servers and vim.lsp.enable()s them (automatic_enable).
+        -- Loaded on BufReadPre, not VeryLazy, so the servers are enabled before
+        -- the first file's FileType event and attach to it.
+        event = { "BufReadPre", "BufNewFile" },
         dependencies = { 'williamboman/mason.nvim', 'neovim/nvim-lspconfig' },
         config = function()
-            -- These must be defined INSIDE the config function
-            -- to be in scope for the handlers.
-            local lspconfig = require('lspconfig')
-            local capabilities = require('cmp_nvim_lsp').default_capabilities()
-
             require('mason-lspconfig').setup({
                 ensure_installed = { "basedpyright", "ruff", "lua_ls", "vtsls" },
-                -- The 'handlers' table is the correct place for this logic
-                handlers = {
-                    -- 1. This is the default handler for all servers
-                    -- (e.g., ruff, basedpyright)
-                    function(server_name)
-                        lspconfig[server_name].setup({
-                            on_attach = on_attach,
-                            capabilities = capabilities
-                        })
-                    end,
-                    ["vtsls"] = function()
-                        lspconfig.vtsls.setup({
-                            on_attach = on_attach,
-                            capabilities = capabilities,
-                            filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
-                        })
-                    end,
-                    ["lua_ls"] = function()
-                        lspconfig.lua_ls.setup({
-                            on_attach = on_attach,
-                            capabilities = capabilities,
-                            settings = {
-                                Lua = {
-                                    diagnostics = {
-                                        globals = { "vim" }
-                                    }
-                                }
-                            }
-                        })
-                    end,
-                },
             })
         end
+    },
+
+    {
+        'folke/trouble.nvim',
+        cmd = "Trouble",
+        opts = {},
     },
 
     {

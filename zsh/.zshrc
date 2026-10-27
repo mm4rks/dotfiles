@@ -20,7 +20,8 @@ setopt pushdignoredups      # Don't push directories that are already on the sta
 WORDCHARS=${WORDCHARS//\/} # Slashes and minus separate words
 
 # --- History Configuration ----------------------------------------------------
-HISTFILE="${ZDOTDIR:-$HOME}/.zsh_history"     # Set path for the history file.
+# Guest mode keeps history in the gitignored sandbox, never inside the repo's zsh/.
+HISTFILE="${DOTFILES_GUEST_DIR:-$HOME}/.zsh_history"
 HISTSIZE=20000              # Max number of commands to keep in memory.
 SAVEHIST=20000              # Max number of commands to save to the file.
 setopt appendhistory        # Append to history, don't overwrite.
@@ -167,15 +168,6 @@ precmd_functions+=(_prompt_segments)
 # status character on its own line.
 PROMPT=$'\n''%B%F{#fab387}%m%f%b ${_prompt_venv}%B%F{cyan}%(3~|…/%2~|%~)%f%b${_prompt_ro} '$'\n''%(?.%B%F{#89dceb}❯.%B%F{#f38ba8}✗)%f%b '
 PROMPT2='%F{8}∙%f '
-
-# Android SDK
-export ANDROID_SDK_ROOT="$HOME/android-sdk"
-export ANDROID_HOME="$HOME/android-sdk"
-export PATH="$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools"
-
-
-# Added by Antigravity CLI installer
-export PATH="/home/user/.local/bin:$PATH"
 
 # Re-apply typeset -U (assignments via `export PATH=` bypass it)
 path=($path)
