@@ -53,3 +53,13 @@ command_exists() {
 user_in_group() {
     groups | grep -q "\b$1\b"
 }
+
+# Checks if the current system is Omarchy.
+is_omarchy() {
+    [ -d /usr/share/omarchy ] || [ -d "$HOME/.local/share/omarchy" ] || command_exists omarchy-version
+}
+
+# Checks if the current system is Debian/Ubuntu/Kali-based.
+is_debian_family() {
+    [ -f /etc/debian_version ] && command_exists apt-get
+}

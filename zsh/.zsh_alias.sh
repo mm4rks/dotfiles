@@ -101,3 +101,4 @@ alias devdocs="docker run --name devdocs -d -p 9292:9292 ghcr.io/freecodecamp/de
 alias orga="cd ~/notes/00-Organization/ && opencode"
 alias plan="orga --prompt 'plan my day'"
 alias wiki="mkdir -p ~/notes/05-Wiki && cd ~/notes/05-Wiki && opencode"
+alias virtualbox="QT_SCALE_FACTOR=2 virtualbox"

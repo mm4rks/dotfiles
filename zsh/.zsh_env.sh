@@ -1,3 +1,6 @@
+# Deduplicate PATH entries automatically in Zsh
+typeset -U path PATH
+
 # Ensure ~/.local/bin is in PATH but preserve existing paths
 export PATH="$HOME/.local/bin:$PATH"
 export GOPATH="$HOME/go"

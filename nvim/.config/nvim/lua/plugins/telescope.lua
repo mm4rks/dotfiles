@@ -9,7 +9,6 @@ return {
             local telescope = require('telescope')
             local builtin = require('telescope.builtin')
             local actions = require('telescope.actions')
-            local joern = require('config.joern')
 
             telescope.setup {
                 defaults = {
@@ -72,11 +71,10 @@ return {
                             table.insert(args, "-g")
                             table.insert(args, pieces[2])
                         end
-                        ---@diagnostic disable-next-line: deprecated
-                        return vim.tbl_flatten {
+                        return vim.iter({
                             args,
                             { "--color=never", "--no-heading", "--with-filename", "--line-number", "--column", "--smart-case", "--hidden" },
-                        }
+                        }):flatten():totable()
                     end,
                     entry_maker = make_entry.gen_from_vimgrep(opts),
                     cwd = opts.cwd,

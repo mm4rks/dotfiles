@@ -11,6 +11,7 @@ o.bind("SUPER + RETURN", "Terminal", 'uwsm-app -- xdg-terminal-exec --dir="$(oma
 hl.unbind("SUPER + SHIFT + RETURN")
 o.bind("SUPER + SHIFT + RETURN", "Browser", "omarchy-launch-browser")
 
+hl.unbind("SUPER + Q")
 o.bind("SUPER + Q", "Main Terminal", "omarchy-launch-or-focus 'main-terminal' \"foot --app-id 'main-terminal' tmux new-session -A -s main\"")
 
 hl.unbind("SUPER + SHIFT + F")
@@ -37,8 +38,6 @@ o.bind("SUPER + SHIFT + N", "Editor", "omarchy-launch-editor")
 hl.unbind("SUPER + SHIFT + D")
 o.bind("SUPER + SHIFT + D", "Docker", "omarchy-launch-tui lazydocker")
 
-o.bind("SUPER + D", "Dictation", "voxtype record toggle")
-
 hl.unbind("SUPER + SHIFT + S")
 o.bind("SUPER + SHIFT + S", "Signal", 'omarchy-launch-or-focus signal "uwsm-app -- signal-desktop"')
 
@@ -51,8 +50,6 @@ o.bind("SUPER + SHIFT + C", "Anki", os.getenv("HOME") .. "/.config/hypr/run-anki
 -- Web Apps
 hl.unbind("SUPER + SHIFT + A")
 o.bind("SUPER + SHIFT + A", "Gemini", 'omarchy-launch-webapp "https://gemini.google.com/app"')
-
-o.bind("SUPER + A", "Log Note", "vnote-toggle")
 
 hl.unbind("SUPER + SHIFT + G")
 o.bind("SUPER + SHIFT + G", "GitHub", 'omarchy-launch-webapp "https://github.com/mm4rks/dotfiles"')
@@ -68,8 +65,9 @@ hl.unbind("SUPER + SHIFT + O")
 o.bind("SUPER + SHIFT + O", "Pop window out", "omarchy-hyprland-window-pop")
 
 hl.unbind("SUPER + E")
-o.bind("SUPER + E", "Apps menu", "omarchy-menu toggle apps")
-o.bind("SUPER + R", "Omarchy menu", "omarchy-menu")
+o.bind("SUPER + E", "Apps menu", { menu = "apps" })
+hl.unbind("SUPER + R")
+o.bind("SUPER + R", "Omarchy menu", { menu = "root" })
 
 -- Focus navigation (Vim-style)
 hl.bind("ALT + H", hl.dsp.focus({ direction = "l" }), { description = "Focus left" })

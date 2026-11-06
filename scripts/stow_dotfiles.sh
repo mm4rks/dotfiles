@@ -13,7 +13,11 @@ stow_dotfiles() {
         mv "$HOME/.zshrc" "$HOME/.zshrc.bak"
     fi
 
-    local CORE_PACKAGES=(zsh tmux eza git vivid nvim opencode voxtype starship)
+    local CORE_PACKAGES=(zsh tmux eza git vivid nvim opencode starship)
+    if is_omarchy; then
+        CORE_PACKAGES+=(hypr)
+    fi
+
     for pkg in "${CORE_PACKAGES[@]}"; do
         if [ -d "${REPO_DIR}/${pkg}" ]; then
             log "Stowing '${pkg}'..."
@@ -21,7 +25,14 @@ stow_dotfiles() {
         fi
     done
 
-
+    if is_omarchy && [ -d "${REPO_DIR}/applications" ]; then
+        mkdir -p "$HOME/.local/share/applications"
+        log "Stowing 'applications'..."
+        stow --dir="$REPO_DIR" --target="$HOME/.local/share/applications" --restow applications 2>/dev/null || warn "Stow found conflicts for 'applications'. It might be partially stowed."
+    fi
 }
 
-stow_dotfiles
+main() {
+    stow_dotfiles "$@"
+}
+main "$@"

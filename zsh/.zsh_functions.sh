@@ -2,24 +2,13 @@ function ts() {
     tmux send-keys -t right "$@" C-m
 } # Description: Send a command and its arguments to the tmux pane to the right
 
-function swapctrl() {
-    local arg="${1,,}"
-
-    if [[ "$arg" == "off" ]]; then
-        gsettings set org.gnome.desktop.input-sources xkb-options "[]"
-        echo "[+] Key swap disabled."
-    else
-        gsettings set org.gnome.desktop.input-sources xkb-options "['ctrl:swapcaps']"
-        echo "[+] Ctrl and Caps Lock swapped."
-    fi
-} # Description:  Swaps Ctrl and Caps Lock. Usage: swapctrl [off]
-
 function rf() {
     local search_path="${1:-.}" #  default to the current directory ('.')
     local INITIAL_QUERY=""
     local RG_PREFIX="rg --column --line-number --no-heading --color=always --smart-case"
     FZF_DEFAULT_COMMAND="$RG_PREFIX '$INITIAL_QUERY' -- '$search_path'" \
-        fzf --bind "change:reload:$RG_PREFIX {q} -- '$search_path' || true" \
+        fzf --bind "start:reload:$RG_PREFIX {q} -- '$search_path' || true" \
+            --bind "change:reload:$RG_PREFIX {q} -- '$search_path' || true" \
             --ansi --disabled --query "$INITIAL_QUERY" \
             --height=50% --layout=reverse \
             --preview "${BAT_CMD:-cat} --color=always {1} --highlight-line {2}" \
@@ -63,8 +52,9 @@ EOF
 } # Description: Print a cheat sheet for SSH port forwarding.
 
 function genhosts() {
+    setopt localtraps
     if [[ -z "$1" ]]; then
-        echo "[i] Usage: ${FUNCNAME[0]} <IP_ADDRESS>"
+        echo "[i] Usage: ${funcstack[1]:-${FUNCNAME[0]:-genhosts}} <IP_ADDRESS>"
         return 1
     fi
 
@@ -292,3 +282,44 @@ function tdl() {
     # Attach to the session
     tmux attach-session -t dev_layout
 } # Description: Tmux Dev Layout with editor, AI agent, and terminal.
+
+function backward_kill_word_delim() {
+    emulate -L zsh
+    setopt extendedglob
+    [[ -z "$LBUFFER" ]] && return 0
+
+    local new_lbuffer="${LBUFFER%%[^[:space:]:@/]##[[:space:]:@/]#}"
+    if [[ "$new_lbuffer" == "$LBUFFER" ]]; then
+        new_lbuffer=""
+    fi
+
+    local killed="${LBUFFER:${#new_lbuffer}}"
+    if [[ "$LASTWIDGET" == *kill* ]]; then
+        CUTBUFFER="${killed}${CUTBUFFER}"
+    else
+        zle copy-region-as-kill -- "$killed"
+    fi
+    LBUFFER="$new_lbuffer"
+    zle -f kill
+} # Description: Backward kill word treating whitespace and :@/ as word breaks.
+
+function kill_word_delim() {
+    emulate -L zsh
+    setopt extendedglob
+    [[ -z "$RBUFFER" ]] && return 0
+
+    local new_rbuffer="${RBUFFER#[[:space:]]#[:@/]#[^[:space:]:@/]##}"
+    if [[ "$new_rbuffer" == "$RBUFFER" ]]; then
+        new_rbuffer="${RBUFFER#[[:space:]:@/]##}"
+    fi
+
+    local killed_len=$(( ${#RBUFFER} - ${#new_rbuffer} ))
+    local killed="${RBUFFER:0:$killed_len}"
+    if [[ "$LASTWIDGET" == *kill* ]]; then
+        CUTBUFFER="${CUTBUFFER}${killed}"
+    else
+        zle copy-region-as-kill -- "$killed"
+    fi
+    RBUFFER="$new_rbuffer"
+    zle -f kill
+} # Description: Forward kill word treating :@/ as word breaks and stopping at whitespace.

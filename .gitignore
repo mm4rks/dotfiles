@@ -3,6 +3,7 @@ gef/
 GEMINI.md
 *.bak.*
 .opencode/
+zsh/.zsh_history
 
 # Only keep the curated opencode config files under the stowed package.
 opencode/.config/opencode/*

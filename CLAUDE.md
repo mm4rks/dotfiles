@@ -40,7 +40,7 @@ Use `# shellcheck disable=SCXXXX` only for confirmed false positives.
 `activate.sh` is sourced (not executed) for guest mode — sets `ZDOTDIR` and `XDG_CONFIG_HOME` to point into the repo instead of using Stow.
 
 ### Stow Packages
-The following directories are stowed to `$HOME`: `zsh`, `tmux`, `eza`, `git`, `vivid`, `nvim`, `opencode`, `voxtype`. Wayland-specific (`alacritty`, `hypr`, `waybar`) are stowed separately.
+The following directories are stowed to `$HOME`: `zsh`, `tmux`, `eza`, `git`, `vivid`, `nvim`, `opencode`, `starship`. On Omarchy, `hypr` is also stowed to `$HOME`, and `applications` is stowed to `~/.local/share/applications`.
 
 ### Mise Tool Management
 `mise/base.toml` pins core tools (Neovim, Node, Python, fzf, ripgrep, bat, delta, zoxide, etc.). Profile-specific tools are in `mise/dev.profile` (Go, Rust), `mise/rev.profile` (Java, semgrep, flare-capa). `scripts/configure_mise.sh` merges these into a single config before installing.

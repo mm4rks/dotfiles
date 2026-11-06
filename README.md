@@ -1,11 +1,11 @@
 # Dotfiles
 
-Automated development environment setup for Debian and Arch-based distributions.
+Automated development environment setup for Ubuntu/Kali distributions, plus configuration stowing on Omarchy.
 
 ## Quick Start
 
-### Standard Setup
-Requires sudo privileges. Performs full system configuration and stows dotfiles.
+### Standard Setup (Ubuntu/Kali or Omarchy)
+On Ubuntu/Kali, requires sudo privileges and performs full system configuration, Mise tool installation, and dotfile stowing. On Omarchy, skips system/Mise installers and only stows the relevant configurations and syncs Neovim plugins.
 
 ```bash
 git clone https://github.com/mm4rks/dotfiles.git ~/.dotfiles
@@ -13,7 +13,7 @@ cd ~/.dotfiles
 ./setup.sh
 ```
 
-### Guest Mode
+### Guest Mode (Ubuntu/Kali)
 Sandboxed environment. No sudo required. Does not modify the host home directory.
 
 ```bash
@@ -22,20 +22,12 @@ cd ~/.dotfiles
 source activate.sh
 ```
 
-## Profiles (./setup.sh [profiles])
+## Profiles (./setup.sh [profiles] on Ubuntu/Kali)
 
 - **dev**: Go, Rust.
 - **pwn**: BloodHound, NetExec, PowerView, Certipy.
 - **rev**: Joern, Ghidra, jadx, apktool, apkleaks, semgrep, flare-capa.
 - **ssh**: SSH hardening.
-
-## Opencode Sandbox
-
-The opencode Docker image is built once and skipped on subsequent runs of `setup.sh`. To force a rebuild:
-
-```bash
-./scripts/install_opencode.sh --update
-```
 
 ## Testing
 

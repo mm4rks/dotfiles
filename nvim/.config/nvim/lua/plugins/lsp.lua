@@ -1,6 +1,5 @@
 local function on_attach(client, bufnr)
-    print("LSP client attached: " .. client.name .. " to buffer: " .. bufnr)
-    vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+    vim.bo[bufnr].omnifunc = 'v:lua.vim.lsp.omnifunc'
     local opts = { noremap = true, silent = true, buffer = bufnr }
 
     vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
@@ -15,8 +14,8 @@ local function on_attach(client, bufnr)
     vim.keymap.set("n", "<leader>vrr", function() require("trouble").open("lsp_references") end, opts)
 
     -- These diagnostic maps are still useful
-    vim.keymap.set("n", "<leader>gn", vim.diagnostic.goto_next, opts)
-    vim.keymap.set("n", "<leader>gp", vim.diagnostic.goto_prev, opts)
+    vim.keymap.set("n", "<leader>gn", function() vim.diagnostic.jump({ count = 1, float = true }) end, opts)
+    vim.keymap.set("n", "<leader>gp", function() vim.diagnostic.jump({ count = -1, float = true }) end, opts)
 
     if client.name == 'ruff' then
         vim.keymap.set("n", "<leader>fm", function()

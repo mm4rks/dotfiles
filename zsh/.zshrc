@@ -82,15 +82,15 @@ bindkey '^[[3~' delete-char
 bindkey '^H' backward-delete-char   # Backspace
 bindkey '^P' up-line-or-history     # Previous history
 bindkey '^N' down-line-or-history   # Next history
-bindkey '^W' backward-kill-word     # Delete word backward
 bindkey '^U' kill-whole-line        # Delete from cursor to start of line
 bindkey '^K' kill-line              # Delete from cursor to end of line
 bindkey '^Y' yank                   # Paste (yank)
-bindkey '\ed' kill-word             # Alt-d, delete word forward
 
 source "${ZDOTDIR:-$HOME}/.zsh_env.sh"
-eval "$(mise activate zsh)"
-eval "$(mise completion zsh)"
+if command -v mise &> /dev/null; then
+    eval "$(mise activate zsh)"
+    eval "$(mise completion zsh)"
+fi
 
 # Set default editor: prefer nvim, but fall back to vim
 # Checked after mise activate so mise-installed nvim is found
@@ -121,8 +121,12 @@ fi
 # Register widgets from .zsh_functions.sh
 zle -N tmux_smart_detach
 zle -N edit-command-line-tmux-float
+zle -N backward_kill_word_delim
+zle -N kill_word_delim
 bindkey '^D' tmux_smart_detach
 bindkey '^x^e' edit-command-line-tmux-float      # Ctrl+X, Ctrl+E to open editor.
+bindkey '^W' backward_kill_word_delim            # Ctrl+W: delete word backward (: @ / and space breaks)
+bindkey '\ed' kill_word_delim                    # Alt+D: delete word forward (: @ / breaks, stops at space)
 
 # --- Prompt Configuration ---
 PROMPT_EOL_MARK=""          # Hide the '%' character that appears at the end of lines.
@@ -144,7 +148,3 @@ fi
 export ANDROID_SDK_ROOT="$HOME/android-sdk"
 export ANDROID_HOME="$HOME/android-sdk"
 export PATH="$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools"
-
-
-# Added by Antigravity CLI installer
-export PATH="/home/user/.local/bin:$PATH"
