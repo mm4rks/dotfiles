@@ -80,16 +80,15 @@ vim.keymap.set("n", "<leader>#", ":set hlsearch!<CR>", { noremap = true, silent 
 vim.keymap.set("n", "\\", "#", { noremap = true, silent = true })
 vim.keymap.set("n", "<leader>\\", ":set hlsearch!<CR>", { noremap = true, silent = true })
 
--- map :W to :w
+-- map :W to :w and :E to :Explore
 vim.cmd.command("W", "w")
 vim.cmd.command("Wq", "wq")
 vim.cmd.command("WQ", "wq")
 vim.cmd.command("Q", "q")
+vim.api.nvim_create_user_command("E", "Explore <args>", { nargs = "?", complete = "dir" })
 
--- " indent/unindent with tab/shift-tab
+-- indent/unindent with tab/shift-tab (visual/insert only so <C-i> jump works in normal mode)
 vim.keymap.set("i", "<S-Tab>", "<Esc><<i")
-vim.keymap.set("n", "<Tab>", ">>")
-vim.keymap.set("n", "<S-Tab>", "<<")
 vim.keymap.set("v", "<Tab>", ">", { noremap = true })
 vim.keymap.set("v", "<S-Tab>", "<")
 

@@ -73,6 +73,12 @@ bindkey ' ' magic-space                          # Space performs history expans
 bindkey '^[[Z' undo                              # Shift+Tab to undo.
 bindkey '\ef' forward-word                       # Alt-f
 bindkey '\eb' backward-word                      # Alt-b
+bindkey '^[[1;5C' forward-word                   # Ctrl+Right
+bindkey '^[[1;5D' backward-word                  # Ctrl+Left
+bindkey '^[[5C' forward-word                     # Ctrl+Right (rxvt)
+bindkey '^[[5D' backward-word                    # Ctrl+Left (rxvt)
+bindkey '^[Oc' forward-word                      # Ctrl+Right (urxvt)
+bindkey '^[Od' backward-word                     # Ctrl+Left (urxvt)
 bindkey '^A' beginning-of-line
 bindkey '^E' end-of-line
 bindkey '^F' autosuggest-accept
@@ -126,7 +132,7 @@ zle -N kill_word_delim
 bindkey '^D' tmux_smart_detach
 bindkey '^x^e' edit-command-line-tmux-float      # Ctrl+X, Ctrl+E to open editor.
 bindkey '^W' backward_kill_word_delim            # Ctrl+W: delete word backward (: @ / and space breaks)
-bindkey '\ed' kill_word_delim                    # Alt+D: delete word forward (: @ / breaks, stops at space)
+bindkey '\ed' kill_word_delim                    # Alt+D: delete word forward (: @ / and space breaks)
 
 # --- Prompt Configuration ---
 PROMPT_EOL_MARK=""          # Hide the '%' character that appears at the end of lines.

@@ -288,7 +288,7 @@ function backward_kill_word_delim() {
     setopt extendedglob
     [[ -z "$LBUFFER" ]] && return 0
 
-    local new_lbuffer="${LBUFFER%%[^[:space:]:@/]##[[:space:]:@/]#}"
+    local new_lbuffer="${LBUFFER%%([^[:space:]:@/]##[:@/]#|[:@/]##)[[:space:]]#}"
     if [[ "$new_lbuffer" == "$LBUFFER" ]]; then
         new_lbuffer=""
     fi
@@ -308,9 +308,14 @@ function kill_word_delim() {
     setopt extendedglob
     [[ -z "$RBUFFER" ]] && return 0
 
-    local new_rbuffer="${RBUFFER#[[:space:]]#[:@/]#[^[:space:]:@/]##}"
+    local new_rbuffer
+    if [[ "$RBUFFER" == [[:space:]]* ]]; then
+        new_rbuffer="${RBUFFER#[[:space:]]#([:@/]#[^[:space:]:@/]##|[:@/]##)}"
+    else
+        new_rbuffer="${RBUFFER#([:@/]#[^[:space:]:@/]##|[:@/]##)[[:space:]]#}"
+    fi
     if [[ "$new_rbuffer" == "$RBUFFER" ]]; then
-        new_rbuffer="${RBUFFER#[[:space:]:@/]##}"
+        new_rbuffer=""
     fi
 
     local killed_len=$(( ${#RBUFFER} - ${#new_rbuffer} ))
@@ -322,4 +327,4 @@ function kill_word_delim() {
     fi
     RBUFFER="$new_rbuffer"
     zle -f kill
-} # Description: Forward kill word treating :@/ as word breaks and stopping at whitespace.
+} # Description: Forward kill word treating whitespace and :@/ as word breaks.
