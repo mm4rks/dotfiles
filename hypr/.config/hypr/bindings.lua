@@ -69,6 +69,9 @@ o.bind("SUPER + E", "Apps menu", { menu = "apps" })
 hl.unbind("SUPER + R")
 o.bind("SUPER + R", "Omarchy menu", { menu = "root" })
 
+hl.unbind("SUPER + L")
+o.bind("SUPER + L", "Toggle workspace layout (tiling/scrolling)", 'if [ "$(omarchy-hyprland-workspace-layout-current)" = scrolling ]; then omarchy-hyprland-workspace-layout-toggle back; else omarchy-hyprland-workspace-layout-toggle; fi')
+
 -- Focus navigation (Vim-style)
 hl.bind("ALT + H", hl.dsp.focus({ direction = "l" }), { description = "Focus left" })
 hl.bind("ALT + J", hl.dsp.focus({ direction = "d" }), { description = "Focus down" })

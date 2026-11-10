@@ -15,4 +15,8 @@ install_powerview() {
     log "powerview.py installation complete."
 }
 
-install_powerview
+main() {
+    install_powerview "$@"
+}
+
+main "$@"

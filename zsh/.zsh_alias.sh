@@ -9,12 +9,12 @@ alias diff='diff --color=auto'
 alias ip='ip --color=auto'
 alias xargs='xargs '
 # Smart clipboard alias (xc for copy, xp for paste)
-if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
-  alias xc='wl-copy'
-  alias xp='wl-paste'
+if [ -n "${WAYLAND_DISPLAY:-}" ] || [ "${XDG_SESSION_TYPE:-}" = "wayland" ]; then
+    alias xc='wl-copy'
+    alias xp='wl-paste'
 else
-  alias xc='xclip -selection clipboard'
-  alias xp='xclip -selection clipboard -o'
+    alias xc='xclip -selection clipboard'
+    alias xp='xclip -selection clipboard -o'
 fi
 
 # Smart bat/cat alias
@@ -77,9 +77,6 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 
 # Tools
-# alias d='docker'
-# alias r='rails'
-# n() { if [ "$#" -eq 0 ]; then nvim .; else nvim "$@"; fi; }
 alias n="nvim"
 
 # Git
@@ -89,13 +86,9 @@ alias gcam='git commit -a -m'
 alias gcad='git commit -a --amend'
 
 # Sandboxed Tmux
-if [ -n "$ZDOTDIR" ]; then
+if [ -n "${ZDOTDIR:-}" ]; then
     alias tmux="tmux -f ${ZDOTDIR:h}/tmux/.tmux.conf"
 fi
-
-# if command -v nvim &> /dev/null; then
-#     alias vim='nvim' # Conditional alias for Neovim
-# fi
 
 alias devdocs="docker run --name devdocs -d -p 9292:9292 ghcr.io/freecodecamp/devdocs:latest"
 alias orga="cd ~/notes/00-Organization/ && opencode"

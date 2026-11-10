@@ -23,4 +23,8 @@ sync_nvim() {
     log "Neovim sync complete."
 }
 
-sync_nvim
+main() {
+    sync_nvim "$@"
+}
+
+main "$@"

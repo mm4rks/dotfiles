@@ -38,4 +38,8 @@ install_certipy() {
     log "Certipy verified."
 }
 
-install_certipy
+main() {
+    install_certipy "$@"
+}
+
+main "$@"

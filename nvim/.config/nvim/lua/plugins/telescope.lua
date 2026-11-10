@@ -155,6 +155,8 @@ return {
                 local text = get_visual_selection()
                 live_cascadegrep({ default_text = text })
             end)
+
+            require('config.joern')
         end,
     }
 }

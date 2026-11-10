@@ -67,18 +67,14 @@ function genhosts() {
     trap 'rm -f "$tmp_file"' EXIT INT TERM
 
     echo "[i] Generating hosts file for: $ip_address"
-    netexec smb "$ip_address" --generate-hosts-file "$tmp_file"
-
-    if [[ $? -ne 0 ]]; then
+    if ! netexec smb "$ip_address" --generate-hosts-file "$tmp_file"; then
         echo "[!] Failed to generate hosts file. Check netexec command."
         return 1
     fi
 
     echo "[i] Appending generated entries to /etc/hosts..."
     # Use sudo with tee to append to a root-owned file.
-    sudo tee -a /etc/hosts < "$tmp_file" > /dev/null
-
-    if [[ $? -eq 0 ]]; then
+    if sudo tee -a /etc/hosts < "$tmp_file" > /dev/null; then
         echo "[✓] /etc/hosts successfully updated. New entries:"
         cat "$tmp_file"
     else
@@ -87,19 +83,20 @@ function genhosts() {
 } # Description: Generate and append to /etc/hosts using netexec.
 
 edit-command-line-tmux-float() {
-  local TFILE=$(mktemp -t zshXXXXXX.sh)
-  echo "$BUFFER" > "$TFILE"
+    local TFILE
+    TFILE=$(mktemp "${TMPDIR:-/tmp}/zshXXXXXX.sh")
+    echo "$BUFFER" > "$TFILE"
 
-  if [[ -n "$TMUX" ]]; then
-    tmux display-popup -h 80% -w 80% -E "${EDITOR:-nvim} \"$TFILE\""
-  else
-    "${EDITOR:-nvim}" "$TFILE"
-  fi
+    if [[ -n "$TMUX" ]]; then
+        tmux display-popup -h 80% -w 80% -E "${EDITOR:-nvim} \"$TFILE\""
+    else
+        "${EDITOR:-nvim}" "$TFILE"
+    fi
 
-  BUFFER=$(cat "$TFILE")
-  rm "$TFILE"
+    BUFFER=$(cat "$TFILE")
+    rm -f "$TFILE"
 
-  zle redisplay
+    zle redisplay
 } # Description: Edit the current command in a floating tmux popup or external editor.
 
 
@@ -283,6 +280,30 @@ function tdl() {
     tmux attach-session -t dev_layout
 } # Description: Tmux Dev Layout with editor, AI agent, and terminal.
 
+function backward_word_delim() {
+    emulate -L zsh
+    setopt extendedglob
+    [[ -z "$LBUFFER" ]] && return 0
+
+    local new_lbuffer="${LBUFFER%%([^[:space:]:@/]##[:@/]#|[:@/]##)[[:space:]]#}"
+    if [[ "$new_lbuffer" == "$LBUFFER" ]]; then
+        new_lbuffer=""
+    fi
+    CURSOR=${#new_lbuffer}
+} # Description: Move cursor backward one word treating whitespace and :@/ as word breaks.
+
+function forward_word_delim() {
+    emulate -L zsh
+    setopt extendedglob
+    [[ -z "$RBUFFER" ]] && return 0
+
+    local new_rbuffer="${RBUFFER##[[:space:]]#([:@/]#[^[:space:]:@/]##|[:@/]##)}"
+    if [[ "$new_rbuffer" == "$RBUFFER" ]]; then
+        new_rbuffer=""
+    fi
+    CURSOR=$(( CURSOR + ${#RBUFFER} - ${#new_rbuffer} ))
+} # Description: Move cursor forward one word treating whitespace and :@/ as word breaks.
+
 function backward_kill_word_delim() {
     emulate -L zsh
     setopt extendedglob
@@ -310,9 +331,9 @@ function kill_word_delim() {
 
     local new_rbuffer
     if [[ "$RBUFFER" == [[:space:]]* ]]; then
-        new_rbuffer="${RBUFFER#[[:space:]]#([:@/]#[^[:space:]:@/]##|[:@/]##)}"
+        new_rbuffer="${RBUFFER##[[:space:]]#([:@/]#[^[:space:]:@/]##|[:@/]##)}"
     else
-        new_rbuffer="${RBUFFER#([:@/]#[^[:space:]:@/]##|[:@/]##)[[:space:]]#}"
+        new_rbuffer="${RBUFFER##([:@/]#[^[:space:]:@/]##|[:@/]##)[[:space:]]#}"
     fi
     if [[ "$new_rbuffer" == "$RBUFFER" ]]; then
         new_rbuffer=""

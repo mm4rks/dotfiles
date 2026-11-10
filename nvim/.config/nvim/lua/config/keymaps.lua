@@ -1,6 +1,3 @@
--- Open file browser
--- vim.keymap.set("n", "<leader>e", vim.cmd.Ex)
-
 -- move selected lines
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
 vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
@@ -61,17 +58,14 @@ vim.keymap.set("i", "<C-l>", "<Right>", { noremap = true })
 -- L to move to the last character in a line
 vim.keymap.set("n", "L", "g_")
 
--- Vertical split
--- vim.keymap.set("n", "vs", "<C-w>v", {noremap = true, silent = true })
-
 -- Make easy editing and sourcing vimrc
 vim.cmd("command! RefreshConfig source % <bar> echo 'Refreshed!'")
 
 -- <Leader> ev for edit vimrc
-vim.api.nvim_set_keymap('n', '<leader>ev', ':vsplit $MYVIMRC<cr> <bar> :lcd %:h<cr>', { noremap = true })
+vim.keymap.set("n", "<leader>ev", ":vsplit $MYVIMRC<cr> <bar> :lcd %:h<cr>", { noremap = true })
 
 -- <Leader> sv for sourcing vimrc
-vim.api.nvim_set_keymap('n', '<leader>sv', ':RefreshConfig<cr>', { noremap = true })
+vim.keymap.set("n", "<leader>sv", ":RefreshConfig<cr>", { noremap = true })
 
 -- highlight search results toggle
 vim.keymap.set("n", "<leader>#", ":set hlsearch!<CR>", { noremap = true, silent = true })
@@ -94,8 +88,8 @@ vim.keymap.set("v", "<S-Tab>", "<")
 
 
 -- Vimtex mappings
-vim.api.nvim_set_keymap('n', '<F5>', ':w<CR>:VimtexCompile<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', ',c', '<F7>', { noremap = false })
+vim.keymap.set("n", "<F5>", ":w<CR>:VimtexCompile<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", ",c", "<F7>", { remap = true })
 
 -- Fugitive
 vim.keymap.set("n", "<leader>gs", vim.cmd.Git)

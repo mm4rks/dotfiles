@@ -1,7 +1,7 @@
 #!/bin/bash
 # test_runner.sh - Builds test images. If the build succeeds, all scripts passed.
 
-set -e # Exit immediately if a command exits with a non-zero status.
+set -euo pipefail
 
 # --- Configuration ---
 DOCKERFILE="Dockerfile.test"

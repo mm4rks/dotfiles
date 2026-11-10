@@ -15,4 +15,8 @@ install_netexec() {
     log "NetExec installation complete."
 }
 
-install_netexec
+main() {
+    install_netexec "$@"
+}
+
+main "$@"

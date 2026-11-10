@@ -68,7 +68,7 @@ install_nvidia_toolkit() {
     fi
 
     log "Checking for NVIDIA GPU..."
-    if ! grep -qi "nvidia" /proc/bus/pci/devices 2>/dev/null && ! (command -v lspci >/dev/null && lspci | grep -qi "nvidia"); then
+    if ! grep -qi "nvidia" /proc/bus/pci/devices 2>/dev/null && ! (command_exists lspci && lspci | grep -qi "nvidia"); then
         warn "No NVIDIA GPU detected. Skipping NVIDIA Container Toolkit installation."
         return 0
     fi

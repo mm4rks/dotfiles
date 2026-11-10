@@ -47,10 +47,16 @@ harden_ssh() {
         systemctl enable ssh
         systemctl restart ssh || log "Failed to restart ssh service, might be running in a container."
     else
-        error "SSH Config syntax check failed. Reverting changes..."
         mv "$SSHD_CONFIG.bak" "$SSHD_CONFIG"
-        exit 1
+        error "SSH Config syntax check failed. Reverted changes."
     fi
 }
 
-harden_ssh
+main() {
+    if [[ $EUID -ne 0 ]]; then
+        error "This script must be run as root (use sudo)."
+    fi
+    harden_ssh "$@"
+}
+
+main "$@"

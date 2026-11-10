@@ -7,6 +7,11 @@ export GOPATH="$HOME/go"
 export PATH="$GOPATH/bin:$PATH"
 export PATH="$HOME/.cargo/bin:$PATH"
 
+# Android SDK
+export ANDROID_SDK_ROOT="$HOME/android-sdk"
+export ANDROID_HOME="$HOME/android-sdk"
+export PATH="$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools"
+
 # Only set XDG_CONFIG_HOME if it hasn't been redirected (e.g. for sandbox)
 export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 

@@ -26,4 +26,8 @@ install_mise_binary() {
     fi
 }
 
-install_mise_binary
+main() {
+    install_mise_binary "$@"
+}
+
+main "$@"

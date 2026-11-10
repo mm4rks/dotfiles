@@ -16,7 +16,7 @@ setopt pushdminus           # Swap behavior of `pushd +N` and `pushd -N`.
 setopt pushdsilent          # Don't print the directory stack after `pushd` or `popd`.
 setopt pushdtohome          # Make `pushd` with no arguments go to the home directory.
 setopt pushdignoredups      # Don't push directories that are already on the stack.
-WORDCHARS=${WORDCHARS//\/} # Slashes and minus separate words
+WORDCHARS=${WORDCHARS//[\/:@-]} # Treat /, :, @, and - as word separators
 
 # --- History Configuration ----------------------------------------------------
 HISTFILE="${ZDOTDIR:-$HOME}/.zsh_history"     # Set path for the history file.
@@ -71,14 +71,6 @@ zle -N edit-command-line
 bindkey '^R' history-incremental-search-backward # Ctrl+R for history search.
 bindkey ' ' magic-space                          # Space performs history expansion (e.g., '!!').
 bindkey '^[[Z' undo                              # Shift+Tab to undo.
-bindkey '\ef' forward-word                       # Alt-f
-bindkey '\eb' backward-word                      # Alt-b
-bindkey '^[[1;5C' forward-word                   # Ctrl+Right
-bindkey '^[[1;5D' backward-word                  # Ctrl+Left
-bindkey '^[[5C' forward-word                     # Ctrl+Right (rxvt)
-bindkey '^[[5D' backward-word                    # Ctrl+Left (rxvt)
-bindkey '^[Oc' forward-word                      # Ctrl+Right (urxvt)
-bindkey '^[Od' backward-word                     # Ctrl+Left (urxvt)
 bindkey '^A' beginning-of-line
 bindkey '^E' end-of-line
 bindkey '^F' autosuggest-accept
@@ -127,10 +119,20 @@ fi
 # Register widgets from .zsh_functions.sh
 zle -N tmux_smart_detach
 zle -N edit-command-line-tmux-float
+zle -N backward_word_delim
+zle -N forward_word_delim
 zle -N backward_kill_word_delim
 zle -N kill_word_delim
 bindkey '^D' tmux_smart_detach
 bindkey '^x^e' edit-command-line-tmux-float      # Ctrl+X, Ctrl+E to open editor.
+bindkey '\ef' forward_word_delim                 # Alt+F: move forward one word (: @ / and space breaks)
+bindkey '\eb' backward_word_delim                # Alt+B: move backward one word (: @ / and space breaks)
+bindkey '^[[1;5C' forward_word_delim             # Ctrl+Right
+bindkey '^[[1;5D' backward_word_delim            # Ctrl+Left
+bindkey '^[[5C' forward_word_delim               # Ctrl+Right (rxvt)
+bindkey '^[[5D' backward_word_delim              # Ctrl+Left (rxvt)
+bindkey '^[Oc' forward_word_delim                # Ctrl+Right (urxvt)
+bindkey '^[Od' backward_word_delim               # Ctrl+Left (urxvt)
 bindkey '^W' backward_kill_word_delim            # Ctrl+W: delete word backward (: @ / and space breaks)
 bindkey '\ed' kill_word_delim                    # Alt+D: delete word forward (: @ / and space breaks)
 
@@ -149,8 +151,3 @@ precmd_functions+=(_fix_cursor)
 if command -v starship &> /dev/null; then
     eval "$(starship init zsh)"
 fi
-
-# Android SDK
-export ANDROID_SDK_ROOT="$HOME/android-sdk"
-export ANDROID_HOME="$HOME/android-sdk"
-export PATH="$PATH:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/platform-tools"
